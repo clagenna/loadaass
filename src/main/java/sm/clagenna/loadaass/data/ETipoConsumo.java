@@ -26,8 +26,26 @@ public enum ETipoConsumo {
   public static ETipoConsumo parse(String p_dic, String p_sca) {
     ETipoConsumo ret = null;
     for (ETipoConsumo vv : ETipoConsumo.values()) {
-      if (vv.dicitura.toLowerCase().contains(p_dic.toLowerCase())) {
+      if (p_dic.toLowerCase().contains(vv.dicitura.toLowerCase())) {
         ret = vv;
+        switch (vv) {
+          case Energia1S:
+            String sz = p_sca != null ? p_sca.substring(0, 1) : "*";
+            switch (sz) {
+              case "1":
+                ret = Energia1S;
+                break;
+              case "2":
+                ret = Energia2S;
+                break;
+              case "3":
+                ret = Energia3S;
+                break;
+            }
+            return ret;
+          default:
+            break;
+        }
         break;
       }
     }

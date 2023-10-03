@@ -68,6 +68,7 @@ public abstract class SqlServBase {
   }
 
   protected void setVal(Object vv, PreparedStatement p_stmt, int p_indxStmt, int p_sqlType) throws SQLException {
+    java.sql.Date dt = null;
     String szClsNam = vv != null ? vv.getClass().getSimpleName() : null;
     if (szClsNam == null) {
       p_stmt.setNull(p_indxStmt, p_sqlType);
@@ -77,8 +78,15 @@ public abstract class SqlServBase {
       case "String":
         p_stmt.setString(p_indxStmt, vv.toString());
         break;
+      case "Integer":
+        p_stmt.setInt(p_indxStmt, (Integer) vv);
+        break;
       case "Date":
-        p_stmt.setDate(p_indxStmt, (java.sql.Date) vv);
+        if (vv instanceof java.util.Date) {
+          dt = new java.sql.Date( ((java.util.Date) vv).getTime());
+          p_stmt.setDate(p_indxStmt, dt);
+        } else
+          p_stmt.setDate(p_indxStmt, (java.sql.Date) vv);
         break;
       case "Double":
         p_stmt.setDouble(p_indxStmt, (Double) vv);
@@ -87,7 +95,7 @@ public abstract class SqlServBase {
         p_stmt.setBigDecimal(p_indxStmt, (BigDecimal) vv);
         break;
       default:
-        getLog().error("Il campo {} non ha tipo riconosciuto \"{}\"", p_indxStmt, szClsNam);
+        getLog().error("Il campo {} ha tipo non riconosciuto \"{}\"", p_indxStmt, szClsNam);
         break;
     }
   }

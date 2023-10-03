@@ -1,6 +1,5 @@
 package sm.clagenna.loadaass.dbsql;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -95,14 +94,6 @@ public class SqlServToEELettura extends SqlServBase {
 
   public int insertNewLettura() throws SQLException {
     Integer idEEFattura = masterFattura.getIdFattura();
-    // ETipoLettura TipoEnergia;
-    java.sql.Date LettDtPrec;
-    Integer LettPrec;
-    java.sql.Date LettDtAttuale;
-    Integer LettAttuale;
-    // float LettCoeffK;
-    BigDecimal LettConsumo;
-    // LettProvvenienza : reale/presunta
 
     int QtaRighe = -1;
     try {
@@ -115,49 +106,15 @@ public class SqlServToEELettura extends SqlServBase {
     }
 
     for (int riga = 0; riga < QtaRighe; riga++) {
-      // String sz = (String) getValore(Consts.TGV_TipoEnergia, riga);
-      // TipoEnergia = ETipoLettura.parse(sz);
-      LettDtPrec = getValoreDt(Consts.TGV_LettDtPrec, riga);
-      LettPrec = (Integer) getValore(Consts.TGV_LettPrec, riga);
-      LettDtAttuale = getValoreDt(Consts.TGV_LettDtAttuale, riga);
-      LettAttuale = (Integer) getValore(Consts.TGV_LettAttuale, riga);
-      LettConsumo = (BigDecimal) getValore(Consts.TGV_LettConsumo, riga);
-
-      /*
-       * + "INSERT INTO dbo.EELettura" // + "           (idEEFattura" // +
-       * "           ,LettDtPrec" // + "           ,LettPrec" // +
-       * "           ,LettDtAttuale" // + "           ,LettAttuale" // +
-       * "           ,LettConsumo)" //
-       */
       int k = 1;
-      m_stmt_ins_Lettura.setInt(k++, idEEFattura);
-      //      if (TipoEnergia == null)
-      //        m_stmt_ins_Lettura.setNull(k++, Types.VARCHAR);
-      //      else
-      //        m_stmt_ins_Lettura.setString(k++, TipoEnergia.getSigla());
-      if (LettDtPrec == null)
-        m_stmt_ins_Lettura.setNull(k++, Types.DATE);
-      else
-        m_stmt_ins_Lettura.setDate(k++, LettDtPrec);
-      if (LettPrec == null)
-        m_stmt_ins_Lettura.setNull(k++, Types.INTEGER);
-      else
-        m_stmt_ins_Lettura.setInt(k++, LettPrec);
-      if (LettDtAttuale == null)
-        m_stmt_ins_Lettura.setNull(k++, Types.DATE);
-      else
-        m_stmt_ins_Lettura.setDate(k++, LettDtAttuale);
-      if (LettAttuale == null)
-        m_stmt_ins_Lettura.setNull(k++, Types.INTEGER);
-      else
-        m_stmt_ins_Lettura.setInt(k++, LettAttuale);
-      if (LettConsumo == null)
-        m_stmt_ins_Lettura.setNull(k++, Types.DECIMAL);
-      else
-        m_stmt_ins_Lettura.setBigDecimal(k++, LettConsumo);
+      setVal(idEEFattura, m_stmt_ins_Lettura, k++, Types.INTEGER);
+      setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettDtPrec, riga, k++, Types.DATE);
+      setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettPrec, riga, k++, Types.INTEGER);
+      setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettDtAttuale, riga, k++, Types.DATE);
+      setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettAttuale, riga, k++, Types.INTEGER);
+      setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettConsumo, riga, k++, Types.DECIMAL);
 
       m_stmt_ins_Lettura.executeUpdate();
-      // Integer idLettura = getConnSql().getLastIdentity();
     }
     return QtaRighe;
   }

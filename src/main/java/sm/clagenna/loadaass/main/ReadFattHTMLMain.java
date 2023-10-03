@@ -69,7 +69,8 @@ public class ReadFattHTMLMain implements ILog4jReader {
       gpdf.setConnSql(connSQL);
       gpdf.convertiPDF();
     } catch (IOException e) {
-      e.printStackTrace();
+      s_log.error("Errore di conversione {}", gpdf.getPdfFile(), e);
+      // e.printStackTrace();
     }
     System.out.println(gpdf.toString());
   }

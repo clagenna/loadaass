@@ -1,5 +1,6 @@
 package sm.clagenna.loadaass.dbsql;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -97,7 +98,7 @@ public class SqlServToEEConsumo extends SqlServBase {
   public void insertConsumo() throws SQLException {
     Integer idEEFattura = null;
     ETipoConsumo tipoSpesa = null;
-    Double quantita = null;
+    BigDecimal quantita = null;
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_PotCostUnit);
@@ -110,21 +111,27 @@ public class SqlServToEEConsumo extends SqlServBase {
 
     idEEFattura = masterFattura.getIdFattura();
     for (int riga = 0; riga < QtaRighe; riga++) {
-      String sz = (String) getValore(Consts.TGV_TipoEnergia, riga);
-      String sca = (String) getValore(Consts.TGV_tipoScaglione, riga);
+      String sz = (String) getValore(Consts.TGV_tipoPotImpegn, riga);
+      Object obj = getValore(Consts.TGV_tipoScaglione, riga);
+      String sca = obj != null && obj instanceof String ? obj.toString() : "*";
+      // System.out.printf("Consumo tipo = %s -- %s\n", sz, sca);
       tipoSpesa = ETipoConsumo.parse(sz, sca);
-      quantita = (Double) getValore(Consts.TGV_PotConsumo, riga);
-      if (quantita == null)
-        quantita = (Double) getValore(Consts.TGV_PotConsumo2, riga);
-
+      obj = getValore(Consts.TGV_PotConsumo, riga);
+      Integer vv = obj != null && obj instanceof Integer ? (Integer) obj : null;
+      if (vv != null)
+        quantita = new BigDecimal(vv);
+      else
+        quantita = (BigDecimal) getValore(Consts.TGV_PotConsumo2, riga);
       int k = 1;
+      
       setVal(idEEFattura, m_stmt_ins_Consumo, k++, Types.INTEGER);
       setVal(tipoSpesa.getSigla(), m_stmt_ins_Consumo, k++, Types.VARCHAR);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotDtDa, riga, k++, Types.DATE);
-      setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotDtDa, riga, k++, Types.DATE);
-      setValTgv(m_stmt_ins_Consumo, Consts.TGV_potImpUnit, riga, k++, Types.VARCHAR);
-      setVal(quantita, m_stmt_ins_Consumo, k++, Types.INTEGER);
-      setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotTotale, riga, k++, Types.DOUBLE);
+      setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotDtA, riga, k++, Types.DATE);
+      setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotCostUnit, riga, k++, Types.DECIMAL);
+      setVal(quantita, m_stmt_ins_Consumo, k++, Types.DECIMAL);
+      setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotTotale, riga, k++, Types.DECIMAL);
+
       m_stmt_ins_Consumo.executeUpdate();
 
     }
