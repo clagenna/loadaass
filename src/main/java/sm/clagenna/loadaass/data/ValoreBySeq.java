@@ -119,7 +119,7 @@ public class ValoreBySeq {
         return 0;
       tgv = p_liCmp.get(indx);
       if (tg.getTipoDato() != tgv.getTipo()) {
-        s_log.debug("Il valore {} differisce da {}", tgv.toString(), tg.toString());
+        s_log.trace("Scarto il valore {} perche' tipodato incompatibile di {}", tgv.toString(), tg.toString());
         return 0;
       }
     }
@@ -129,6 +129,7 @@ public class ValoreBySeq {
       tgv = p_liCmp.get(p_k + j++);
       try {
         tg.assegnaValDaCampo(tgv, rigaHolder.getRiga());
+        // System.out.println("ValoreBySeq.estraiValori()=" + this.toString());
       } catch (ReadFattValoreException e) {
         System.err.printf("Errore assegna seq:%s", tg.getFieldName(), tgv.toString());
       }
@@ -144,14 +145,13 @@ public class ValoreBySeq {
       sz += "**NULL**";
       return sz;
     }
+    int k = 0;
     for (ValoreByTag p : m_liSeq) {
       sz += vir; // + p.getTipoDato();
-      Object val = p.getValoreNoEx();
-      if (val != null && val.getClass().getSimpleName().equals("Object")) {
-        sz += "{" + p.toString() + "}";
-      } else {
-        sz += "";
-      }
+      //      Object val = p.getValoreNoEx();
+      //      String szV = (val != null && !val.getClass().getSimpleName().equals("Object")) ? p.toString() : "*null*";
+      //      sz += String.format("(%d){%s}", k++, szV);
+      sz += String.format("(%d){%s}", k++, p.toString());
       vir = "\n\t";
     }
     return sz;
@@ -172,7 +172,7 @@ public class ValoreBySeq {
       rigaHolder.addRiga();
     else
       s_log.error("La seq {} non ha riga holder!", numSeq);
-
+    // System.out.println("ValoreBySeq.addRiga()" + this.toString());
   }
 
   public void setRigaHolder(RigaHolder p_rh) {

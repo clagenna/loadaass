@@ -3,14 +3,14 @@
 	<Appenders>
 		<Console name="console" target="SYSTEM_OUT">
 			<!-- PatternLayout pattern="%d %-5p %-32F:%L - %m%n" / -->
-			<PatternLayout pattern="%-32c  %d{yyyy-MM-dd HH:mm:ss} %-5p: %m%n"/>
+			<PatternLayout pattern="%-32c{3}(%L)  %d{yyyy-MM-dd HH:mm:ss} %-5p: %m%n"/>
 		</Console>
 		<File name="readfatt" fileName="log/readfatt.log" append="true">
-			<PatternLayout pattern="%-32c  %d{yyyy-MM-dd HH:mm:ss} %-5p: %m%n"/>
+			<PatternLayout pattern="%-32c{3}(%L)  %d{yyyy-MM-dd HH:mm:ss} %-5p: %m%n"/>
 		</File>
 		<MioAppender name="MIOAPPENDER">
 			<!--  PatternLayout pattern="serial:%sn |Date:%d |level:%level |class:%logger |method:%M() |line:%L |Location: %l |message:%m%n"/ -->
-			<PatternLayout pattern="%logger[%L]\t%d\t%level\t%m%n"/>
+			<PatternLayout pattern="%logger(%L)\t%d\t%level\t%m%n"/>
 		</MioAppender>
 		
 	</Appenders>

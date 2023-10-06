@@ -1,6 +1,6 @@
 package sm.clagenna.loadaass.data;
 
-public enum ETipoConsumo {
+public enum ETipoEEConsumo {
   Energia1S("E1", "Corrispettivo energia"), //
   Energia2S("E2", "Corrispettivo energia"), //
   Energia3S("E3", "Corrispettivo energia"), //
@@ -18,14 +18,14 @@ public enum ETipoConsumo {
     return dicitura;
   }
 
-  private ETipoConsumo(String p_si, String p_dic) {
+  private ETipoEEConsumo(String p_si, String p_dic) {
     sigla = p_si;
     dicitura = p_dic;
   }
 
-  public static ETipoConsumo parse(String p_dic, String p_sca) {
-    ETipoConsumo ret = null;
-    for (ETipoConsumo vv : ETipoConsumo.values()) {
+  public static ETipoEEConsumo parse(String p_dic, String p_sca) {
+    ETipoEEConsumo ret = null;
+    for (ETipoEEConsumo vv : ETipoEEConsumo.values()) {
       if (p_dic.toLowerCase().contains(vv.dicitura.toLowerCase())) {
         ret = vv;
         switch (vv) {

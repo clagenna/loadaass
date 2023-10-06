@@ -7,7 +7,12 @@ import java.nio.file.Paths;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 
+import lombok.Getter;
+import lombok.Setter;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.DBConnSQL;
 import sm.clagenna.loadaass.sys.ILog4jReader;
@@ -22,6 +27,8 @@ public class ReadFattHTMLMain implements ILog4jReader {
   private static Level        s_logLev;
 
   private ParseCmdLine        m_cmdParse;
+  @Getter @Setter
+  private Level               logLevel;
   @SuppressWarnings("unused")
   private String              m_lastLogMessage;
 
@@ -47,6 +54,7 @@ public class ReadFattHTMLMain implements ILog4jReader {
   private void initCmdline(String[] p_args) throws ReadFattException {
     m_cmdParse = new ParseCmdLine();
     m_cmdParse.parse(p_args);
+    changeLogLevel();
     // String fiProp = m_cmdParse.getPropertyFile();
   }
 
@@ -59,7 +67,6 @@ public class ReadFattHTMLMain implements ILog4jReader {
       pth = Paths.get(szPropFi);
       gpdf.setPropertyFile(pth);
     }
-
     gpdf.setGenPDFText(m_cmdParse.isGenPDFText());
     gpdf.setGenTagFile(m_cmdParse.isGenTagFile());
     gpdf.setGenHTMLFile(m_cmdParse.isGenHTMLFile());
@@ -72,7 +79,7 @@ public class ReadFattHTMLMain implements ILog4jReader {
       s_log.error("Errore di conversione {}", gpdf.getPdfFile(), e);
       // e.printStackTrace();
     }
-    System.out.println(gpdf.toString());
+    // System.out.println(gpdf.toString());
   }
 
   @Override
@@ -83,4 +90,23 @@ public class ReadFattHTMLMain implements ILog4jReader {
     // arr[3] - message to log
     m_lastLogMessage = p_arr[3];
   }
+
+  /**
+   * Vedi StackOverflow
+   * {@linkplain https://stackoverflow.com/questions/23434252/programmatically-change-log-level-in-log4j2}
+   */
+  private void changeLogLevel() {
+    ParseCmdLine cmd = ParseCmdLine.getInst();
+    if (cmd.getLogLevel() == null)
+      setLogLevel(Level.DEBUG);
+    else
+      setLogLevel(cmd.getLogLevel());
+    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+    s_log.warn("Setto il Log Level a {}", logLevel.toString());
+    loggerConfig.setLevel(logLevel);
+    ctx.updateLoggers(); // This causes all Loggers to refetch information from their LoggerConfig.
+  }
+
 }

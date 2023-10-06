@@ -10,6 +10,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +31,7 @@ public class ParseCmdLine {
   public static final String  CSZ_GENTAGFFILE = "gg";
   public static final String  CSZ_GENHTMLFILE = "gh";
   public static final String  CSZ_LANCIAEXCEL = "e";
+  public static final String  CSZ_LOGLEVEL    = "lv";
 
   private Options             m_opt;
   @Getter @Setter
@@ -46,6 +48,8 @@ public class ParseCmdLine {
   private boolean             LanciaExcel;
   @Getter @Setter
   private ETipoFatt           tipoFatt;
+  @Getter @Setter
+  private Level               logLevel;
 
   public ParseCmdLine() {
     s_inst = this;
@@ -61,8 +65,9 @@ public class ParseCmdLine {
     m_opt.addOption(CSZ_PDFINPUT, true, "Il file PDF fattura ");
     m_opt.getOption(CSZ_PDFINPUT).setRequired(true);
     m_opt.addOption(CSZ_PROPERTY, true, "Il Property File per il tipo fattura");
-    m_opt.getOption(CSZ_PROPERTY).setRequired(true);
+    //    m_opt.getOption(CSZ_PROPERTY).setRequired(true);
     m_opt.addOption(CSZ_TIPOFATT, true, "Il Tipo di fattura (H2O,EE,GAS)");
+    m_opt.addOption(CSZ_LOGLEVEL, true, "Il Tipo di Log Level (TRACE,DEBUG,INFO,WARN,ERROR)");
 
     m_opt.addOption(CSZ_GENTAGFFILE, false, "Genera il tag file");
     m_opt.addOption(CSZ_GENTEXT, false, "Genera file di testo");
@@ -98,7 +103,13 @@ public class ParseCmdLine {
     genHTMLFile = p_cmd.hasOption(CSZ_GENHTMLFILE);
 
     LanciaExcel = p_cmd.hasOption(CSZ_LANCIAEXCEL);
-
+    String szLv = "DEBUG";
+    if (p_cmd.hasOption(CSZ_LOGLEVEL)) {
+      szLv = p_cmd.getOptionValue(CSZ_LOGLEVEL).toUpperCase();
+    }
+    logLevel = Level.getLevel(szLv);
+    if (logLevel == null)
+      throw new ReadFattCmdLineException("Non interpreto il Log Level=" + szLv);
     if ( !Files.exists(Paths.get(getPDFFatt()), LinkOption.NOFOLLOW_LINKS))
       throw new ReadFattCmdLineException("Non esiste PDF =" + PDFFatt);
     //    if ( !Files.exists(Paths.get(getPropertyFile()), LinkOption.NOFOLLOW_LINKS))

@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import lombok.Setter;
-import sm.clagenna.loadaass.data.ETipoConsumo;
+import sm.clagenna.loadaass.data.ETipoEEConsumo;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
@@ -97,7 +97,7 @@ public class SqlServToEEConsumo extends SqlServBase {
 
   public void insertConsumo() throws SQLException {
     Integer idEEFattura = null;
-    ETipoConsumo tipoSpesa = null;
+    ETipoEEConsumo tipoSpesa = null;
     BigDecimal quantita = null;
     int QtaRighe = -1;
     try {
@@ -115,7 +115,7 @@ public class SqlServToEEConsumo extends SqlServBase {
       Object obj = getValore(Consts.TGV_tipoScaglione, riga);
       String sca = obj != null && obj instanceof String ? obj.toString() : "*";
       // System.out.printf("Consumo tipo = %s -- %s\n", sz, sca);
-      tipoSpesa = ETipoConsumo.parse(sz, sca);
+      tipoSpesa = ETipoEEConsumo.parse(sz, sca);
       obj = getValore(Consts.TGV_PotConsumo, riga);
       Integer vv = obj != null && obj instanceof Integer ? (Integer) obj : null;
       if (vv != null)

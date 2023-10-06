@@ -31,6 +31,9 @@ import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.SqlServToEEConsumo;
 import sm.clagenna.loadaass.dbsql.SqlServToEEFattura;
 import sm.clagenna.loadaass.dbsql.SqlServToEELettura;
+import sm.clagenna.loadaass.dbsql.SqlServToGASConsumo;
+import sm.clagenna.loadaass.dbsql.SqlServToGASFattura;
+import sm.clagenna.loadaass.dbsql.SqlServToGASLettura;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
@@ -82,131 +85,14 @@ public class GestPDFFatt {
   }
 
   public void convertiPDF() throws ReadFattException {
+
     convertiInHTML();
     leggiCercaValori();
     cercaTagValues();
     cercaSeqValues();
-    creaDbValori();
+    if (s_log.isTraceEnabled())
+      creaDbValori();
     inserisciInDB();
-
-    //    s_log.debug("------------------- Risultato Finale in DBValori ------------");
-    //    s_log.debug(m_dbVal.toString());
-    //    if (s_logLev.isInRange(Level.DEBUG, Level.TRACE)) {
-    //      boolean bv = m_liCercaVal.stream().map(s -> s.isAssegnato()).reduce(true, (a, b) -> a && b);
-    //      if (bv)
-    //        s_log.debug("!! Tutti i campi Valore sono valorizzati !");
-    //    }
-    //    if (isLanciaExcel())
-    //      trasbordaInExcel();
-
-  }
-
-  private void inserisciInDB() {
-    SqlServToEEFattura fatt = new SqlServToEEFattura(tagFactory, connSQL);
-    try {
-      if ( !fatt.fatturaExist())
-        fatt.insertNewFattura();
-      else {
-        var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
-        s_log.warn("La fattura \"{}\" esiste nel DB", val);
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-
-    SqlServToEELettura lett = new SqlServToEELettura(tagFactory, connSQL);
-    lett.setMasterFattura(fatt);
-    try {
-      if ( !lett.letturaExist())
-        lett.insertNewLettura();
-      else {
-        var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
-        s_log.warn("La Lettura \"{}\" esiste nel DB", val);
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-
-    SqlServToEEConsumo cons = new SqlServToEEConsumo(tagFactory, connSQL);
-    cons.setMasterFattura(fatt);
-    try {
-      if ( !cons.consumoExists())
-        cons.insertConsumo();
-      else {
-        var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
-        s_log.warn("Il consumo  \"{}\" esiste nel DB", val);
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-
-  }
-
-  private void creaDbValori() {
-    m_liDataset = new ArrayList<>();
-    CreaDataset dts = new CreaDataset();
-    dts.creaDtSet(m_liTagVals);
-    System.out.println(dts.toString());
-    m_liDataset.add(dts);
-    for (RigaHolder rh : m_liRigaHolder) {
-      dts = new CreaDataset();
-      dts.creaDtSet(rh);
-      m_liDataset.add(dts);
-      System.out.println(dts.toString());
-    }
-  }
-
-  public void init() throws ReadFattException {
-    m_props = AppProperties.getInstance();
-    if (m_props == null)
-      m_props = new AppProperties();
-    else
-      m_props.reset();
-    m_props.leggiPropertyFile(propertyFile);
-
-    if ( !Files.exists(pdfFile, LinkOption.NOFOLLOW_LINKS))
-      throw new ReadFattException("Non esiste " + pdfFile.toString());
-    String szNoExt = FilenameUtils.removeExtension(pdfFile.toString());
-    m_TextFile = szNoExt + ".txt";
-    m_TagFile = szNoExt + "_Tags.txt";
-    m_HtmlFile = szNoExt + ".HTML";
-    m_liRigaHolder = new ArrayList<>();
-    tagFactory = new TagValFactory();
-  }
-
-  private void discerniTipoPropDaFile() {
-    // discerno il tipo di property-file dal prefisso del nome file della fattura
-    String szNam = pdfFile.getFileName().toString().toUpperCase();
-    tipoFatt = null;
-    for (ETipoFatt t : ETipoFatt.values()) {
-      String sz = t.getTitolo() + "_";
-      if (szNam.startsWith(sz)) {
-        setTipoFatt(t);
-        String szProp = String.format("Fatt%s_HTML.properties", t.getTitolo());
-        setPropertyFile(Paths.get(szProp));
-        break;
-      }
-    }
-  }
-
-  private void setPdfFile(Path p_pdf) throws ReadFattException {
-    pdfFile = p_pdf;
-    if (tipoFatt == null)
-      discerniTipoPropDaFile();
-    init();
-  }
-
-  public void setPropertyFile(Path p_prop) {
-    propertyFile = p_prop;
-    if (tipoFatt != null)
-      return;
-    final String szPat = "Fatt([a-z]{2-3})_.*";
-    Pattern pat = Pattern.compile(szPat);
-    Matcher mtch = pat.matcher(szPat);
-    if (mtch.matches()) {
-      String gr = mtch.group(1);
-      tipoFatt = ETipoFatt.parse(gr);
-    }
   }
 
   private void convertiInHTML() {
@@ -228,18 +114,6 @@ public class GestPDFFatt {
     if (genPDFText) {
       m_fromHtml.saveTxtFile(m_TextFile);
     }
-  }
-
-  private void discerniTipoPropContenuto() {
-    String szTxt = m_fromHtml.getTextTAGs();
-    if (szTxt.indexOf("Servizio Gas Naturale") >= 0)
-      setTipoFatt(ETipoFatt.GAS);
-    else if (szTxt.indexOf("Servizio Energia Elettrica") >= 0)
-      setTipoFatt(ETipoFatt.EnergiaElettrica);
-    else if (szTxt.indexOf("Servizio Idrico Integrato") >= 0)
-      setTipoFatt(ETipoFatt.Acqua);
-    else
-      s_log.warn("non sono riuscito a capire che tipo di Fattura AASS e'");
   }
 
   private void leggiCercaValori() throws ReadFattPropsException {
@@ -305,14 +179,6 @@ public class GestPDFFatt {
     }
   }
 
-  private String getFieldName(String p_sz) {
-    String szRet = null;
-    String[] arr = p_sz.split(":");
-    if (arr.length >= 1)
-      szRet = arr[0];
-    return szRet;
-  }
-
   private List<TaggedValue> cercaTagValues() {
     // Iterator<Campo> enu = app.getListCampi().iterator();
     m_liVals = m_fromHtml.getListCampi();
@@ -323,6 +189,198 @@ public class GestPDFFatt {
       }
     }
     return m_liVals;
+  }
+
+  private void creaDbValori() {
+    m_liDataset = new ArrayList<>();
+    CreaDataset dts = new CreaDataset();
+    dts.creaDtSet(m_liTagVals);
+    s_log.trace(dts.toString());
+    m_liDataset.add(dts);
+    for (RigaHolder rh : m_liRigaHolder) {
+      dts = new CreaDataset();
+      dts.creaDtSet(rh);
+      m_liDataset.add(dts);
+      s_log.trace(dts.toString());
+    }
+  }
+
+  private void inserisciInDB() throws ReadFattException {
+    switch (tipoFatt) {
+      case Acqua:
+        insertH2O();
+        break;
+      case EnergiaElettrica:
+        insertEE();
+        break;
+      case GAS:
+        insertGAS();
+        break;
+      default:
+        throw new ReadFattException("Non riconosco il tipo di fattura");
+    }
+  }
+
+  private void insertH2O() {
+    System.out.println("GestPDFFatt.insertH2O() --- Da implementare !!!");
+
+  }
+
+  private void insertEE() {
+    SqlServToEEFattura fatt = new SqlServToEEFattura(tagFactory, connSQL);
+    try {
+      if ( !fatt.fatturaExist())
+        fatt.insertNewFattura();
+      else {
+        var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
+        s_log.warn("La fattura \"{}\" esiste gia' nel DB", val);
+        return;
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+
+    SqlServToEELettura lett = new SqlServToEELettura(tagFactory, connSQL);
+    lett.setMasterFattura(fatt);
+    try {
+      if ( !lett.letturaExist())
+        lett.insertNewLettura();
+      else {
+        var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
+        s_log.warn("La Lettura \"{}\" esiste gia' nel DB", val);
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+
+    SqlServToEEConsumo cons = new SqlServToEEConsumo(tagFactory, connSQL);
+    cons.setMasterFattura(fatt);
+    try {
+      if ( !cons.consumoExists())
+        cons.insertConsumo();
+      else {
+        var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
+        s_log.warn("Il consumo  \"{}\" esiste gia' nel DB", val);
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  private void insertGAS() {
+    SqlServToGASFattura fatt = new SqlServToGASFattura(tagFactory, connSQL);
+    try {
+      if ( !fatt.fatturaExist())
+        fatt.insertNewFattura();
+      else {
+        var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
+        s_log.warn("La fattura \"{}\" esiste gia' nel DB", val);
+        return;
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+
+    SqlServToGASLettura lett = new SqlServToGASLettura(tagFactory, connSQL);
+    lett.setMasterFattura(fatt);
+    try {
+      if ( !lett.letturaExist())
+        lett.insertNewLettura();
+      else {
+        var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
+        s_log.warn("La Lettura \"{}\" esiste gia' nel DB", val);
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+
+    SqlServToGASConsumo cons = new SqlServToGASConsumo(tagFactory, connSQL);
+    cons.setMasterFattura(fatt);
+    try {
+      if ( !cons.consumoExists())
+        cons.insertConsumo();
+      else {
+        var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
+        s_log.warn("Il consumo  \"{}\" esiste gia' nel DB", val);
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  public void init() throws ReadFattException {
+    m_props = AppProperties.getInstance();
+    if (m_props == null)
+      m_props = new AppProperties();
+    else
+      m_props.reset();
+    m_props.leggiPropertyFile(propertyFile);
+
+    if ( !Files.exists(pdfFile, LinkOption.NOFOLLOW_LINKS))
+      throw new ReadFattException("Non esiste " + pdfFile.toString());
+    String szNoExt = FilenameUtils.removeExtension(pdfFile.toString());
+    m_TextFile = szNoExt + ".txt";
+    m_TagFile = szNoExt + "_Tags.txt";
+    m_HtmlFile = szNoExt + ".HTML";
+    m_liRigaHolder = new ArrayList<>();
+    tagFactory = new TagValFactory();
+  }
+
+  private void discerniTipoPropDaFile() {
+    // discerno il tipo di property-file dal prefisso del nome file della fattura
+    String szNam = pdfFile.getFileName().toString().toUpperCase();
+    tipoFatt = null;
+    for (ETipoFatt t : ETipoFatt.values()) {
+      String sz = t.getTitolo() + "_";
+      if (szNam.startsWith(sz)) {
+        setTipoFatt(t);
+        String szProp = String.format("Fatt%s_HTML.properties", t.getTitolo());
+        setPropertyFile(Paths.get(szProp));
+        break;
+      }
+    }
+  }
+
+  private void setPdfFile(Path p_pdf) throws ReadFattException {
+    pdfFile = p_pdf;
+    if (tipoFatt == null)
+      discerniTipoPropDaFile();
+    init();
+  }
+
+  public void setPropertyFile(Path p_prop) {
+    propertyFile = p_prop;
+    if (tipoFatt != null)
+      return;
+    final String szPat = "Fatt([a-z]{2-3})_.*";
+    Pattern pat = Pattern.compile(szPat);
+    Matcher mtch = pat.matcher(szPat);
+    if (mtch.matches()) {
+      String gr = mtch.group(1);
+      tipoFatt = ETipoFatt.parse(gr);
+    }
+  }
+
+  private void discerniTipoPropContenuto() {
+    String szTxt = m_fromHtml.getTextTAGs();
+    if (szTxt.indexOf("Servizio Gas Naturale") >= 0)
+      setTipoFatt(ETipoFatt.GAS);
+    else if (szTxt.indexOf("Servizio Energia Elettrica") >= 0)
+      setTipoFatt(ETipoFatt.EnergiaElettrica);
+    else if (szTxt.indexOf("Servizio Idrico Integrato") >= 0)
+      setTipoFatt(ETipoFatt.Acqua);
+    else
+      s_log.warn("non sono riuscito a capire che tipo di Fattura AASS e'");
+  }
+
+  private String getFieldName(String p_sz) {
+    String szRet = null;
+    String[] arr = p_sz.split(":");
+    if (arr.length >= 1)
+      szRet = arr[0];
+    return szRet;
   }
 
   /**
@@ -377,14 +435,14 @@ public class GestPDFFatt {
           tagIndx += nTagsAvanti - 1;
           break;
         } else {
-          s_log.debug("La seq N.{}\n\t{} non match-a col val:\n\t{}", //
+          s_log.trace("La seq N.{}\n\t{} non match-a col val:\n\t{}", //
               seq.getNumSeq(), //
               seq.getValoreTag(0).toString(), //
               tgv.toString());
         }
       }
     }
-    System.out.println("GestPDFFatt.cercaSeqValues() kMax=" + kk);
+    s_log.trace("GestPDFFatt cercaSeqValues  qta tags =" + kk);
   }
 
   @Override

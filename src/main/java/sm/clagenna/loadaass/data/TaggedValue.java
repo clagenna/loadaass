@@ -31,7 +31,7 @@ public class TaggedValue implements Comparable<TaggedValue> {
   private String              vFattNo;
   private String              vInt15;
 
-  private static DateFormat   fmtData    = new SimpleDateFormat("dd/MM/yyyy");
+  public static DateFormat   fmtData    = new SimpleDateFormat("dd/MM/yyyy");
 
   private static Pattern      patInt15   = Pattern.compile(ETipiDato.IntN15.getRegex());
   private static Pattern      patBarrato = Pattern.compile(ETipiDato.Barrato.getRegex());

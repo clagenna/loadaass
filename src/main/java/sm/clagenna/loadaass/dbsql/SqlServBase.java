@@ -94,6 +94,9 @@ public abstract class SqlServBase {
       case "BigDecimal":
         p_stmt.setBigDecimal(p_indxStmt, (BigDecimal) vv);
         break;
+      case "Object":
+        p_stmt.setNull(p_indxStmt, p_sqlType);
+        break;
       default:
         getLog().error("Il campo {} ha tipo non riconosciuto \"{}\"", p_indxStmt, szClsNam);
         break;

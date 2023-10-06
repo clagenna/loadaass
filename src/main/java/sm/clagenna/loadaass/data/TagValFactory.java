@@ -1,7 +1,9 @@
 package sm.clagenna.loadaass.data;
 
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,7 +39,7 @@ public class TagValFactory {
         //
       }
     } else
-      s_log.warn("Il tag \"{}\" esiste gia' vedi:{} !", p_nam, ret.toString());
+      s_log.debug("Il tag \"{}\" esiste gia' vedi:{} !", p_nam, ret.toString());
     return ret;
   }
 
@@ -46,5 +48,13 @@ public class TagValFactory {
     if (ret == null)
       s_log.error("Il tag \"{}\" non e' stato creato !", p_nam);
     return ret;
+  }
+
+  public List<String> getAllTagsNames() {
+    List<String> li = null;
+    if (m_map == null)
+      return li;
+    li = m_map.keySet().stream().collect(Collectors.toList());
+    return li;
   }
 }
