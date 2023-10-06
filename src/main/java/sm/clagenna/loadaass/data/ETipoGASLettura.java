@@ -3,6 +3,7 @@ package sm.clagenna.loadaass.data;
 public enum ETipoGASLettura {
   Stimata("Stim", "STIMATA"), //
   Effettiva("Eff", "EFFETTIVA"), //
+  Autolettura("Auto", "AUTOLETTURA"), //
   Totale("Tot", "Totale Consumi mc");
 
   private String sigla;
