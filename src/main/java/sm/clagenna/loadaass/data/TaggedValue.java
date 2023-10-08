@@ -31,7 +31,7 @@ public class TaggedValue implements Comparable<TaggedValue> {
   private String              vFattNo;
   private String              vInt15;
 
-  public static DateFormat   fmtData    = new SimpleDateFormat("dd/MM/yyyy");
+  public static DateFormat    fmtData    = new SimpleDateFormat("dd/MM/yyyy");
 
   private static Pattern      patInt15   = Pattern.compile(ETipiDato.IntN15.getRegex());
   private static Pattern      patBarrato = Pattern.compile(ETipiDato.Barrato.getRegex());
@@ -51,8 +51,8 @@ public class TaggedValue implements Comparable<TaggedValue> {
   }
 
   private void calcola() {
-    int px = (int) (getFx() / Utils.DBL_XMAX * Utils.F_XCharMax);
-    int py = (int) (getFy() / Utils.DBL_YMAX * Utils.F_YRigheMax);
+    int px = (int)  Math.round(( (getFx() / Utils.DBL_XMAX) * Utils.F_XCharMax));
+    int py = (int)  Math.round(( (getFy() / Utils.DBL_YMAX) * Utils.F_YRigheMax));
     // salto alla pagina
     py += (getPage() - 1) * Utils.F_YRigheMax;
     setLeft(px);
@@ -303,7 +303,8 @@ public class TaggedValue implements Comparable<TaggedValue> {
     }
     //    String sz = String.format("Top:%d(%d)\tleft:%d, %s=\"%s\"", //
     //        getTop(), getPage(), getLeft(), szIs, getTxt());
-    String sz = String.format("%d(%d), %d\t%s=\"%s\"", //
+    String sz = String.format("(%.2f,%.2f)\t%d(%d), %d\t%s=\"%s\"", //
+        getFy(), getFx(), //
         getTop(), getPage(), getLeft(), szIs, getTxt());
     return sz;
   }
@@ -311,20 +312,23 @@ public class TaggedValue implements Comparable<TaggedValue> {
   /**
    * Verifico se e' un testo accodabile al precedente
    *
-   * @param p_rec
+   * @param p_succ
    * @return
    */
-  @SuppressWarnings("unused")
-  public boolean isConsecutivo(TaggedValue p_rec) {
-    double diffX = Math.abs(p_rec.left - left);
+  public boolean isConsecutivo(TaggedValue p_succ) {
+    double diffX = Math.abs(p_succ.left - left);
+    double diffY = Math.abs(top - p_succ.top);
+    double dimChMax = 7.0;
     double dimCh = 999.9F;
     if (txt != null)
       dimCh = diffX / txt.length();
     if ( !isText() || //
-        !p_rec.isText() || //
-        Math.abs(top - p_rec.top) >= 1 || //
-        (left > p_rec.left))
+        !p_succ.isText() || //
+        diffY >= 1 || //
+        (left > p_succ.left) || //
+        dimCh > dimChMax) {
       return false;
+    }
     return true;
   }
 

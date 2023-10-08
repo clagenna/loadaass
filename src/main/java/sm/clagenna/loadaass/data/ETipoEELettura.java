@@ -1,12 +1,12 @@
 package sm.clagenna.loadaass.data;
 
-public enum ETipoLettura {
+public enum ETipoEELettura {
   Attiva("A", "Energia Attiva");
 
   private String sigla;
   private String dicitura;
 
-  private ETipoLettura(String p_sigla, String p_dicitura) {
+  private ETipoEELettura(String p_sigla, String p_dicitura) {
     sigla = p_sigla;
     dicitura = p_dicitura;
   }
@@ -15,9 +15,9 @@ public enum ETipoLettura {
     return sigla;
   }
 
-  public static ETipoLettura parse(String p_dici) {
-    ETipoLettura ret = null;
-    for (ETipoLettura val : ETipoLettura.values()) {
+  public static ETipoEELettura parse(String p_dici) {
+    ETipoEELettura ret = null;
+    for (ETipoEELettura val : ETipoEELettura.values()) {
       if (val.dicitura.toLowerCase().contains(p_dici.toLowerCase())) {
         ret = val;
         break;

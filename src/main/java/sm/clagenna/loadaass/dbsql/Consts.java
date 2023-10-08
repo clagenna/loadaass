@@ -16,6 +16,7 @@ public class Consts {
 
   public static final String TGV_accontoBollPrec     = "accontoBollPrec";
   public static final String TGV_addizFER            = "addizFER";
+  public static final String TGV_assicurazione       = "assicurazione";
   public static final String TGV_Consumofatt         = "Consumofatt";
   public static final String TGV_Contatore           = "Contatore";
   public static final String TGV_CredAnnoAttuale     = "CredAnnoAttuale";
@@ -55,6 +56,7 @@ public class Consts {
   public static final String TGV_PotDtDa             = "PotDtDa";
   public static final String TGV_potImpUnit          = "potImpUnit";
   public static final String TGV_PotTotale           = "PotTotale";
+  public static final String TGV_RestituzAccPrec     = "RestituzAccPrec";
   public static final String TGV_seqAddizFER         = "seqAddizFER";
   public static final String TGV_TipoCausale         = "TipoCausale";
   public static final String TGV_TipoEnergia         = "TipoEnergia";

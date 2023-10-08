@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.Setter;
 import sm.clagenna.loadaass.data.ETipiDato;
 import sm.clagenna.loadaass.data.ETipoFatt;
+import sm.clagenna.loadaass.data.FactoryFattura;
 import sm.clagenna.loadaass.data.RigaHolder;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.TaggedValue;
@@ -28,12 +29,7 @@ import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.dbsql.Consts;
 import sm.clagenna.loadaass.dbsql.CreaDataset;
 import sm.clagenna.loadaass.dbsql.DBConn;
-import sm.clagenna.loadaass.dbsql.SqlServToEEConsumo;
-import sm.clagenna.loadaass.dbsql.SqlServToEEFattura;
-import sm.clagenna.loadaass.dbsql.SqlServToEELettura;
-import sm.clagenna.loadaass.dbsql.SqlServToGASConsumo;
-import sm.clagenna.loadaass.dbsql.SqlServToGASFattura;
-import sm.clagenna.loadaass.dbsql.SqlServToGASLettura;
+import sm.clagenna.loadaass.dbsql.ISql;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
@@ -73,6 +69,8 @@ public class GestPDFFatt {
   private boolean                   genHTMLFile;
   @Getter @Setter
   private boolean                   lanciaExcel;
+  @Getter @Setter
+  private boolean                   overwrite;
   private DBConn                    connSQL;
 
   public GestPDFFatt(String p_string) throws ReadFattException {
@@ -206,108 +204,45 @@ public class GestPDFFatt {
   }
 
   private void inserisciInDB() throws ReadFattException {
-    switch (tipoFatt) {
-      case Acqua:
-        insertH2O();
-        break;
-      case EnergiaElettrica:
-        insertEE();
-        break;
-      case GAS:
-        insertGAS();
-        break;
-      default:
-        throw new ReadFattException("Non riconosco il tipo di fattura");
-    }
-  }
-
-  private void insertH2O() {
-    System.out.println("GestPDFFatt.insertH2O() --- Da implementare !!!");
-
-  }
-
-  private void insertEE() {
-    SqlServToEEFattura fatt = new SqlServToEEFattura(tagFactory, connSQL);
+    ISql genfatt = FactoryFattura.getFatturaInserter(tipoFatt);
+    genfatt.init(tagFactory, connSQL);
+    // ------ Fattura ---------
     try {
-      if ( !fatt.fatturaExist())
-        fatt.insertNewFattura();
-      else {
+      if ( !genfatt.fatturaExist())
+        genfatt.insertNewFattura();
+      else if (isOverwrite()) {
+        genfatt.deleteFattura();
+        genfatt.insertNewFattura();
+      } else {
         var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
-        s_log.warn("La fattura \"{}\" esiste gia' nel DB", val);
+        s_log.warn("La fattura {} \"{}\" esiste gia' nel DB", tipoFatt.getTitolo(), val);
         return;
       }
     } catch (SQLException e) {
       e.printStackTrace();
     }
-
-    SqlServToEELettura lett = new SqlServToEELettura(tagFactory, connSQL);
-    lett.setMasterFattura(fatt);
+    // ------ Lettura ---------
     try {
-      if ( !lett.letturaExist())
-        lett.insertNewLettura();
+      if ( !genfatt.letturaExist())
+        genfatt.insertNewLettura();
       else {
         var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
-        s_log.warn("La Lettura \"{}\" esiste gia' nel DB", val);
+        s_log.warn("La Lettura per {} No \"{}\" esiste gia' nel DB", tipoFatt.getTitolo(), val);
       }
     } catch (SQLException e) {
       e.printStackTrace();
     }
-
-    SqlServToEEConsumo cons = new SqlServToEEConsumo(tagFactory, connSQL);
-    cons.setMasterFattura(fatt);
+    // ------ Consumo ---------
     try {
-      if ( !cons.consumoExists())
-        cons.insertConsumo();
+      if ( !genfatt.consumoExist())
+        genfatt.insertNewConsumo();
       else {
         var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
-        s_log.warn("Il consumo  \"{}\" esiste gia' nel DB", val);
+        s_log.warn("Il consumo per {} No \"{}\" esiste gia' nel DB", tipoFatt.getTitolo(), val);
       }
     } catch (SQLException e) {
       e.printStackTrace();
     }
-
-  }
-
-  private void insertGAS() {
-    SqlServToGASFattura fatt = new SqlServToGASFattura(tagFactory, connSQL);
-    try {
-      if ( !fatt.fatturaExist())
-        fatt.insertNewFattura();
-      else {
-        var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
-        s_log.warn("La fattura \"{}\" esiste gia' nel DB", val);
-        return;
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-
-    SqlServToGASLettura lett = new SqlServToGASLettura(tagFactory, connSQL);
-    lett.setMasterFattura(fatt);
-    try {
-      if ( !lett.letturaExist())
-        lett.insertNewLettura();
-      else {
-        var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
-        s_log.warn("La Lettura \"{}\" esiste gia' nel DB", val);
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-
-    SqlServToGASConsumo cons = new SqlServToGASConsumo(tagFactory, connSQL);
-    cons.setMasterFattura(fatt);
-    try {
-      if ( !cons.consumoExists())
-        cons.insertConsumo();
-      else {
-        var val = tagFactory.get(Consts.TGV_FattNr).getValoreNoEx();
-        s_log.warn("Il consumo  \"{}\" esiste gia' nel DB", val);
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-
   }
 
   public void init() throws ReadFattException {

@@ -22,7 +22,7 @@ public class Utils {
   public static double                 F_A4wi          = 2480f;
   public static double                 F_A4he          = 3508f;
   public static double                 F_XCharMax      = 150f;
-  public static double                 F_YRigheMax     = 72f;
+  public static double                 F_YRigheMax     = 140f;
 
   private final static char[]          hexArray        = "0123456789ABCDEF".toCharArray();
 

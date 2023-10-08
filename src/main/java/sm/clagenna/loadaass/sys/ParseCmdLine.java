@@ -31,6 +31,7 @@ public class ParseCmdLine {
   public static final String  CSZ_GENTAGFFILE = "gg";
   public static final String  CSZ_GENHTMLFILE = "gh";
   public static final String  CSZ_LANCIAEXCEL = "e";
+  public static final String  CSZ_OVERWRITE   = "o";
   public static final String  CSZ_LOGLEVEL    = "lv";
 
   private Options             m_opt;
@@ -46,6 +47,8 @@ public class ParseCmdLine {
   private boolean             genHTMLFile;
   @Getter @Setter
   private boolean             LanciaExcel;
+  @Getter @Setter
+  private boolean             overwrite;
   @Getter @Setter
   private ETipoFatt           tipoFatt;
   @Getter @Setter
@@ -74,6 +77,8 @@ public class ParseCmdLine {
     m_opt.addOption(CSZ_GENHTMLFILE, false, "Genera HTML dal PDF");
 
     m_opt.addOption(CSZ_LANCIAEXCEL, false, "Lancia Excel del file convertito");
+
+    m_opt.addOption(CSZ_OVERWRITE, false, "Sovrascivi (previa cancellazione) dell'intera fattura");
   }
 
   public void parse(String[] p_args) throws ReadFattCmdLineException {
@@ -103,6 +108,7 @@ public class ParseCmdLine {
     genHTMLFile = p_cmd.hasOption(CSZ_GENHTMLFILE);
 
     LanciaExcel = p_cmd.hasOption(CSZ_LANCIAEXCEL);
+    overwrite = p_cmd.hasOption(CSZ_OVERWRITE);
     String szLv = "DEBUG";
     if (p_cmd.hasOption(CSZ_LOGLEVEL)) {
       szLv = p_cmd.getOptionValue(CSZ_LOGLEVEL).toUpperCase();

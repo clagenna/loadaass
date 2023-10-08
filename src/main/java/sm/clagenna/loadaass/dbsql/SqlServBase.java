@@ -1,37 +1,66 @@
 package sm.clagenna.loadaass.dbsql;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
 
-import org.apache.logging.log4j.Logger;
-
 import lombok.Getter;
 import lombok.Setter;
+import sm.clagenna.loadaass.data.ETipoFatt;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.ValoreByTag;
 
-public abstract class SqlServBase {
+public abstract class SqlServBase implements ISql {
 
   @Getter @Setter
-  private TagValFactory tagFactory;
+  private TagValFactory       tagFactory;
   @Getter @Setter
-  private DBConn        connSql;
+  private DBConn              connSql;
+  @Getter @Setter
+  private ETipoFatt           tipoFatt;
+  @Getter @Setter
+  private Integer             idFattura;
+
+  private static final String QRY_del_Fattura = ""   //
+      + "DELETE  FROM dbo.%s WHERE idEEFattura = ?";
 
   public SqlServBase() {
     //
   }
 
   public SqlServBase(TagValFactory p_fact, DBConn p_con) {
+    init(p_fact, p_con);
+  }
+
+  @Override
+  public void init(TagValFactory p_fact, DBConn p_con) {
     tagFactory = p_fact;
     setConnSql(p_con);
     init();
   }
 
-  protected abstract void init();
+  public abstract void init();
 
-  protected abstract Logger getLog();
+  @Override
+  public void deleteFattura() throws SQLException {
+    String[] arrtabs = { "EEConsumo", "EELettura", "EEFattura" };
+    Connection conn = getConnSql().getConn();
+    int idFatt = getIdFattura();
+    String qry = null;
+    for (String tab : arrtabs) {
+      qry = String.format(QRY_del_Fattura, tab);
+      try (PreparedStatement stmt = conn.prepareStatement(qry)) {
+        stmt.setInt(1, idFatt);
+        int qtaDel = stmt.executeUpdate();
+        getLog().debug("Cancellato {} righe da {}", qtaDel, tab);
+      } catch (SQLException e) {
+        getLog().error("Errore per stmt {}", qry, e);
+      }
+    }
+
+  }
 
   public Object getValore(String fldNam) {
     return getValore(fldNam, 0);

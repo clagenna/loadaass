@@ -71,6 +71,8 @@ public class ReadFattHTMLMain implements ILog4jReader {
     gpdf.setGenTagFile(m_cmdParse.isGenTagFile());
     gpdf.setGenHTMLFile(m_cmdParse.isGenHTMLFile());
     gpdf.setLanciaExcel(m_cmdParse.isLanciaExcel());
+    gpdf.setOverwrite(m_cmdParse.isOverwrite());
+
     try (DBConn connSQL = new DBConnSQL()) {
       connSQL.doConn();
       gpdf.setConnSql(connSQL);

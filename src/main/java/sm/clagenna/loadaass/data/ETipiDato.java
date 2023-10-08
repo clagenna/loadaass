@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public enum ETipiDato {
   IntN15("i15", "(\\d{15})"), //
-  Intero("i", "(\\d+[\\.]*\\d+)"), //
+  Intero("i", "(\\d+[\\.]*\\d*)"), //
   Float("f", "([\\d\\.]*\\d+[,]\\d+)"), //
   Importo("cy", "(-{0,1}[\\d\\.]*\\d+,\\d{2})"), //
   Barrato("br", "(\\d+/\\d+)"), //
