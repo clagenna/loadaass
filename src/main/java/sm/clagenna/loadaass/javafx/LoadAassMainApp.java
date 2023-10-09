@@ -1,6 +1,7 @@
 package sm.clagenna.loadaass.javafx;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URL;
 
 import org.apache.logging.log4j.LogManager;
@@ -23,9 +24,11 @@ public class LoadAassMainApp extends Application {
   @Getter
   private static LoadAassMainApp inst;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private AppProperties          props;
-  @Getter @Setter
+  @Getter
+  @Setter
   private Stage                  primaryStage;
 
   public LoadAassMainApp() {
@@ -35,17 +38,19 @@ public class LoadAassMainApp extends Application {
   @Override
   public void start(Stage p_primaryStage) throws Exception {
     setPrimaryStage(p_primaryStage);
-    inst = this;
+    LoadAassMainApp.inst = this;
     initApp();
 
     URL url = getClass().getResource(LoadAassController.CSZ_FXMLNAME);
     if (url == null)
       url = getClass().getClassLoader().getResource(LoadAassController.CSZ_FXMLNAME);
+    if (url == null)
+      throw new FileNotFoundException(String.format("Non trovo reource %s", LoadAassController.CSZ_FXMLNAME));
     Parent radice = FXMLLoader.load(url);
     Scene scene = new Scene(radice, 725, 550);
-    url = getClass().getResource(CSZ_MAIN_APP_CSS);
+    url = getClass().getResource(LoadAassMainApp.CSZ_MAIN_APP_CSS);
     if (url == null)
-      url = getClass().getClassLoader().getResource(CSZ_MAIN_APP_CSS);
+      url = getClass().getClassLoader().getResource(LoadAassMainApp.CSZ_MAIN_APP_CSS);
     scene.getStylesheets().add(url.toExternalForm());
 
     primaryStage.setScene(scene);
@@ -69,7 +74,7 @@ public class LoadAassMainApp extends Application {
         primaryStage.setHeight(dy);
       }
     } catch (ReadFattException l_e) {
-      s_log.error("Errore in main initApp: {}", l_e.getMessage(), l_e);
+      LoadAassMainApp.s_log.error("Errore in main initApp: {}", l_e.getMessage(), l_e);
       System.exit(1957);
     }
   }
