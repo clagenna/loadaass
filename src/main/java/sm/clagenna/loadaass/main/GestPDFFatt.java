@@ -77,6 +77,10 @@ public class GestPDFFatt {
     setPdfFile(Paths.get(p_string));
   }
 
+  public GestPDFFatt(Path p_pth) throws ReadFattException {
+    setPdfFile(p_pth);
+  }
+
   public void convertiPDF(Path p_pdf) throws ReadFattException {
     setPdfFile(p_pdf);
     convertiPDF();

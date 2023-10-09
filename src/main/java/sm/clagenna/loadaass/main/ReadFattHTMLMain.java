@@ -17,7 +17,6 @@ import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.DBConnSQL;
 import sm.clagenna.loadaass.sys.ILog4jReader;
 import sm.clagenna.loadaass.sys.MioAppender;
-import sm.clagenna.loadaass.sys.ParseCmdLine;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
 
 public class ReadFattHTMLMain implements ILog4jReader {

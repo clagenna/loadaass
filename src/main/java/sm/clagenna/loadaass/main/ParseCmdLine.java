@@ -1,4 +1,4 @@
-package sm.clagenna.loadaass.sys;
+package sm.clagenna.loadaass.main;
 
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
