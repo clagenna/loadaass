@@ -24,7 +24,7 @@
 		<Logger name="org.fit.pdfdom" level="warn">
 			<AppenderRef ref="console"/>
 		</Logger>
-		<Root level="info">
+		<Root level="trace">
 			<AppenderRef ref="console"/>
 			<AppenderRef ref="readfatt"/>
 			<AppenderRef ref="MIOAPPENDER"/>

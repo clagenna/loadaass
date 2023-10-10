@@ -5,12 +5,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import sm.clagenna.loadaass.data.RigaHolder;
 import sm.clagenna.loadaass.data.ValoreBySeq;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class CreaDataset {
+  private static final Logger      s_log  = LogManager.getLogger(CreaDataset.class);
   private static int               NWIDTH = 20;
 
   private Map<String, ValoreByTag> m_map;
@@ -28,16 +32,12 @@ public class CreaDataset {
       for (ValoreByTag vbt : liVal) {
         if (m_map.containsKey(vbt.getFieldName()))
           continue;
-        try {
-          Object obj = vbt.getValore();
-          if (obj instanceof List<?>) {
-            int n = ((List<?>) obj).size();
-            m_nRighe = n > m_nRighe ? n : m_nRighe;
-          } else
-            m_nRighe = 1;
-        } catch (ReadFattValoreException e) {
-          e.printStackTrace();
-        }
+        Object obj = vbt.getValoreNoEx();
+        if (obj != null && (obj instanceof List<?>)) {
+          int n = ((List<?>) obj).size();
+          m_nRighe = n > m_nRighe ? n : m_nRighe;
+        } else
+          m_nRighe = 1;
         m_map.put(vbt.getFieldName(), vbt);
       }
     }

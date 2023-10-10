@@ -41,11 +41,14 @@ public class AppProperties {
       else {
         throw new ReadFattPropsException("App Prop. gia istanziato !");
       }
-    } else
-      AppProperties.s_inst = this;
+    } /*
+       * else AppProperties.s_inst = this;
+       */
   }
 
   public static AppProperties getInstance() {
+    if ( !AppProperties.isSingleton())
+      throw new UnsupportedOperationException("AppProperties *NON* è singleton!");
     return AppProperties.s_inst;
   }
 

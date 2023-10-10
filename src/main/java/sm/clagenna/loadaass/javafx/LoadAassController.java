@@ -194,7 +194,7 @@ public class LoadAassController implements Initializable, ILog4jReader {
     // [1] - timestamp
     // [2] - Log Level
     // [3] - message
-    // System.out.println("addLog="+p_arr);
+    System.out.println("addLog=" + String.join("\t", p_arr));
     Log4jRow riga = null;
     try {
       riga = new Log4jRow(p_arr);
@@ -402,7 +402,7 @@ public class LoadAassController implements Initializable, ILog4jReader {
   @FXML
   void cbLevelMinSel(ActionEvent event) {
     levelMin = cbLevelMin.getSelectionModel().getSelectedItem();
-    System.out.println("ReadFattHTMLController.cbLevelMinSel():" + levelMin.name());
+    // System.out.println("ReadFattHTMLController.cbLevelMinSel():" + levelMin.name());
     tblView.getItems().clear();
     if (m_liMsgs == null || m_liMsgs.size() == 0)
       return;
@@ -416,5 +416,4 @@ public class LoadAassController implements Initializable, ILog4jReader {
     Platform.exit();
   }
 
-  
 }

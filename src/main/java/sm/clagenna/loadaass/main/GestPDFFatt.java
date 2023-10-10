@@ -250,11 +250,7 @@ public class GestPDFFatt {
   }
 
   public void init() throws ReadFattException {
-    m_props = AppProperties.getInstance();
-    if (m_props == null)
-      m_props = new AppProperties();
-    else
-      m_props.reset();
+    m_props = new AppProperties();
     m_props.leggiPropertyFile(propertyFile);
 
     if ( !Files.exists(pdfFile, LinkOption.NOFOLLOW_LINKS))
