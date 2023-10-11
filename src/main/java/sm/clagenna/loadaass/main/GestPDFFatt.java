@@ -353,9 +353,16 @@ public class GestPDFFatt {
    */
   private void cercaSeqValues() {
     int kk = 0;
+    boolean bSemaConsEffettivi = true;
     for (int tagIndx = 0; tagIndx < m_liVals.size(); tagIndx++) {
       kk = tagIndx;
       TaggedValue tgv = m_liVals.get(tagIndx);
+      // per scartare le righe delle letture stimate
+      if (tgv.getTxt().contains("CONSUMI STIMATI"))
+        bSemaConsEffettivi = false;
+      if (tgv.getTxt().contains("TOTALE SERVIZI FORNITURA GAS"))
+        bSemaConsEffettivi = true;
+
       for (Integer ii : m_liSeqs.keySet()) {
         ValoreBySeq seq = m_liSeqs.get(ii);
         if ( !seq.goodStart(tgv)) {
@@ -365,7 +372,8 @@ public class GestPDFFatt {
         if (nTagsAvanti != 0) {
           // trovato la sequenza !
           // per cui incremento la riga di pertinenza
-          seq.addRiga();
+          if (bSemaConsEffettivi)
+            seq.addRiga();
           // - 1 perche' poi ho tagIndx++
           tagIndx += nTagsAvanti - 1;
           break;
