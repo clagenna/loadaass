@@ -35,7 +35,7 @@ Here is an excerpt from those files:
 
 # First aspect
 
-![First page of application LoadAASS](https://imgur.com/a/S7ZB7Se "Prima pagina")
+![First page of application LoadAASS](https://i.imgur.com/3tily36.png "Prima pagina")
 
 
 
