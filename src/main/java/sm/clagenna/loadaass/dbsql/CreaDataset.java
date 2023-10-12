@@ -14,6 +14,7 @@ import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class CreaDataset {
+  @SuppressWarnings("unused")
   private static final Logger      s_log  = LogManager.getLogger(CreaDataset.class);
   private static int               NWIDTH = 20;
 

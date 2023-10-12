@@ -42,6 +42,8 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import sm.clagenna.loadaass.dbsql.DBConn;
@@ -49,15 +51,17 @@ import sm.clagenna.loadaass.dbsql.DBConnSQL;
 import sm.clagenna.loadaass.main.GestPDFFatt;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.ILog4jReader;
+import sm.clagenna.loadaass.sys.IStartApp;
 import sm.clagenna.loadaass.sys.Log4jRow;
 import sm.clagenna.loadaass.sys.MioAppender;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
 import sm.clagenna.loadaass.sys.ex.ReadFattLog4jRowException;
 
-public class LoadAassController implements Initializable, ILog4jReader {
+public class LoadAassController implements Initializable, ILog4jReader, IStartApp {
 
-  private static final Logger           s_log        = LogManager.getLogger(LoadAassController.class);
-  public static final String            CSZ_FXMLNAME = "LoadAassJavaFX.fxml";
+  private static final Logger           s_log         = LogManager.getLogger(LoadAassController.class);
+  public static final String            CSZ_FXMLNAME  = "LoadAassJavaFX.fxml";
+  private static final String           CSZ_LOG_LEVEL = "logLevel";
 
   @FXML
   private TextField                     txDirFatt;
@@ -109,9 +113,17 @@ public class LoadAassController implements Initializable, ILog4jReader {
 
   @Override
   public void initialize(URL p_location, ResourceBundle p_resources) {
-
     MioAppender.setLogReader(this);
     props = LoadAassMainApp.getInst().getProps();
+    levelMin = Level.INFO;
+    initApp(props);
+  }
+
+  @Override
+  public void initApp(AppProperties props) {
+    LoadAassMainApp main = LoadAassMainApp.getInst();
+    main.setController(this);
+    getStage().setTitle("Caricamento delle fatture AASS su DB");
     String szLastDir = props.getLastDir();
     if (szLastDir != null)
       txDirFatt.setText(szLastDir);
@@ -126,8 +138,12 @@ public class LoadAassController implements Initializable, ILog4jReader {
         }
       }
     });
+    if (props != null) {
+      String sz = props.getProperty(CSZ_LOG_LEVEL);
+      if (sz != null)
+        levelMin = Level.toLevel(sz);
+    }
     initTblView();
-
   }
 
   private void initTblView() {
@@ -179,13 +195,7 @@ public class LoadAassController implements Initializable, ILog4jReader {
     colLev.setCellValueFactory(new PropertyValueFactory<>("level"));
     colMsg.setCellValueFactory(new PropertyValueFactory<>("message"));
     cbLevelMin.getItems().addAll(Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL);
-    levelMin = Level.TRACE;
     cbLevelMin.getSelectionModel().select(levelMin);
-
-  }
-
-  protected void onEnterDirPDF(Object p_object) {
-    // TODO Auto-generated method stub
   }
 
   @Override
@@ -194,7 +204,7 @@ public class LoadAassController implements Initializable, ILog4jReader {
     // [1] - timestamp
     // [2] - Log Level
     // [3] - message
-    System.out.println("addLog=" + String.join("\t", p_arr));
+    // System.out.println("addLog=" + String.join("\t", p_arr));
     Log4jRow riga = null;
     try {
       riga = new Log4jRow(p_arr);
@@ -231,12 +241,28 @@ public class LoadAassController implements Initializable, ILog4jReader {
 
     File dirScelto = filChoose.showDialog(stage);
     if (dirScelto != null) {
-      settaFileIn(dirScelto.toPath(), true);
+      settaFileIn(dirScelto.toPath(), true, false);
     } else {
       szMsg = "Non hai scelto nessun file !!";
       s_log.warn(szMsg);
       messageDialog(AlertType.WARNING, szMsg);
     }
+  }
+
+  @FXML
+  public Object premutoTasto(KeyEvent p_e) {
+    // System.out.printf("LoadAassController.premutoTasto(%s)\n", p_e.toString());
+    KeyCode key = p_e.getCode();
+    switch (key) {
+      case ENTER:
+      case F5:
+        Path pth = Paths.get(txDirFatt.getText());
+        settaFileIn(pth, false, true);
+        break;
+      default:
+        break;
+    }
+    return null;
   }
 
   @FXML
@@ -283,7 +309,6 @@ public class LoadAassController implements Initializable, ILog4jReader {
 
     ObservableList<Path> sels = liPdf.getSelectionModel().getSelectedItems();
     for (Path pth : sels) {
-
       try {
         eseguiConversione(pth);
       } catch (ReadFattException | IOException e) {
@@ -326,14 +351,29 @@ public class LoadAassController implements Initializable, ILog4jReader {
   }
 
   private Path settaFileIn(Path p_fi) {
-    return settaFileIn(p_fi, true);
+    return settaFileIn(p_fi, true, false);
   }
 
-  private Path settaFileIn(Path p_fi, boolean p_setTx) {
+  /**
+   * Imposta il {@link #txDirFatt} col valore passato a meno che non sia
+   * specificato p_setTx = False. Inoltre se specificato bForce = True
+   * indipendentemente dal valore precedente di {@link #pthDirPDF} comunque
+   * ricarica l'elenco dei files nella listView
+   *
+   * @param p_fi
+   *          path al nuovo dir delle fatture
+   * @param p_setTx
+   *          se aggiornare {@link #txDirFatt} col nuovo valore
+   * @param bForce
+   *          ricarica l'elenco dei files nella listView
+   * @return
+   */
+  private Path settaFileIn(Path p_fi, boolean p_setTx, boolean bForce) {
     if (p_fi == null)
       return p_fi;
-    if (pthDirPDF != null && pthDirPDF.compareTo(p_fi) == 0)
-      return pthDirPDF;
+    if ( !bForce)
+      if (pthDirPDF != null && pthDirPDF.compareTo(p_fi) == 0)
+        return pthDirPDF;
     String szFiin = p_fi.toString();
     props.setLastDir(szFiin);
     if (p_setTx)
@@ -358,6 +398,7 @@ public class LoadAassController implements Initializable, ILog4jReader {
     ObservableList<Path> li = FXCollections.observableArrayList(result);
     liPdf.setItems(li);
     liPdf.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+    s_log.debug("Ricarico la lista files dal dir \"{}\"", pthDirPDF.toString());
   }
 
   private void messageDialog(AlertType typ, String p_msg) {
@@ -414,6 +455,12 @@ public class LoadAassController implements Initializable, ILog4jReader {
   @FXML
   void mnuExitClick(ActionEvent event) {
     Platform.exit();
+  }
+
+  @Override
+  public void closeApp(AppProperties p_props) {
+    p_props.setProperty(CSZ_LOG_LEVEL, levelMin.toString());
+
   }
 
 }

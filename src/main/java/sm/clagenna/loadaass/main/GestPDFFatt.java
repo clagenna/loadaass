@@ -1,11 +1,13 @@
 package sm.clagenna.loadaass.main;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ import sm.clagenna.loadaass.dbsql.CreaDataset;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.ISql;
 import sm.clagenna.loadaass.sys.AppProperties;
+import sm.clagenna.loadaass.sys.Utils;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
@@ -91,10 +94,37 @@ public class GestPDFFatt {
     convertiInHTML();
     leggiCercaValori();
     cercaTagValues();
+    renamePdfFile();
     cercaSeqValues();
-    if (s_log.isTraceEnabled())
+    if (genHTMLFile)
       creaDbValori();
     inserisciInDB();
+  }
+
+  private void renamePdfFile() throws ReadFattValoreException {
+    ValoreByTag tg = tagFactory.get(Consts.TGV_PeriodFattDtIniz);
+    Date dtIni = (Date) tg.getValore();
+    tg = tagFactory.get(Consts.TGV_PeriodFattDtFine);
+    Date dtFin = (Date) tg.getValore();
+    String szNewName = String
+        .format("%s_%s_%s.pdf", tipoFatt.getTitolo(), Utils.s_fmtY4MD.format(dtIni), Utils.s_fmtY4MD.format(dtFin));
+    String szOldName = pdfFile.getFileName().toString().toLowerCase();
+    try {
+      if ( !szOldName.equals(szNewName.toLowerCase())) {
+        s_log.warn("Rinomino \"{}\" in \"{}\"", szOldName, szNewName);
+        Path newName = Paths.get(pdfFile.getParent().toString(), szNewName);
+        int k = 1;
+        while ( Files.exists(newName)) {
+          String seq = String.format("_%03d.pdf", k++);
+          String szB = szNewName.replace(".pdf", seq);
+          newName = Paths.get(pdfFile.getParent().toString(), szB);
+        }
+        Files.move(pdfFile, newName);
+      }
+    } catch (IOException e) {
+      s_log.error("Errore rename \"{}\" in \"{}\"", szOldName, szNewName, e);
+      // e.printStackTrace();
+    }
   }
 
   private void convertiInHTML() {

@@ -11,25 +11,27 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 import sm.clagenna.loadaass.sys.AppProperties;
+import sm.clagenna.loadaass.sys.IStartApp;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
 
-public class LoadAassMainApp extends Application {
+public class LoadAassMainApp extends Application implements IStartApp {
 
   private static final Logger    s_log            = LogManager.getLogger(LoadAassMainApp.class);
   public static final String     CSZ_MAIN_APP_CSS = "LoadAassFX.css";
   @Getter
   private static LoadAassMainApp inst;
 
-  @Getter
-  @Setter
+  @Getter @Setter
   private AppProperties          props;
-  @Getter
-  @Setter
+  @Getter @Setter
   private Stage                  primaryStage;
+  @Getter @Setter
+  private IStartApp              controller;
 
   public LoadAassMainApp() {
     //
@@ -39,7 +41,7 @@ public class LoadAassMainApp extends Application {
   public void start(Stage p_primaryStage) throws Exception {
     setPrimaryStage(p_primaryStage);
     LoadAassMainApp.inst = this;
-    initApp();
+    initApp(null);
 
     URL url = getClass().getResource(LoadAassController.CSZ_FXMLNAME);
     if (url == null)
@@ -48,6 +50,10 @@ public class LoadAassMainApp extends Application {
       throw new FileNotFoundException(String.format("Non trovo reource %s", LoadAassController.CSZ_FXMLNAME));
     Parent radice = FXMLLoader.load(url);
     Scene scene = new Scene(radice, 725, 550);
+
+    // <a target="_blank" href="https://icons8.com/icon/Qd0k8d5D0tSe/invoice">Invoice</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
+    primaryStage.getIcons().add(new Image("sm/clagenna/loadaass/icon/icona-fattura.png"));
+
     url = getClass().getResource(LoadAassMainApp.CSZ_MAIN_APP_CSS);
     if (url == null)
       url = getClass().getClassLoader().getResource(LoadAassMainApp.CSZ_MAIN_APP_CSS);
@@ -57,7 +63,8 @@ public class LoadAassMainApp extends Application {
     primaryStage.show();
   }
 
-  private void initApp() {
+  @Override
+  public void initApp(AppProperties p_props) {
     try {
       AppProperties.setSingleton(false);
       props = new AppProperties();
@@ -82,6 +89,16 @@ public class LoadAassMainApp extends Application {
   @Override
   public void stop() throws Exception {
     AppProperties prop = getProps();
+    closeApp(prop);
+    super.stop();
+  }
+
+  public static void main(String[] args) {
+    Application.launch(args);
+  }
+
+  @Override
+  public void closeApp(AppProperties prop) {
     Scene sce = primaryStage.getScene();
     double px = sce.getWindow().getX();
     double py = sce.getWindow().getY();
@@ -92,13 +109,11 @@ public class LoadAassMainApp extends Application {
     prop.setProperty(AppProperties.CSZ_PROP_POSFRAME_Y, (int) py);
     prop.setProperty(AppProperties.CSZ_PROP_DIMFRAME_X, (int) dx);
     prop.setProperty(AppProperties.CSZ_PROP_DIMFRAME_Y, (int) dy);
-    if (prop != null)
-      prop.salvaSuProperties();
-    super.stop();
-  }
 
-  public static void main(String[] args) {
-    Application.launch(args);
+    if (controller != null)
+      controller.closeApp(prop);
+
+    prop.salvaSuProperties();
   }
 
 }
