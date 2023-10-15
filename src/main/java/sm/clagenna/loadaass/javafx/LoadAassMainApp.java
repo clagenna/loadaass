@@ -15,6 +15,9 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
+import sm.clagenna.loadaass.dbsql.DBConn;
+import sm.clagenna.loadaass.dbsql.DBConnSQL;
+import sm.clagenna.loadaass.dbsql.SqlServIntest;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.IStartApp;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
@@ -32,6 +35,10 @@ public class LoadAassMainApp extends Application implements IStartApp {
   private Stage                  primaryStage;
   @Getter @Setter
   private IStartApp              controller;
+  @Getter @Setter
+  private DBConn                 connSQL;
+  @Getter
+  private SqlServIntest          intesta;
 
   public LoadAassMainApp() {
     //
@@ -83,6 +90,13 @@ public class LoadAassMainApp extends Application implements IStartApp {
     } catch (ReadFattException l_e) {
       LoadAassMainApp.s_log.error("Errore in main initApp: {}", l_e.getMessage(), l_e);
       System.exit(1957);
+    }
+    try {
+      connSQL = new DBConnSQL();
+      connSQL.doConn();
+      intesta = new SqlServIntest(connSQL);
+    } catch (Exception e) {
+      s_log.error("Errore apertura DB, error={}", e.getMessage(), e);
     }
   }
 

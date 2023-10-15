@@ -11,6 +11,7 @@ import lombok.Setter;
 import sm.clagenna.loadaass.data.ETipoFatt;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.ValoreByTag;
+import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 
 public abstract class SqlServBase implements ISql {
 
@@ -20,6 +21,8 @@ public abstract class SqlServBase implements ISql {
   private DBConn              connSql;
   @Getter @Setter
   private ETipoFatt           tipoFatt;
+  @Getter @Setter
+  private RecIntesta          recIntesta;
   @Getter @Setter
   private Integer             idFattura;
 

@@ -88,7 +88,7 @@ public class FromPdf2Html {
     m_nPage = 0;
     Pattern pat2 = Pattern.compile(CSZ_PAT2);
     String szLeft = null, szTop = null, szText = null;
-
+    m_liCampi = new ArrayList<>();
     for (String sz : m_outHtml) {
       if (sz.indexOf(">&nbsp;</div>") >= 0)
         continue;
@@ -106,6 +106,10 @@ public class FromPdf2Html {
       szLeft = mtch.group(k++);
       szText = mtch.group(k++);
       trattaRiga(szLeft, szTop, szText);
+    }
+    if ( m_liCampi.size() < 5 ) {
+      s_log.error("Non sembra essere una fattura");
+      return false;
     }
     Collections.sort(m_liCampi);
     return true;

@@ -18,6 +18,7 @@ import sm.clagenna.loadaass.data.ETipoH2OLettura;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.TaggedValue;
 import sm.clagenna.loadaass.data.ValoreByTag;
+import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class SqlServToH2O extends SqlServBase {
@@ -26,7 +27,8 @@ public class SqlServToH2O extends SqlServBase {
 
   private static final String QRY_ins_Fattura   = ""                                       //
       + "INSERT INTO dbo.H2OFattura"                                                       //
-      + "           (annoComp"                                                             //
+      + "           (idIntesta"                                                            //
+      + "           ,annoComp"                                                             //
       + "           ,DataEmiss"                                                            //
       + "           ,fattNrAnno"                                                           //
       + "           ,fattNrNumero"                                                         //
@@ -34,18 +36,17 @@ public class SqlServToH2O extends SqlServBase {
       + "           ,periodFattDtFine"                                                     //
       + "           ,periodCongDtIniz"                                                     //
       + "           ,periodCongDtFine"                                                     //
-      + "           ,periodAccontoDtIniz"                                                     //
-      + "           ,periodAccontoDtFine"                                                     //
+      + "           ,periodAccontoDtIniz"                                                  //
+      + "           ,periodAccontoDtFine"                                                  //
       + "           ,assicurazione"                                                        //
-      + "           ,impostaQuiet"     
-      + "           ,RestituzAccPrec"                                                  //
+      + "           ,impostaQuiet" + "           ,RestituzAccPrec"                         //
       + "           ,TotPagare)"                                                           //
-      + "     VALUES (?, ? ,? ,? ,?, ?, ? ,? ,? ,?, ? ,?, ? ,?)";
+      + "     VALUES (?, ?, ? ,? ,? ,?, ?, ? ,? ,? ,?, ? ,?, ? ,?)";
   private PreparedStatement   m_stmt_ins_fattura;
 
   private static final String QRY_Fattura       = ""                                       //
       + "SELECT idH2OFattura   FROM dbo.H2OFattura"                                        //
-      + " WHERE DataEmiss = ?";
+      + " WHERE DataEmiss = ?" + "   AND idIntesta = ?";
   private PreparedStatement   m_stmt_cerca_fattura;
 
   private static final String QRY_ins_Lettura   = ""                                       //
@@ -139,9 +140,10 @@ public class SqlServToH2O extends SqlServBase {
     // String[] arr = sz.split("/");
     // int annoComp = Integer.parseInt(arr[0]);
     // String fattNumero = arr[1];
-
+    RecIntesta reci = getRecIntesta();
     int k = 1;
     m_stmt_cerca_fattura.setDate(k++, new java.sql.Date(dtEmiss.getTime()));
+    m_stmt_cerca_fattura.setInt(k++, reci.idIntesta());
     setIdFattura(null);
     try (ResultSet res = m_stmt_cerca_fattura.executeQuery()) {
       while (res.next()) {
@@ -185,6 +187,7 @@ public class SqlServToH2O extends SqlServBase {
 
   @Override
   public void insertNewFattura() throws SQLException {
+    RecIntesta reci = getRecIntesta();
     Integer annoComp = null;
     java.sql.Date dataEmiss = null;
     Integer fattNrAnno = null;
@@ -207,6 +210,7 @@ public class SqlServToH2O extends SqlServBase {
     }
 
     int k = 1;
+    setVal(reci.idIntesta(), m_stmt_ins_fattura, k++, Types.INTEGER);
     setVal(annoComp, m_stmt_ins_fattura, k++, Types.INTEGER);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_DataEmiss, 0, k++, Types.DATE);
     setVal(fattNrAnno, m_stmt_ins_fattura, k++, Types.INTEGER);

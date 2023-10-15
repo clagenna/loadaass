@@ -18,6 +18,7 @@ import sm.clagenna.loadaass.data.ETipoGASLettura;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.TaggedValue;
 import sm.clagenna.loadaass.data.ValoreByTag;
+import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class SqlServToGAS extends SqlServBase {
@@ -26,7 +27,8 @@ public class SqlServToGAS extends SqlServBase {
 
   private static final String QRY_ins_Fattura   = ""                                       //
       + "INSERT INTO dbo.GASFattura"                                                       //
-      + "           (annoComp"                                                             //
+      + "           (idIntesta"                                                            //
+      + "           ,annoComp"                                                             //
       + "           ,DataEmiss"                                                            //
       + "           ,fattNrAnno"                                                           //
       + "           ,fattNrNumero"                                                         //
@@ -40,12 +42,12 @@ public class SqlServToGAS extends SqlServBase {
       + "           ,addizFER"                                                             //
       + "           ,impostaQuiet"                                                         //
       + "           ,TotPagare)"                                                           //
-      + "     VALUES (? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,?)";
+      + "     VALUES (?,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,?)";
   private PreparedStatement   m_stmt_ins_fattura;
 
   private static final String QRY_Fattura       = ""                                       //
       + "SELECT idGASFattura   FROM dbo.GASFattura"                                        //
-      + " WHERE DataEmiss = ?";
+      + " WHERE DataEmiss = ?" + "   AND idIntesta = ?";
   private PreparedStatement   m_stmt_cerca_fattura;
 
   private static final String QRY_ins_Lettura   = ""                                       //
@@ -148,7 +150,9 @@ public class SqlServToGAS extends SqlServBase {
     // String fattNumero = arr[1];
 
     int k = 1;
+    RecIntesta reci = getRecIntesta();
     m_stmt_cerca_fattura.setDate(k++, new java.sql.Date(dtEmiss.getTime()));
+    m_stmt_cerca_fattura.setInt(k++, reci.idIntesta());
     setIdFattura(null);
     try (ResultSet res = m_stmt_cerca_fattura.executeQuery()) {
       while (res.next()) {
@@ -193,6 +197,7 @@ public class SqlServToGAS extends SqlServBase {
 
   @Override
   public void insertNewFattura() throws SQLException {
+    RecIntesta reci = getRecIntesta();
     Integer annoComp = null;
     java.sql.Date dataEmiss = null;
     Integer fattNrAnno = null;
@@ -215,6 +220,7 @@ public class SqlServToGAS extends SqlServBase {
     }
 
     int k = 1;
+    setVal(reci.idIntesta(), m_stmt_ins_fattura, k++, Types.INTEGER);
     setVal(annoComp, m_stmt_ins_fattura, k++, Types.INTEGER);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_DataEmiss, 0, k++, Types.DATE);
     setVal(fattNrAnno, m_stmt_ins_fattura, k++, Types.INTEGER);

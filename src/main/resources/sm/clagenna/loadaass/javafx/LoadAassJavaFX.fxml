@@ -128,6 +128,7 @@
             </SplitPane>
             <CheckBox fx:id="ckGenHtml" layoutX="255.0" layoutY="49.0" mnemonicParsing="false" text="Gen HTML File" />
             <CheckBox fx:id="ckOverwrite" layoutX="367.0" layoutY="49.0" mnemonicParsing="false" text="Sovrascrivi Fatture" />
+            <ComboBox fx:id="cbIntesta" layoutX="448.0" layoutY="79.0" onAction="#cbIntesta" prefHeight="25.0" prefWidth="213.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="79.0" />
       </children>
     </AnchorPane>
   </children>

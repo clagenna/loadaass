@@ -47,7 +47,8 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import sm.clagenna.loadaass.dbsql.DBConn;
-import sm.clagenna.loadaass.dbsql.DBConnSQL;
+import sm.clagenna.loadaass.dbsql.SqlServIntest;
+import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 import sm.clagenna.loadaass.main.GestPDFFatt;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.ILog4jReader;
@@ -59,9 +60,10 @@ import sm.clagenna.loadaass.sys.ex.ReadFattLog4jRowException;
 
 public class LoadAassController implements Initializable, ILog4jReader, IStartApp {
 
-  private static final Logger           s_log         = LogManager.getLogger(LoadAassController.class);
-  public static final String            CSZ_FXMLNAME  = "LoadAassJavaFX.fxml";
-  private static final String           CSZ_LOG_LEVEL = "logLevel";
+  private static final Logger           s_log            = LogManager.getLogger(LoadAassController.class);
+  public static final String            CSZ_FXMLNAME     = "LoadAassJavaFX.fxml";
+  private static final String           CSZ_LOG_LEVEL    = "logLevel";
+  private static final String           CSZ_INTESTATARIO = "intestatario";
 
   @FXML
   private TextField                     txDirFatt;
@@ -96,6 +98,9 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   @FXML
   private ComboBox<Level>               cbLevelMin;
   private Level                         levelMin;
+  @FXML
+  private ComboBox<RecIntesta>          cbIntesta;
+  private RecIntesta                    recIntesta;
 
   private List<Log4jRow>                m_liMsgs;
 
@@ -131,7 +136,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       @Override
       public void changed(ObservableValue<? extends Boolean> p_observable, Boolean p_oldValue, Boolean p_newValue) {
         String sz = txDirFatt.getText();
-        s_log.debug("txDirFatt.focus={} text={}", p_newValue, sz);
+        // s_log.debug("txDirFatt.focus={} text={}", p_newValue, sz);
         if ( !p_newValue) {
           if (sz != null && sz.length() > 2)
             onEnterDirPDF(null);
@@ -143,6 +148,15 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       if (sz != null)
         levelMin = Level.toLevel(sz);
     }
+    SqlServIntest intesta = LoadAassMainApp.getInst().getIntesta();
+    List<RecIntesta> liInte = intesta.getList();
+    cbIntesta.getItems().addAll(liInte);
+    recIntesta = intesta.get(1);
+    String nomeInt = props.getProperty(CSZ_INTESTATARIO);
+    if (nomeInt != null) {
+      recIntesta = intesta.get(nomeInt);
+    }
+    cbIntesta.getSelectionModel().select(recIntesta);
     initTblView();
   }
 
@@ -328,18 +342,20 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     s_log.info("Converto fatt {}", p_pth.toString());
 
     GestPDFFatt gpdf = new GestPDFFatt(p_pth);
-
+    gpdf.setRecIntesta(recIntesta);
     gpdf.setGenPDFText(m_bGenTxt);
     gpdf.setGenTagFile(m_bGenTag);
     gpdf.setGenHTMLFile(m_bGenHtml);
     gpdf.setOverwrite(m_bOverwrite);
     gpdf.setLanciaExcel(m_bLanciaExc);
 
-    try (DBConn connSQL = new DBConnSQL()) {
-      connSQL.doConn();
+    // try (DBConn connSQL = new DBConnSQL()) {
+    //  connSQL.doConn();
+    try {
+      DBConn connSQL = LoadAassMainApp.getInst().getConnSQL();
       gpdf.setConnSql(connSQL);
       gpdf.convertiPDF();
-    } catch (IOException e) {
+    } catch (Exception e) {
       s_log.error("Errore di conversione PDF Fattura {}", gpdf.getPdfFile(), e);
       throw e;
     }
@@ -385,7 +401,9 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
 
   private void reloadListFilesPDF() {
     List<Path> result = null;
-    PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:*:/**/{EE_,GAS_,H2O_}*.pdf");
+    String szGlobMatch = "glob:*:/**/{EE_,GAS_,H2O_}*.pdf";
+    szGlobMatch = "glob:*:/**/*.pdf";
+    PathMatcher matcher = FileSystems.getDefault().getPathMatcher(szGlobMatch);
     try (Stream<Path> walk = Files.walk(pthDirPDF)) {
       result = walk.filter(p -> !Files.isDirectory(p)) // not a directory
           // .map(p -> p.toString().toLowerCase()) // convert path to string
@@ -441,6 +459,14 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   }
 
   @FXML
+  void cbIntesta(ActionEvent event) {
+    recIntesta = cbIntesta.getSelectionModel().getSelectedItem();
+    s_log.info("Selezionato intestatario: {}", recIntesta.nome());
+    Path pth = recIntesta.dirFatture();
+    settaFileIn(pth, true, true);
+  }
+
+  @FXML
   void cbLevelMinSel(ActionEvent event) {
     levelMin = cbLevelMin.getSelectionModel().getSelectedItem();
     // System.out.println("ReadFattHTMLController.cbLevelMinSel():" + levelMin.name());
@@ -460,7 +486,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   @Override
   public void closeApp(AppProperties p_props) {
     p_props.setProperty(CSZ_LOG_LEVEL, levelMin.toString());
-
+    p_props.setProperty(CSZ_INTESTATARIO, recIntesta.nome());
   }
 
 }

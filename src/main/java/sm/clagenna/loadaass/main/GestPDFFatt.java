@@ -32,6 +32,7 @@ import sm.clagenna.loadaass.dbsql.Consts;
 import sm.clagenna.loadaass.dbsql.CreaDataset;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.ISql;
+import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.Utils;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
@@ -75,6 +76,8 @@ public class GestPDFFatt {
   @Getter @Setter
   private boolean                   overwrite;
   private DBConn                    connSQL;
+  @Getter @Setter
+  private RecIntesta                recIntesta;
 
   public GestPDFFatt(String p_string) throws ReadFattException {
     setPdfFile(Paths.get(p_string));
@@ -90,31 +93,34 @@ public class GestPDFFatt {
   }
 
   public void convertiPDF() throws ReadFattException {
-
     convertiInHTML();
+    if (tipoFatt == null) {
+      s_log.error("Rinuncio interpretare {}", pdfFile.toString());
+      return;
+    }
     leggiCercaValori();
     cercaTagValues();
-    renamePdfFile();
+    renamePdfFiles();
     cercaSeqValues();
     if (genHTMLFile)
       creaDbValori();
     inserisciInDB();
   }
 
-  private void renamePdfFile() throws ReadFattValoreException {
+  private void renamePdfFiles() throws ReadFattValoreException {
     ValoreByTag tg = tagFactory.get(Consts.TGV_PeriodFattDtIniz);
-    Date dtIni = (Date) tg.getValore();
+    Date dtIniz = (Date) tg.getValore();
     tg = tagFactory.get(Consts.TGV_PeriodFattDtFine);
     Date dtFin = (Date) tg.getValore();
-    String szNewName = String
-        .format("%s_%s_%s.pdf", tipoFatt.getTitolo(), Utils.s_fmtY4MD.format(dtIni), Utils.s_fmtY4MD.format(dtFin));
+    String szNewName = String.format("%s_%s_%s.pdf", tipoFatt.getTitolo(), Utils.s_fmtY4MD.format(dtIniz),
+        Utils.s_fmtY4MD.format(dtFin));
     String szOldName = pdfFile.getFileName().toString().toLowerCase();
     try {
       if ( !szOldName.equals(szNewName.toLowerCase())) {
         s_log.warn("Rinomino \"{}\" in \"{}\"", szOldName, szNewName);
         Path newName = Paths.get(pdfFile.getParent().toString(), szNewName);
         int k = 1;
-        while ( Files.exists(newName)) {
+        while (Files.exists(newName)) {
           String seq = String.format("_%03d.pdf", k++);
           String szB = szNewName.replace(".pdf", seq);
           newName = Paths.get(pdfFile.getParent().toString(), szB);
@@ -127,14 +133,17 @@ public class GestPDFFatt {
     }
   }
 
-  private void convertiInHTML() {
+  private void convertiInHTML() throws ReadFattPropsException {
     m_fromHtml = new FromPdf2Html();
     if ( !m_fromHtml.convertiPDF(pdfFile)) {
       s_log.error("Errore di conversione PDF in HTML!");
       return;
     }
-    if (tipoFatt == null) {
+    if (tipoFatt == null)
       discerniTipoPropContenuto();
+    if (tipoFatt == null) {
+      s_log.warn("Non riesco a capire il tipo di documento!");
+      return;
     }
 
     if (genTagFile) {
@@ -240,6 +249,7 @@ public class GestPDFFatt {
   private void inserisciInDB() throws ReadFattException {
     ISql genfatt = FactoryFattura.getFatturaInserter(tipoFatt);
     genfatt.init(tagFactory, connSQL);
+    genfatt.setRecIntesta(getRecIntesta());
     // ------ Fattura ---------
     try {
       if ( !genfatt.fatturaExist())
@@ -280,8 +290,10 @@ public class GestPDFFatt {
   }
 
   public void init() throws ReadFattException {
-    m_props = new AppProperties();
-    m_props.leggiPropertyFile(propertyFile);
+    if (propertyFile != null) {
+      m_props = new AppProperties();
+      m_props.leggiPropertyFile(propertyFile);
+    }
 
     if ( !Files.exists(pdfFile, LinkOption.NOFOLLOW_LINKS))
       throw new ReadFattException("Non esiste " + pdfFile.toString());
@@ -293,7 +305,7 @@ public class GestPDFFatt {
     tagFactory = new TagValFactory();
   }
 
-  private void discerniTipoPropDaFile() {
+  private void discerniTipoPropDaNomeFile() {
     // discerno il tipo di property-file dal prefisso del nome file della fattura
     String szNam = pdfFile.getFileName().toString().toUpperCase();
     tipoFatt = null;
@@ -311,7 +323,7 @@ public class GestPDFFatt {
   private void setPdfFile(Path p_pdf) throws ReadFattException {
     pdfFile = p_pdf;
     if (tipoFatt == null)
-      discerniTipoPropDaFile();
+      discerniTipoPropDaNomeFile();
     init();
   }
 
@@ -328,7 +340,7 @@ public class GestPDFFatt {
     }
   }
 
-  private void discerniTipoPropContenuto() {
+  private void discerniTipoPropContenuto() throws ReadFattPropsException {
     String szTxt = m_fromHtml.getTextTAGs();
     if (szTxt.indexOf("Servizio Gas Naturale") >= 0)
       setTipoFatt(ETipoFatt.GAS);
@@ -338,6 +350,12 @@ public class GestPDFFatt {
       setTipoFatt(ETipoFatt.Acqua);
     else
       s_log.warn("non sono riuscito a capire che tipo di Fattura AASS e'");
+    if (propertyFile == null || m_props == null) {
+      String szProp = String.format("Fatt%s_HTML.properties", tipoFatt.getTitolo());
+      setPropertyFile(Paths.get(szProp));
+      m_props = new AppProperties();
+      m_props.leggiPropertyFile(propertyFile);
+    }
   }
 
   private String getFieldName(String p_sz) {
