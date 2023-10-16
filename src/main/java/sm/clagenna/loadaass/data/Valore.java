@@ -72,7 +72,7 @@ public abstract class Valore {
         vv = p_cmp.getTxt();
         break;
       case Importo:
-        String sz = p_cmp.getTxt().replace(",", ".");
+        String sz = p_cmp.getTxt().replace(".", "").replace(",", ".");
         vv = new BigDecimal(sz);
         break;
       case IntN15:

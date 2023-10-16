@@ -263,7 +263,7 @@ public class GestPDFFatt {
         return;
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      s_log.error("Insert New Fattura {} error:{}", genfatt.getClass().getSimpleName(), e.getMessage(), e);
     }
     // ------ Lettura ---------
     try {
@@ -274,7 +274,7 @@ public class GestPDFFatt {
         s_log.warn("La Lettura per {} No \"{}\" esiste gia' nel DB", tipoFatt.getTitolo(), val);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      s_log.error("Insert New Lettura {} error:{}", genfatt.getClass().getSimpleName(), e.getMessage(), e);
     }
     // ------ Consumo ---------
     try {
@@ -285,7 +285,7 @@ public class GestPDFFatt {
         s_log.warn("Il consumo per {} No \"{}\" esiste gia' nel DB", tipoFatt.getTitolo(), val);
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      s_log.error("Insert New Consumo {} error:{}", genfatt.getClass().getSimpleName(), e.getMessage(), e);
     }
   }
 

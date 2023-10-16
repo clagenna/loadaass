@@ -150,7 +150,9 @@ public class TaggedValue implements Comparable<TaggedValue> {
     // -------------- IMPORTO ----------------
     if (patImpor.matcher(txt).matches()) {
       try {
-        vImporto = new BigDecimal(Double.parseDouble(txt.replace(',', '.')));
+        String szV = txt.replace(".", "");
+        szV = szV.replace(',', '.');
+        vImporto = new BigDecimal(Double.parseDouble(szV));
         vImporto = vImporto.setScale(2, RoundingMode.HALF_DOWN);
         m_ETipiDato = ETipiDato.Importo;
       } catch (NumberFormatException e) {
