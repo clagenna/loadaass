@@ -1,5 +1,6 @@
 package sm.clagenna.loadaass.javafx;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -34,8 +35,10 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -416,6 +419,26 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     ObservableList<Path> li = FXCollections.observableArrayList(result);
     liPdf.setItems(li);
     liPdf.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+    MenuItem mi1 = new MenuItem("Vedi Fattura");
+    mi1.setOnAction((ActionEvent ev) -> {
+      Path it = liPdf.getSelectionModel().getSelectedItem();
+      // System.out.println("Ctx menu: path="+it);
+      try {
+        if ( Desktop.isDesktopSupported()) {
+          s_log.info("Apro lettore PDF per {}",it.toString());
+          Desktop.getDesktop().open(it.toFile());
+        } else {
+          s_log.error("Desktop not supported");
+        }
+      } catch (IOException e) {
+        s_log.error("Desktop PDF launch error:"+e.getMessage(),e);
+      }
+    });
+    ContextMenu menu = new ContextMenu();
+    menu.getItems().add(mi1);
+    liPdf.setContextMenu(menu);
+    
     s_log.debug("Ricarico la lista files dal dir \"{}\"", pthDirPDF.toString());
   }
 

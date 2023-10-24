@@ -13,12 +13,12 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import sm.clagenna.loadaass.data.ETipoH2OConsumo;
-import sm.clagenna.loadaass.data.ETipoH2OLettura;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.TaggedValue;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
+import sm.clagenna.loadaass.enums.ETipoH2OConsumo;
+import sm.clagenna.loadaass.enums.ETipoLettProvvenienza;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class SqlServToH2O extends SqlServBase {
@@ -243,14 +243,14 @@ public class SqlServToH2O extends SqlServBase {
       @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
-      s_log.error("Impossibile trovare li.size() per la Lettura H2O");
+      s_log.warn("Sembra non ci siano letture di H2O!");
       return;
     }
 
     for (int riga = 0; riga < QtaRighe; riga++) {
       int k = 1;
       Object obj = getValore(Consts.TGV_TipoLett, riga);
-      ETipoH2OLettura tp = ETipoH2OLettura.parse(obj.toString());
+      ETipoLettProvvenienza tp = ETipoLettProvvenienza.parse(obj.toString());
       if (tp == null) {
         szMsg = "H2O Letture, Non decodifico tipo lettura:" + obj;
         throw new SQLException(szMsg);
@@ -277,7 +277,7 @@ public class SqlServToH2O extends SqlServBase {
       @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
-      s_log.error("Impossibile trovare li.size() per i consumi");
+      s_log.warn("Sembra non ci siano letture di H2O!");
       return;
     }
     idH2OFattura = getIdFattura();

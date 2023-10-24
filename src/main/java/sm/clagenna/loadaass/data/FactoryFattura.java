@@ -4,6 +4,7 @@ import sm.clagenna.loadaass.dbsql.ISql;
 import sm.clagenna.loadaass.dbsql.SqlServToEE;
 import sm.clagenna.loadaass.dbsql.SqlServToGAS;
 import sm.clagenna.loadaass.dbsql.SqlServToH2O;
+import sm.clagenna.loadaass.enums.ETipoFatt;
 
 public class FactoryFattura {
 

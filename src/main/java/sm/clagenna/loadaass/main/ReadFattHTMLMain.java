@@ -15,9 +15,12 @@ import lombok.Getter;
 import lombok.Setter;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.DBConnSQL;
+import sm.clagenna.loadaass.dbsql.SqlServIntest;
+import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 import sm.clagenna.loadaass.sys.ILog4jReader;
 import sm.clagenna.loadaass.sys.MioAppender;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
+import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
 
 public class ReadFattHTMLMain implements ILog4jReader {
 
@@ -30,6 +33,7 @@ public class ReadFattHTMLMain implements ILog4jReader {
   private Level               logLevel;
   @SuppressWarnings("unused")
   private String              m_lastLogMessage;
+  private SqlServIntest       recintesta;
 
   static {
     s_logLev = s_log.getLevel();
@@ -75,6 +79,11 @@ public class ReadFattHTMLMain implements ILog4jReader {
     try (DBConn connSQL = new DBConnSQL()) {
       connSQL.doConn();
       gpdf.setConnSql(connSQL);
+      recintesta = new SqlServIntest(connSQL);
+      RecIntesta intes = recintesta.get(m_cmdParse.getIntesta());
+      if (intes == null)
+        throw new ReadFattPropsException(String.format("L'intestatario \"%s\" non esiste nel DB", m_cmdParse.getIntesta()));
+      gpdf.setRecIntesta(intes);
       gpdf.convertiPDF();
     } catch (IOException e) {
       s_log.error("Errore di conversione {}", gpdf.getPdfFile(), e);

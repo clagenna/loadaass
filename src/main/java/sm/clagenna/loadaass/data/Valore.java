@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import sm.clagenna.loadaass.enums.ETipiDato;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public abstract class Valore {

@@ -13,11 +13,12 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import sm.clagenna.loadaass.data.ETipoEEConsumo;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.TaggedValue;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
+import sm.clagenna.loadaass.enums.ETipoEEConsumo;
+import sm.clagenna.loadaass.enums.ETipoLettProvvenienza;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class SqlServToEE extends SqlServBase {
@@ -90,16 +91,11 @@ public class SqlServToEE extends SqlServBase {
       + "           (idEEFattura"                                                         //
       + "           ,LettDtPrec"                                                          //
       + "           ,LettPrec"                                                            //
+      + "           ,TipoLettura"                                                         //
       + "           ,LettDtAttuale"                                                       //
       + "           ,LettAttuale"                                                         //
       + "           ,LettConsumo)"                                                        //
-      + "     VALUES"                                                                     //
-      + "           (?"                                                                   // <idEEFattura, int,>"
-      + "           ,?"                                                                   // <LettDtPrec, date,>"
-      + "           ,?"                                                                   // <LettPrec, int,>"
-      + "           ,?"                                                                   // <LettDtAttuale, date,>"
-      + "           ,?"                                                                   // <LettAttuale, int,>"
-      + "           ,?)";                                                                 // <LettConsumo, float,>)";
+      + "     VALUES (?,?,?,?,?,?,?)";                                                    // <LettConsumo, float,>)";
   private PreparedStatement   m_stmt_ins_Lettura;
 
   private static final String QRY_cerca_Lettura = ""                                      //
@@ -264,22 +260,29 @@ public class SqlServToEE extends SqlServBase {
   @Override
   public void insertNewLettura() throws SQLException {
     Integer idEEFattura = getIdFattura();
-
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_LettDtPrec);
       @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
-      s_log.error("Impossibile trovare li.size() per la Lettura", e);
+      s_log.warn("Sembra non ci siano letture!", e);
       return;
     }
-
+    String szLettProvv = null;
+    ETipoLettProvvenienza tpp = ETipoLettProvvenienza.Reale;
+    try {
+      szLettProvv = (String) getValore(Consts.TGV_LettProvv);
+      tpp = ETipoLettProvvenienza.parse(szLettProvv);
+    } catch (Exception e) {
+      s_log.error("Parse Provven. Lettura di \"{}\"", szLettProvv, e);
+    }
     for (int riga = 0; riga < QtaRighe; riga++) {
       int k = 1;
       setVal(idEEFattura, m_stmt_ins_Lettura, k++, Types.INTEGER);
       setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettDtPrec, riga, k++, Types.DATE);
       setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettPrec, riga, k++, Types.INTEGER);
+      setVal(tpp.getSigla(), m_stmt_ins_Lettura, k++, Types.VARCHAR);
       setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettDtAttuale, riga, k++, Types.DATE);
       setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettAttuale, riga, k++, Types.INTEGER);
       setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettConsumo, riga, k++, Types.DECIMAL);
@@ -301,7 +304,7 @@ public class SqlServToEE extends SqlServBase {
       @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
-      s_log.error("Impossibile trovare li.size() per i consumi", e);
+      s_log.warn("Sembra non ci siano righe di consumi!", e);
       return;
     }
 

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import sm.clagenna.loadaass.enums.ETipiDato;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class ValoreByTag extends Valore {

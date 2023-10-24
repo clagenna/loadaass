@@ -1,10 +1,13 @@
-package sm.clagenna.loadaass.data;
+package sm.clagenna.loadaass.enums;
 
 public enum ETipoGASConsumo {
   MatPrima1S("G1", "Gas I scaglione"), //
   MatPrima2S("G2", "Gas II scaglione"), //
   MatPrima3S("G3", "Gas III scaglione"), //
   MatPrima4S("G4", "Gas IV scaglione"), //
+  EnergiaPUN("PU", "Energia PUN"), //
+  EnergiaSpread1S("S1", "Spread I scaglione"), //
+  EnergiaSpread2S("S2", "Spread II scaglione"), //
   QuotaFissa("F", "Quota Fissa");
   
   private String sigla;

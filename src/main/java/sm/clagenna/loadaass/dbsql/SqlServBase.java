@@ -8,10 +8,10 @@ import java.util.Date;
 
 import lombok.Getter;
 import lombok.Setter;
-import sm.clagenna.loadaass.data.ETipoFatt;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
+import sm.clagenna.loadaass.enums.ETipoFatt;
 
 public abstract class SqlServBase implements ISql {
 
@@ -102,7 +102,7 @@ public abstract class SqlServBase implements ISql {
   protected void setVal(Object vv, PreparedStatement p_stmt, int p_indxStmt, int p_sqlType) throws SQLException {
     java.sql.Date dt = null;
     String szClsNam = vv != null ? vv.getClass().getSimpleName() : null;
-    if (szClsNam == null) {
+    if (szClsNam == null || vv == null) {
       p_stmt.setNull(p_indxStmt, p_sqlType);
       return;
     }

@@ -16,7 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import lombok.Setter;
-import sm.clagenna.loadaass.data.ETipoFatt;
+import sm.clagenna.loadaass.enums.ETipoFatt;
 import sm.clagenna.loadaass.sys.ex.ReadFattCmdLineException;
 
 public class ParseCmdLine {
@@ -27,6 +27,7 @@ public class ParseCmdLine {
   public static final String  CSZ_PDFINPUT    = "f";
   public static final String  CSZ_PROPERTY    = "p";
   public static final String  CSZ_TIPOFATT    = "t";
+  public static final String  CSZ_INTESTA     = "i";
   public static final String  CSZ_GENTEXT     = "gt";
   public static final String  CSZ_GENTAGFFILE = "gg";
   public static final String  CSZ_GENHTMLFILE = "gh";
@@ -39,6 +40,8 @@ public class ParseCmdLine {
   private String              propertyFile;
   @Getter @Setter
   private String              PDFFatt;
+  @Getter @Setter
+  private String              intesta;
   @Getter @Setter
   private boolean             genPDFText;
   @Getter @Setter
@@ -68,6 +71,10 @@ public class ParseCmdLine {
     m_opt.addOption(CSZ_PDFINPUT, true, "Il file PDF fattura ");
     m_opt.getOption(CSZ_PDFINPUT).setRequired(true);
     m_opt.addOption(CSZ_PROPERTY, true, "Il Property File per il tipo fattura");
+
+    m_opt.addOption(CSZ_INTESTA, true, "Il nome intestatario della fattura");
+    m_opt.getOption(CSZ_INTESTA).setRequired(true);
+
     //    m_opt.getOption(CSZ_PROPERTY).setRequired(true);
     m_opt.addOption(CSZ_TIPOFATT, true, "Il Tipo di fattura (H2O,EE,GAS)");
     m_opt.addOption(CSZ_LOGLEVEL, true, "Il Tipo di Log Level (TRACE,DEBUG,INFO,WARN,ERROR)");
@@ -97,7 +104,12 @@ public class ParseCmdLine {
       printUsage();
       throw new ReadFattCmdLineException("Il nome del file fattura e\' obbligatorio");
     }
+    if ( !p_cmd.hasOption(CSZ_INTESTA)) {
+      printUsage();
+      throw new ReadFattCmdLineException("Il nome intestatario e\' obbligatorio");
+    }
     setPDFFatt(p_cmd.getOptionValue(CSZ_PDFINPUT));
+    setIntesta(p_cmd.getOptionValue(CSZ_INTESTA));
     if (p_cmd.hasOption(CSZ_PROPERTY))
       setPropertyFile(p_cmd.getOptionValue(CSZ_PROPERTY));
     if ( !p_cmd.hasOption(CSZ_TIPOFATT))

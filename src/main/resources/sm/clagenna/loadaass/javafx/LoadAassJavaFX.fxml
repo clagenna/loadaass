@@ -85,7 +85,7 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
           <items>
-            <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
+            <MenuItem mnemonicParsing="false" text="Circa LoadAASS" />
           </items>
         </Menu>
       </menus>

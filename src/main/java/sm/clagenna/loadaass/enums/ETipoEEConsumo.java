@@ -1,6 +1,9 @@
-package sm.clagenna.loadaass.data;
+package sm.clagenna.loadaass.enums;
 
 public enum ETipoEEConsumo {
+  EnergiaPUN("PU", "Corrispettivo Energia PUN"), //
+  EnergiaSpread1S("S1", "Corrispettivo Energia Spread"), //
+  EnergiaSpread2S("S2", "Corrispettivo Energia Spread"), //
   Energia1S("E1", "Corrispettivo energia"), //
   Energia2S("E2", "Corrispettivo energia"), //
   Energia3S("E3", "Corrispettivo energia"), //
@@ -25,12 +28,13 @@ public enum ETipoEEConsumo {
 
   public static ETipoEEConsumo parse(String p_dic, String p_sca) {
     ETipoEEConsumo ret = null;
+    String sz = null;
     for (ETipoEEConsumo vv : ETipoEEConsumo.values()) {
       if (p_dic.toLowerCase().contains(vv.dicitura.toLowerCase())) {
         ret = vv;
         switch (vv) {
           case Energia1S:
-            String sz = p_sca != null ? p_sca.substring(0, 1) : "*";
+            sz = p_sca != null ? p_sca.substring(0, 1) : "*";
             switch (sz) {
               case "1":
                 ret = Energia1S;
@@ -40,6 +44,17 @@ public enum ETipoEEConsumo {
                 break;
               case "3":
                 ret = Energia3S;
+                break;
+            }
+            return ret;
+          case EnergiaSpread1S:
+            sz = p_sca != null ? p_sca.substring(0, 1) : "*";
+            switch (sz) {
+              case "1":
+                ret = EnergiaSpread1S;
+                break;
+              case "2":
+                ret = EnergiaSpread2S;
                 break;
             }
             return ret;

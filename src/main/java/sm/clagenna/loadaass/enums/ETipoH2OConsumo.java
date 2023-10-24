@@ -1,4 +1,4 @@
-package sm.clagenna.loadaass.data;
+package sm.clagenna.loadaass.enums;
 
 public enum ETipoH2OConsumo {
   Scagl1S("S1", "Gas I scaglione"), //

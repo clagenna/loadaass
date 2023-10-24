@@ -20,8 +20,6 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import lombok.Setter;
-import sm.clagenna.loadaass.data.ETipiDato;
-import sm.clagenna.loadaass.data.ETipoFatt;
 import sm.clagenna.loadaass.data.FactoryFattura;
 import sm.clagenna.loadaass.data.RigaHolder;
 import sm.clagenna.loadaass.data.TagValFactory;
@@ -33,6 +31,8 @@ import sm.clagenna.loadaass.dbsql.CreaDataset;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.ISql;
 import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
+import sm.clagenna.loadaass.enums.ETipiDato;
+import sm.clagenna.loadaass.enums.ETipoFatt;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.Utils;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;

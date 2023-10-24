@@ -5,8 +5,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<lo4j2.vers>2.17.2</lo4j2.vers>
-		<!-- main.class > sm.clagenna.loadaass.main.ReadFattHTMLMain < / main.class -->
+		<lo4j2.vers>2.21.0</lo4j2.vers>
 		<main.class>sm.clagenna.loadaass.javafx.LoadAassMainApp</main.class>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>

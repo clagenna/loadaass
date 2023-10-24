@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import lombok.Setter;
+import sm.clagenna.loadaass.enums.ETipiDato;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class ValoreBySeq {

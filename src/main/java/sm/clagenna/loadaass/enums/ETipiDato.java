@@ -1,4 +1,4 @@
-package sm.clagenna.loadaass.data;
+package sm.clagenna.loadaass.enums;
 
 import java.util.HashMap;
 import java.util.Map;

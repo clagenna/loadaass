@@ -13,12 +13,12 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import sm.clagenna.loadaass.data.ETipoGASConsumo;
-import sm.clagenna.loadaass.data.ETipoGASLettura;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.TaggedValue;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
+import sm.clagenna.loadaass.enums.ETipoGASConsumo;
+import sm.clagenna.loadaass.enums.ETipoLettProvvenienza;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class SqlServToGAS extends SqlServBase {
@@ -253,14 +253,14 @@ public class SqlServToGAS extends SqlServBase {
       @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
-      s_log.error("Impossibile trovare li.size() per la Lettura GAS");
+      s_log.warn("Sembra non ci siano letture di GAS!");
       return;
     }
 
     for (int riga = 0; riga < QtaRighe; riga++) {
       int k = 1;
       Object obj = getValore(Consts.TGV_TipoLett, riga);
-      ETipoGASLettura tp = ETipoGASLettura.parse(obj.toString());
+      ETipoLettProvvenienza tp = ETipoLettProvvenienza.parse(obj.toString());
       if (tp == null) {
         szMsg = "GAS Letture, Non decodifico tipo lettura:" + obj;
         throw new SQLException(szMsg);
@@ -274,7 +274,7 @@ public class SqlServToGAS extends SqlServBase {
       m_stmt_ins_Lettura.executeUpdate();
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
-    s_log.info("Inserito {} righe di consumo GAS per Fattura del {}", QtaRighe, TaggedValue.fmtData.format((Date) obj));
+    s_log.info("Inserito {} righe di lettura GAS per Fattura del {}", QtaRighe, TaggedValue.fmtData.format((Date) obj));
 
   }
 
@@ -288,7 +288,7 @@ public class SqlServToGAS extends SqlServBase {
       @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
-      s_log.error("Impossibile trovare li.size() per i consumi");
+      s_log.warn("Sembra non ci siano righe di consumi di GAS!");
       return;
     }
     idGASFattura = getIdFattura();
@@ -311,7 +311,7 @@ public class SqlServToGAS extends SqlServBase {
       m_stmt_ins_Consumo.executeUpdate();
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
-    s_log.info("Inserito {} righe di lettura GAS per Fattura del {}", QtaRighe, TaggedValue.fmtData.format((Date) obj));
+    s_log.info("Inserito {} righe di consumo GAS per Fattura del {}", QtaRighe, TaggedValue.fmtData.format((Date) obj));
 
   }
 

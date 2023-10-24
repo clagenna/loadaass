@@ -1,4 +1,4 @@
-package sm.clagenna.loadaass.data;
+package sm.clagenna.loadaass.enums;
 
 public enum ETipoEELettura {
   Attiva("A", "Energia Attiva");
