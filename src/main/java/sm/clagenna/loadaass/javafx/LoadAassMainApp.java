@@ -75,7 +75,7 @@ public class LoadAassMainApp extends Application implements IStartApp {
     try {
       AppProperties.setSingleton(false);
       props = new AppProperties();
-      props.leggiPropertyFile(new File(AppProperties.CSZ_PROPERTIES), false);
+      props.leggiPropertyFile(new File(AppProperties.CSZ_PROPERTIES), false, false);
 
       int px = props.getIntProperty(AppProperties.CSZ_PROP_POSFRAME_X);
       int py = props.getIntProperty(AppProperties.CSZ_PROP_POSFRAME_Y);

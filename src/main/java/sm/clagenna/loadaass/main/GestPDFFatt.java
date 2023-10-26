@@ -42,7 +42,10 @@ import sm.clagenna.loadaass.tohtml.FromPdf2Html;
 
 public class GestPDFFatt {
 
-  private static final Logger       s_log = LogManager.getLogger(GestPDFFatt.class);
+  public static final String        CSZ_TEXT_H2O = "Servizio Idrico Integrato";
+  public static final String        CSZ_TEXT_EE  = "Servizio Energia Elettrica";
+  public static final String        CSZ_TEXT_GAS = "Servizio Gas Naturale";
+  private static final Logger       s_log        = LogManager.getLogger(GestPDFFatt.class);
   private FromPdf2Html              m_fromHtml;
 
   @Getter
@@ -79,6 +82,10 @@ public class GestPDFFatt {
   @Getter @Setter
   private RecIntesta                recIntesta;
 
+  public GestPDFFatt() throws ReadFattException {
+    //
+  }
+
   public GestPDFFatt(String p_string) throws ReadFattException {
     setPdfFile(Paths.get(p_string));
   }
@@ -100,8 +107,8 @@ public class GestPDFFatt {
     }
     leggiCercaValori();
     cercaTagValues();
-    renamePdfFiles();
     cercaSeqValues();
+    renamePdfFiles();
     if (genHTMLFile)
       creaDbValori();
     inserisciInDB();
@@ -157,7 +164,7 @@ public class GestPDFFatt {
     }
   }
 
-  private void leggiCercaValori() throws ReadFattPropsException {
+  public void leggiCercaValori() throws ReadFattPropsException {
     m_liTagVals = new ArrayList<>();
     // qui metto i campi "by tag"
     for (int ndx = 1; ndx < 100; ndx++) {
@@ -172,7 +179,7 @@ public class GestPDFFatt {
       else
         m_liTagVals.add(vTag);
     }
-    if (m_liTagVals.size() < 5) {
+    if (m_liTagVals.size() < 2) {
       throw new ReadFattPropsException("Nelle props. mancano i tags");
     }
     // qui tratto i campi BySeq
@@ -220,7 +227,7 @@ public class GestPDFFatt {
     }
   }
 
-  private List<TaggedValue> cercaTagValues() {
+  public List<TaggedValue> cercaTagValues() {
     // Iterator<Campo> enu = app.getListCampi().iterator();
     m_liVals = m_fromHtml.getListCampi();
     for (int k = 0; k < m_liVals.size(); k++) {
@@ -320,7 +327,7 @@ public class GestPDFFatt {
     }
   }
 
-  private void setPdfFile(Path p_pdf) throws ReadFattException {
+  public void setPdfFile(Path p_pdf) throws ReadFattException {
     pdfFile = p_pdf;
     if (tipoFatt == null)
       discerniTipoPropDaNomeFile();
@@ -340,13 +347,13 @@ public class GestPDFFatt {
     }
   }
 
-  private void discerniTipoPropContenuto() throws ReadFattPropsException {
+  public void discerniTipoPropContenuto() throws ReadFattPropsException {
     String szTxt = m_fromHtml.getTextTAGs();
-    if (szTxt.indexOf("Servizio Gas Naturale") >= 0)
+    if (szTxt.indexOf(CSZ_TEXT_GAS) >= 0)
       setTipoFatt(ETipoFatt.GAS);
-    else if (szTxt.indexOf("Servizio Energia Elettrica") >= 0)
+    else if (szTxt.indexOf(CSZ_TEXT_EE) >= 0)
       setTipoFatt(ETipoFatt.EnergiaElettrica);
-    else if (szTxt.indexOf("Servizio Idrico Integrato") >= 0)
+    else if (szTxt.indexOf(CSZ_TEXT_H2O) >= 0)
       setTipoFatt(ETipoFatt.Acqua);
     else
       s_log.warn("non sono riuscito a capire che tipo di Fattura AASS e'");
@@ -380,6 +387,13 @@ public class GestPDFFatt {
    *          l'indice su elemento valore
    */
   private int trovaValori(TaggedValue p_cmp, List<TaggedValue> p_liCmp, int p_k) {
+    String szDegString = "Periodo di fatturazione dal";
+    if (szDegString != null && p_liCmp.get(p_k + 1).getTxt().contains(szDegString)) {
+      System.out.println();
+      for (int i = p_k - 2; i <= (p_k + 2); i++)
+        if (i < p_liCmp.size())
+          System.out.printf("%s%s\n", (i == p_k ? ">" : " "), p_liCmp.get(i));
+    }
     for (ValoreByTag cv : m_liTagVals) {
       try {
         if (cv.isAssegnabile() && cv.verificaCivetta(p_cmp)) {
@@ -401,6 +415,7 @@ public class GestPDFFatt {
    */
   private void cercaSeqValues() {
     int kk = 0;
+    // semforo dei consumi effettivi
     boolean bSemaConsEffettivi = true;
     for (int tagIndx = 0; tagIndx < m_liVals.size(); tagIndx++) {
       kk = tagIndx;
@@ -450,6 +465,10 @@ public class GestPDFFatt {
 
   public void setConnSql(DBConn p_connSQL) {
     connSQL = p_connSQL;
+  }
+
+  public void setFromPdf2HTML(FromPdf2Html p_pdf2h) {
+    m_fromHtml = p_pdf2h;
   }
 
 }

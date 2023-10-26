@@ -76,39 +76,55 @@ public class AppProperties {
   }
 
   public Properties leggiPropertyFile() throws ReadFattPropsException {
-    return leggiPropertyFile(getPropertyFile(), true);
+    return leggiPropertyFile(getPropertyFile(), true, true);
   }
 
   public Properties leggiPropertyFile(Path p_fiProp) throws ReadFattPropsException {
-    return leggiPropertyFile(p_fiProp.toFile(), true);
+    return leggiPropertyFile(p_fiProp.toFile(), true, true);
   }
 
   public Properties leggiPropertyFile(String p_fiProp) throws ReadFattPropsException {
-    return leggiPropertyFile(new File(p_fiProp), true);
+    return leggiPropertyFile(new File(p_fiProp), true, true);
   }
 
   public Properties leggiPropertyFile(String p_fiProp, boolean bForce) throws ReadFattPropsException {
-    return leggiPropertyFile(new File(p_fiProp), bForce);
+    return leggiPropertyFile(new File(p_fiProp), bForce, true);
   }
 
-  public Properties leggiPropertyFile(File p_fiProp, boolean bForce) throws ReadFattPropsException {
+  public Properties leggiPropertyFile(File p_fiProp, boolean bForce, boolean bResJar) throws ReadFattPropsException {
     properties = new Properties();
-    if (p_fiProp == null || !p_fiProp.exists()) {
-      if (bForce)
-        throw new ReadFattPropsException(
-            "Il file properties non esiste:" + (p_fiProp != null ? p_fiProp.getAbsolutePath() : "*NULL*"));
-      else
-        return properties;
+    if ( !bResJar) {
+      if (p_fiProp == null || !p_fiProp.exists()) {
+        if (bForce)
+          throw new ReadFattPropsException(
+              "Il file properties non esiste:" + (p_fiProp != null ? p_fiProp.getAbsolutePath() : "*NULL*"));
+        else
+          return properties;
+      }
     }
     // System.out.println("Apro il file di  properties:" + p_fiProp.getAbsolutePath());
     s_log.info("Apro il file di  properties: {}", p_fiProp.getAbsolutePath());
     propertyFile = p_fiProp;
     setPropertyFile(p_fiProp);
-    try (InputStream is = new FileInputStream(p_fiProp)) {
-      properties.load(is);
-      setPropertyFile(p_fiProp);
-    } catch (IOException e) {
-      s_log.error("Errore apertura property file {}", p_fiProp.getAbsolutePath(), e);
+    if ( !bResJar) {
+      // leggo dal direttorio
+      try (InputStream is = new FileInputStream(p_fiProp)) {
+        if (is != null)
+          properties.load(is);
+        setPropertyFile(p_fiProp);
+      } catch (IOException e) {
+        s_log.error("Errore apertura property file {}", p_fiProp.getAbsolutePath(), e);
+      }
+    } else {
+      // leggo come risorsa intena al JAR
+      String szFi = String.format("/%s", p_fiProp.getName());
+      try (InputStream is = AppProperties.class.getResourceAsStream(szFi)) {
+        if (is != null)
+          properties.load(is);
+        setPropertyFile(p_fiProp);
+      } catch (IOException e) {
+        s_log.error("Errore apertura property file {}", p_fiProp.getAbsolutePath(), e);
+      }
     }
     // e.printStackTrace();
     // System.err.println("Errore apertura property file:" + p_fiProp.getAbsolutePath() + " " + e);

@@ -36,13 +36,15 @@ public class SqlServToGAS extends SqlServBase {
       + "           ,periodFattDtFine"                                                     //
       + "           ,periodCongDtIniz"                                                     //
       + "           ,periodCongDtFine"                                                     //
+      + "           ,periodEffDtIniz"                                                      //
+      + "           ,periodEffDtFine"                                                      //
       + "           ,periodAccontoDtIniz"                                                  //
       + "           ,periodAccontoDtFine"                                                  //
       + "           ,accontoBollPrec"                                                      //
       + "           ,addizFER"                                                             //
       + "           ,impostaQuiet"                                                         //
       + "           ,TotPagare)"                                                           //
-      + "     VALUES (?,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,?)";
+      + "     VALUES (?,? ,? ,? ,?,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,?)";
   private PreparedStatement   m_stmt_ins_fattura;
 
   private static final String QRY_Fattura       = ""                                       //
@@ -220,6 +222,19 @@ public class SqlServToGAS extends SqlServBase {
     }
 
     int k = 1;
+    
+    /*
+     *+ "           ,periodFattDtIniz"                                                     //
+      + "           ,periodFattDtFine"                                                     //
+      + "           ,periodCongDtIniz"                                                     //
+      + "           ,periodCongDtFine"                                                     //
+      + "           ,periodEffDtIniz"                                                      //
+      + "           ,periodEffDtFine"                                                      //
+      + "           ,periodAccontoDtIniz"                                                  //
+      + "           ,periodAccontoDtFine"                                                  //
+
+     */
+    
     setVal(reci.idIntesta(), m_stmt_ins_fattura, k++, Types.INTEGER);
     setVal(annoComp, m_stmt_ins_fattura, k++, Types.INTEGER);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_DataEmiss, 0, k++, Types.DATE);
@@ -230,6 +245,9 @@ public class SqlServToGAS extends SqlServBase {
 
     setValTgv(m_stmt_ins_fattura, Consts.TGV_PeriodCongDtIniz, 0, k++, Types.DATE);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_PeriodCongDtFine, 0, k++, Types.DATE);
+
+    setValTgv(m_stmt_ins_fattura, Consts.TGV_PeriodEffDtIniz, 0, k++, Types.DATE);
+    setValTgv(m_stmt_ins_fattura, Consts.TGV_PeriodEffDtFine, 0, k++, Types.DATE);
 
     setValTgv(m_stmt_ins_fattura, Consts.TGV_PeriodAccontoDtIniz, 0, k++, Types.DATE);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_PeriodAccontoDtFine, 0, k++, Types.DATE);

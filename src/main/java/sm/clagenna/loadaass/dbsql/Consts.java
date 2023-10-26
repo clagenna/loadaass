@@ -45,6 +45,8 @@ public class Consts {
   public static final String TGV_PeriodAccontoDtIniz = "PeriodAccontoDtIniz";
   public static final String TGV_PeriodCongDtFine    = "PeriodCongDtFine";
   public static final String TGV_PeriodCongDtIniz    = "PeriodCongDtIniz";
+  public static final String TGV_PeriodEffDtFine     = "PeriodEffDtFine";
+  public static final String TGV_PeriodEffDtIniz     = "PeriodEffDtIniz";
   public static final String TGV_PeriodFattDtFine    = "PeriodFattDtFine";
   public static final String TGV_PeriodFattDtIniz    = "PeriodFattDtIniz";
   public static final String TGV_periodoA            = "periodoA";

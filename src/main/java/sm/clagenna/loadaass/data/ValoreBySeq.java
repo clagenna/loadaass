@@ -69,7 +69,7 @@ public class ValoreBySeq {
    */
   public boolean addSeq(String p_szProp, int p_nSeq) {
     String[] arr = p_szProp.split(":");
-    if (arr == null || arr.length < 5) {
+    if (arr == null || arr.length < 4) {
       s_log.error("pochi campi tag {}", p_szProp);
       return false;
     }

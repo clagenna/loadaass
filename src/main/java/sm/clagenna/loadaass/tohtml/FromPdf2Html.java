@@ -19,6 +19,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.fit.pdfdom.PDFDomTree;
 
 import sm.clagenna.loadaass.data.TaggedValue;
+import sm.clagenna.loadaass.sys.AppProperties;
 
 public class FromPdf2Html {
   private static final Logger s_log    = LogManager.getLogger(FromPdf2Html.class);
@@ -107,7 +108,7 @@ public class FromPdf2Html {
       szText = mtch.group(k++);
       trattaRiga(szLeft, szTop, szText);
     }
-    if ( m_liCampi.size() < 5 ) {
+    if (m_liCampi.size() < 5) {
       s_log.error("Non sembra essere una fattura");
       return false;
     }
@@ -115,10 +116,12 @@ public class FromPdf2Html {
     return true;
   }
 
-  private void trattaRiga(String szLeft, String szTop, String szTxt) {
-    String szDebug = "vattela";
-    if (szDebug.length() > 1 && szTxt.toLowerCase().contains(szDebug))
+  @SuppressWarnings("unused")
+  public void trattaRiga(String szLeft, String szTop, String szTxt) {
+    String szDebug = null;
+    if (szDebug != null && szTxt.toLowerCase().contains(szDebug))
       System.out.printf("FromHtml.trattaRiga(\"%s\")=%s\n", szDebug, szTxt);
+
     if (szTxt != null && szTxt.indexOf("nbsp;") >= 0)
       return;
     if (m_liCampi == null)
@@ -180,6 +183,15 @@ public class FromPdf2Html {
     } catch (IOException e) {
       s_log.error("Errore scrittura TAGs", e);
     }
+  }
+
+  public Object parseRiga(String p_l) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public void setPage(int p_i) {
+    m_nPage = p_i;
   }
 
 }
