@@ -48,7 +48,7 @@ SELECT NomeIntesta
 GO
 
 DECLARE @nome varchar(32) = 'andrea',
-        @dtRif date       = '2020-12-16'
+        @dtRif date       = '2022-12-16'
 
 SELECT TOP (1000) NomeIntesta
       ,dtIniz
