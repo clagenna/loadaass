@@ -28,8 +28,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -48,6 +51,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
@@ -425,20 +429,20 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       Path it = liPdf.getSelectionModel().getSelectedItem();
       // System.out.println("Ctx menu: path="+it);
       try {
-        if ( Desktop.isDesktopSupported()) {
-          s_log.info("Apro lettore PDF per {}",it.toString());
+        if (Desktop.isDesktopSupported()) {
+          s_log.info("Apro lettore PDF per {}", it.toString());
           Desktop.getDesktop().open(it.toFile());
         } else {
           s_log.error("Desktop not supported");
         }
       } catch (IOException e) {
-        s_log.error("Desktop PDF launch error:"+e.getMessage(),e);
+        s_log.error("Desktop PDF launch error:" + e.getMessage(), e);
       }
     });
     ContextMenu menu = new ContextMenu();
     menu.getItems().add(mi1);
     liPdf.setContextMenu(menu);
-    
+
     s_log.debug("Ricarico la lista files dal dir \"{}\"", pthDirPDF.toString());
   }
 
@@ -499,6 +503,35 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     // List<Log4jRow> li = m_liMsgs.stream().filter(s -> s.getLevel().isInRange(Level.FATAL, levelMin )).toList(); // !s.getLevel().isLessSpecificThan(levelMin)).toList();
     List<Log4jRow> li = m_liMsgs.stream().filter(s -> s.getLevel().intLevel() <= levelMin.intLevel()).toList();
     tblView.getItems().addAll(li);
+  }
+
+  /**
+   * Mostra la forma modeless per la visualizzazione dei dati presenti nel DB
+   *
+   * @param event
+   * @throws IOException
+   */
+  @FXML
+  void mnuShowData(ActionEvent event) throws IOException {
+
+    Stage stage = new Stage();
+    LoadAassMainApp mainApp = LoadAassMainApp.getInst();
+    Stage primaryStage = mainApp.getPrimaryStage();
+
+    stage.setWidth(800);
+    stage.setHeight(600);
+
+    URL url = getClass().getResource(ResultView.CSZ_FXMLNAME);
+    if (url == null)
+      url = getClass().getClassLoader().getResource(ResultView.CSZ_FXMLNAME);
+    Parent radice = FXMLLoader.load(url);
+    Scene scene = new Scene(radice, 600, 440);
+    stage.setScene(scene);
+    stage.setTitle("Visualizza dati del DB");
+    stage.initModality(Modality.NONE);
+    stage.initOwner(primaryStage);
+
+    stage.show();
   }
 
   @FXML

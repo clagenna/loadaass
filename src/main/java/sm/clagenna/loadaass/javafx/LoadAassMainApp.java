@@ -16,7 +16,7 @@ import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 import sm.clagenna.loadaass.dbsql.DBConn;
-import sm.clagenna.loadaass.dbsql.DBConnSQL;
+import sm.clagenna.loadaass.dbsql.DBConnFactory;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.IStartApp;
@@ -72,10 +72,16 @@ public class LoadAassMainApp extends Application implements IStartApp {
 
   @Override
   public void initApp(AppProperties p_props) {
+    String szDbType = null;
     try {
       AppProperties.setSingleton(false);
-      props = new AppProperties();
-      props.leggiPropertyFile(new File(AppProperties.CSZ_PROPERTIES), false, false);
+      DBConnFactory.setSingleton(false);
+      props = p_props;
+      if (props == null) {
+        props = new AppProperties();
+        props.leggiPropertyFile(new File(AppProperties.CSZ_PROPERTIES), false, false);
+      }
+      szDbType = props.getProperty(AppProperties.CSZ_PROP_DB_Type);
 
       int px = props.getIntProperty(AppProperties.CSZ_PROP_POSFRAME_X);
       int py = props.getIntProperty(AppProperties.CSZ_PROP_POSFRAME_Y);
@@ -92,7 +98,10 @@ public class LoadAassMainApp extends Application implements IStartApp {
       System.exit(1957);
     }
     try {
-      connSQL = new DBConnSQL();
+      // connSQL = new DBConnSQL();
+      DBConnFactory conFact = new DBConnFactory();
+      connSQL = conFact.get(szDbType);
+      connSQL.readProperties(props);
       connSQL.doConn();
       intesta = new SqlServIntest(connSQL);
     } catch (Exception e) {

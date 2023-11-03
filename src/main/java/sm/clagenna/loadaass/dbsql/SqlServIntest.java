@@ -22,7 +22,7 @@ public class SqlServIntest {
       + "SELECT idIntesta"                                                                //
       + "      ,NomeIntesta"                                                              //
       + "      ,dirfatture"                                                               //
-      + "  FROM dbo.Intesta";
+      + "  FROM Intesta";
 
   public record RecIntesta(int idIntesta, String nome, Path dirFatture) {
     @Override

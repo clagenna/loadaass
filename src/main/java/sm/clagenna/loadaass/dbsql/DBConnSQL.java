@@ -4,45 +4,50 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import sm.clagenna.loadaass.enums.EServerId;
 
 public class DBConnSQL extends DBConn {
 
-  private static final String CSZ_DBNAME = "aass";
-  private static final String CSZ_SQLUSER = "sqlgianni";
-  private static final String CSZ_SQLPSWD = "sicuelserver";
+  private static final Logger s_log      = LogManager.getLogger(DBConnSQL.class);
+
+  //  private static final String CSZ_DBNAME  = "aass";
+  //  private static final String CSZ_SQLUSER = "sqlgianni";
+  //  private static final String CSZ_SQLPSWD = "sicuelserver";
+  //  private static final int    CN_SERVICE  = 1433;
   @SuppressWarnings("unused")
   private static final String CSZ_DRIVER = "com.mysql.cj.jdbc.Driver";
-  private static final String CSZ_URL    = "jdbc:sqlserver://%s:%d;"   //
-      + "database=%s;"                                                 //
-      + "user=%s;"                                                     //
-      + "password=%s;"                                                 //
-      + "encrypt=false;"                                               //
-      + "trustServerCertificate=false;"                                //
+  private static final String CSZ_URL    = "jdbc:sqlserver://%s:%d;"             //
+      + "database=%s;"                                                           //
+      + "user=%s;"                                                               //
+      + "password=%s;"                                                           //
+      + "encrypt=false;"                                                         //
+      + "trustServerCertificate=false;"                                          //
       + "loginTimeout=10;";
-  private static final int    CN_SERVICE = 1433;
-  // private static final String QRY_LASTID = "select scope_identity()";
   private static final String QRY_LASTID = "select @@identity";
   private PreparedStatement   m_stmt_lastid;
 
   public DBConnSQL() {
-    //    if (s_inst != null)
-    //      throw new UnsupportedOperationException("DBConn gia istanziata");
-    //    s_inst = this;
+    //
   }
 
   @Override
   public String getURL() {
     String szUrl = String.format(CSZ_URL, "localhost", //
-        CN_SERVICE, //
-        CSZ_DBNAME, //
-        CSZ_SQLUSER, //
-        CSZ_SQLPSWD);
+        getService(), //
+        getDbname(), //
+        getUser(), //
+        getPasswd());
     return szUrl;
   }
 
   @Override
-  public ServerID getServerId() {
-    return ServerID.SqlServer;
+  public EServerId getServerId() {
+    return EServerId.SqlServer;
   }
 
   @Override
@@ -70,5 +75,25 @@ public class DBConnSQL extends DBConn {
     }
     m_stmt_lastid = null;
     super.close();
+  }
+
+  @Override
+  public void setStmtDate(PreparedStatement p_stmt, int p_index, Object p_dt) throws SQLException {
+    java.sql.Date dt = null;
+    if (p_dt instanceof java.sql.Date) {
+      dt = (java.sql.Date) p_dt;
+    } else if (p_dt instanceof java.util.Date) {
+      java.util.Date udt = (java.util.Date) p_dt;
+      dt = new java.sql.Date(udt.getTime());
+    }
+    if (dt != null)
+      p_stmt.setDate(p_index, dt);
+    else
+      p_stmt.setNull(p_index, Types.DATE);
+  }
+
+  @Override
+  public Logger getLog() {
+    return s_log;
   }
 }

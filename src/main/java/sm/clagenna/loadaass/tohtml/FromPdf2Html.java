@@ -19,7 +19,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.fit.pdfdom.PDFDomTree;
 
 import sm.clagenna.loadaass.data.TaggedValue;
-import sm.clagenna.loadaass.sys.AppProperties;
 
 public class FromPdf2Html {
   private static final Logger s_log    = LogManager.getLogger(FromPdf2Html.class);

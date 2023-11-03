@@ -27,7 +27,7 @@ public abstract class SqlServBase implements ISql {
   private Integer             idFattura;
 
   private static final String QRY_del_Fattura = ""   //
-      + "DELETE  FROM dbo.%s WHERE idEEFattura = ?";
+      + "DELETE  FROM %s WHERE idEEFattura = ?";
 
   public SqlServBase() {
     //
@@ -100,7 +100,7 @@ public abstract class SqlServBase implements ISql {
   }
 
   protected void setVal(Object vv, PreparedStatement p_stmt, int p_indxStmt, int p_sqlType) throws SQLException {
-    java.sql.Date dt = null;
+//    java.sql.Date dt = null;
     String szClsNam = vv != null ? vv.getClass().getSimpleName() : null;
     if (szClsNam == null || vv == null) {
       p_stmt.setNull(p_indxStmt, p_sqlType);
@@ -114,11 +114,12 @@ public abstract class SqlServBase implements ISql {
         p_stmt.setInt(p_indxStmt, (Integer) vv);
         break;
       case "Date":
-        if (vv instanceof java.util.Date) {
-          dt = new java.sql.Date( ((java.util.Date) vv).getTime());
-          p_stmt.setDate(p_indxStmt, dt);
-        } else
-          p_stmt.setDate(p_indxStmt, (java.sql.Date) vv);
+//        if (vv instanceof java.util.Date) {
+//          dt = new java.sql.Date( ((java.util.Date) vv).getTime());
+//          p_stmt.setDate(p_indxStmt, dt);
+//        } else
+//          p_stmt.setDate(p_indxStmt, (java.sql.Date) vv);
+        connSql.setStmtDate(p_stmt, p_indxStmt, (java.util.Date) vv);
         break;
       case "Double":
         p_stmt.setDouble(p_indxStmt, (Double) vv);

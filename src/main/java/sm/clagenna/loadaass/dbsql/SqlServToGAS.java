@@ -26,7 +26,7 @@ public class SqlServToGAS extends SqlServBase {
   private static final Logger s_log             = LogManager.getLogger(SqlServToGAS.class);
 
   private static final String QRY_ins_Fattura   = ""                                       //
-      + "INSERT INTO dbo.GASFattura"                                                       //
+      + "INSERT INTO GASFattura"                                                       //
       + "           (idIntesta"                                                            //
       + "           ,annoComp"                                                             //
       + "           ,DataEmiss"                                                            //
@@ -48,12 +48,12 @@ public class SqlServToGAS extends SqlServBase {
   private PreparedStatement   m_stmt_ins_fattura;
 
   private static final String QRY_Fattura       = ""                                       //
-      + "SELECT idGASFattura   FROM dbo.GASFattura"                                        //
+      + "SELECT idGASFattura   FROM GASFattura"                                        //
       + " WHERE DataEmiss = ?" + "   AND idIntesta = ?";
   private PreparedStatement   m_stmt_cerca_fattura;
 
   private static final String QRY_ins_Lettura   = ""                                       //
-      + "INSERT INTO dbo.GASLettura"                                                       //
+      + "INSERT INTO GASLettura"                                                       //
       + "           (idGASFattura"                                                         //
       + "           ,lettQtaMc"                                                            //
       + "           ,LettData"                                                             //
@@ -65,12 +65,12 @@ public class SqlServToGAS extends SqlServBase {
 
   private static final String QRY_cerca_Lettura = ""                                       //
       + "SELECT idLettura"                                                                 //
-      + " FROM dbo.GASLettura"                                                             //
+      + " FROM GASLettura"                                                             //
       + " WHERE idGASFattura = ?"                                                          //
       + " AND lettData = ?";                                                               //
   private PreparedStatement   m_stmt_cerca_Lettura;
 
-  private static final String QRY_ins_Consumo   = "INSERT INTO dbo.GASConsumo"             //
+  private static final String QRY_ins_Consumo   = "INSERT INTO GASConsumo"             //
       + "           (idGASFattura"                                                         //
       + "           ,tipoSpesa"                                                            //
       + "           ,dtIniz"                                                               //
@@ -90,7 +90,7 @@ public class SqlServToGAS extends SqlServBase {
 
   private static final String QRY_cerca_Consumo = ""                                       //
       + "SELECT idConsumo  "                                                               //
-      + " FROM dbo.GASConsumo"                                                             //
+      + " FROM GASConsumo"                                                             //
       + " WHERE idGASFattura = ?"                                                          //
       + "  AND DtIniz = ?";
   private PreparedStatement   m_stmt_cerca_consumo;
@@ -153,7 +153,10 @@ public class SqlServToGAS extends SqlServBase {
 
     int k = 1;
     RecIntesta reci = getRecIntesta();
-    m_stmt_cerca_fattura.setDate(k++, new java.sql.Date(dtEmiss.getTime()));
+    // m_stmt_cerca_fattura.set D a t e(k++, new java.sql.Date(dtEmiss.getTime()));
+    DBConn conn = getConnSql();
+    conn.setStmtDate(m_stmt_cerca_fattura, k++, dtEmiss);
+
     m_stmt_cerca_fattura.setInt(k++, reci.idIntesta());
     setIdFattura(null);
     try (ResultSet res = m_stmt_cerca_fattura.executeQuery()) {
@@ -173,7 +176,10 @@ public class SqlServToGAS extends SqlServBase {
     int k = 1;
     int idLettura = -1;
     m_stmt_cerca_Lettura.setInt(k++, getIdFattura());
-    m_stmt_cerca_Lettura.setDate(k++, dtLett);
+    // m_stmt_cerca_Lettura.set D a t e(k++, dtLett);
+    DBConn conn = getConnSql();
+    conn.setStmtDate(m_stmt_cerca_Lettura, k++, dtLett);
+
     try (ResultSet res = m_stmt_cerca_Lettura.executeQuery()) {
       while (res.next()) {
         idLettura = res.getInt(1);
@@ -189,7 +195,10 @@ public class SqlServToGAS extends SqlServBase {
     int idConsumo = -1;
     int k = 1;
     m_stmt_cerca_consumo.setInt(k++, idFattura);
-    m_stmt_cerca_consumo.setDate(k++, dtIni);
+    // m_stmt_cerca_consumo.set D a t e(k++, dtIni);
+    DBConn conn = getConnSql();
+    conn.setStmtDate(m_stmt_cerca_consumo, k++, dtIni);
+
     try (ResultSet res = m_stmt_cerca_consumo.executeQuery()) {
       while (res.next())
         idConsumo = res.getInt(1);

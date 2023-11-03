@@ -4,16 +4,17 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import lombok.Setter;
+import sm.clagenna.loadaass.enums.EServerId;
+import sm.clagenna.loadaass.sys.AppProperties;
 
 public abstract class DBConn implements Closeable {
-
-  public enum ServerID {
-    SqlServer, HSqlDB
-  }
 
   @Getter @Setter
   private String     host;
@@ -32,18 +33,32 @@ public abstract class DBConn implements Closeable {
     //
   }
 
+  public abstract Logger getLog();
+
   public abstract String getURL();
-  
-  public abstract ServerID getServerId();
+
+  public abstract EServerId getServerId();
 
   public abstract int getLastIdentity() throws SQLException;
+
+  /**
+   * La funzione serve per suplire alla (pessima) caratteristica di SQLite3 che
+   * <b>NON</b> ha il tipo dato "DATE"! 
+   * @see <a href="https://sqlite.org/datatype3.html">SQLite data Types</a> 
+   *
+   * @param p_stmt
+   * @param p_index
+   * @param p_dt
+   * @throws SQLException
+   */
+  public abstract void setStmtDate(PreparedStatement p_stmt, int p_index, Object p_dt) throws SQLException;
 
   public Connection doConn() {
     String szUrl = getURL();
     try {
       conn = DriverManager.getConnection(szUrl, user, passwd);
     } catch (SQLException e) {
-      e.printStackTrace();
+      getLog().error("Error in open connection:{}", e.getMessage(), e);
     }
     return conn;
   }
@@ -54,9 +69,22 @@ public abstract class DBConn implements Closeable {
       if (conn != null)
         conn.close();
     } catch (SQLException e) {
-      e.printStackTrace();
+      getLog().error("Error in close connection:{}", e.getMessage(), e);
     }
     conn = null;
+  }
+
+  public void readProperties(AppProperties p_props) {
+    String szv = p_props.getProperty(AppProperties.CSZ_PROP_DB_name);
+    setDbname(szv);
+    szv = p_props.getProperty(AppProperties.CSZ_PROP_DB_Host);
+    setHost(szv);
+    szv = p_props.getProperty(AppProperties.CSZ_PROP_DB_service);
+    setService(Integer.parseInt(szv));
+    szv = p_props.getProperty(AppProperties.CSZ_PROP_DB_user);
+    setUser(szv);
+    szv = p_props.getProperty(AppProperties.CSZ_PROP_DB_passwd);
+    setPasswd(szv);
   }
 
 }

@@ -26,6 +26,14 @@ public class AppProperties {
   public static final String   CSZ_PROP_DIMFRAME_Y = "frame.dimy";
   public static final String   CSZ_PROP_POSFRAME_X = "frame.posx";
   public static final String   CSZ_PROP_POSFRAME_Y = "frame.posy";
+
+  public static final String   CSZ_PROP_DB_Type    = "DB.Type";
+  public static final String   CSZ_PROP_DB_Host    = "DB.Host";
+  public static final String   CSZ_PROP_DB_name    = "DB.name";
+  public static final String   CSZ_PROP_DB_user    = "DB.user";
+  public static final String   CSZ_PROP_DB_passwd  = "DB.passwd";
+  public static final String   CSZ_PROP_DB_service = "DB.service";
+
   private Properties           properties;
   private File                 propertyFile;
   /**
@@ -91,6 +99,7 @@ public class AppProperties {
     return leggiPropertyFile(new File(p_fiProp), bForce, true);
   }
 
+  @SuppressWarnings("unused")
   public Properties leggiPropertyFile(File p_fiProp, boolean bForce, boolean bResJar) throws ReadFattPropsException {
     properties = new Properties();
     if ( !bResJar) {
@@ -111,6 +120,8 @@ public class AppProperties {
       try (InputStream is = new FileInputStream(p_fiProp)) {
         if (is != null)
           properties.load(is);
+        else
+          s_log.error("property file {} null!", p_fiProp.getAbsolutePath());
         setPropertyFile(p_fiProp);
       } catch (IOException e) {
         s_log.error("Errore apertura property file {}", p_fiProp.getAbsolutePath(), e);
@@ -121,6 +132,8 @@ public class AppProperties {
       try (InputStream is = AppProperties.class.getResourceAsStream(szFi)) {
         if (is != null)
           properties.load(is);
+        else
+          s_log.error("property file {} null!", p_fiProp.getAbsolutePath());
         setPropertyFile(p_fiProp);
       } catch (IOException e) {
         s_log.error("Errore apertura property file {}", p_fiProp.getAbsolutePath(), e);
