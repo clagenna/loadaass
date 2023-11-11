@@ -1,20 +1,26 @@
 package sm.clagenna.loadaass.dbsql;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.sqlite.SQLiteConfig;
+import org.sqlite.SQLiteConfig.Pragma;
 
 import sm.clagenna.loadaass.enums.EServerId;
+import sm.clagenna.loadaass.sys.ParseData;
 import sm.clagenna.loadaass.sys.Utils;
 
 public class DBConnSQLite extends DBConn {
-  private static final Logger s_log      = LogManager.getLogger(DBConnSQLite.class);
+  private static final Logger s_log = LogManager.getLogger(DBConnSQLite.class);
   // private static final String CSZ_DBNAME = "data/sql/SQLite/SQLaass.sqlite3";
-  private static final String CSZ_URL    = "jdbc:sqlite:%s";
+  private static final String CSZ_URL = "jdbc:sqlite:%s";
 
   private static final String QRY_LASTID = "select last_insert_rowid()";
   private PreparedStatement   m_stmt_lastid;
@@ -63,6 +69,13 @@ public class DBConnSQLite extends DBConn {
     super.close();
   }
 
+  @Override
+  public void changePragma() {
+    SQLiteConfig conf = new SQLiteConfig();
+    Properties prop = conf.toProperties();
+    prop.setProperty(Pragma.DATE_STRING_FORMAT.pragmaName, "yyyy-MM-dd");
+  }
+
   /**
    * SQLite preferisce le date in
    * <a href="https://en.wikipedia.org/wiki/ISO_8601}">ISO 8601 Date Format</a>
@@ -99,6 +112,18 @@ public class DBConnSQLite extends DBConn {
       String sz = Utils.s_fmtY4MD.format(dt);
       p_stmt.setString(p_index, sz);
     }
+  }
+
+  @Override
+  public Date getDate(ResultSet p_res, int nCol) throws SQLException {
+    Date dtRet = null;
+    String sz = p_res.getString(nCol);
+    if (sz == null)
+      return dtRet;
+    ParseData pdt = new ParseData();
+    LocalDateTime ldt = pdt.parseData(sz);
+    dtRet = java.sql.Date.valueOf(ldt.toLocalDate());
+    return dtRet;
   }
 
   @Override

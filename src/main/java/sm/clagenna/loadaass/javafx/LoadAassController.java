@@ -67,57 +67,41 @@ import sm.clagenna.loadaass.sys.ex.ReadFattLog4jRowException;
 
 public class LoadAassController implements Initializable, ILog4jReader, IStartApp {
 
-  private static final Logger           s_log            = LogManager.getLogger(LoadAassController.class);
-  public static final String            CSZ_FXMLNAME     = "LoadAassJavaFX.fxml";
-  private static final String           CSZ_LOG_LEVEL    = "logLevel";
-  private static final String           CSZ_INTESTATARIO = "intestatario";
+  private static final Logger s_log            = LogManager.getLogger(LoadAassController.class);
+  public static final String  CSZ_FXMLNAME     = "LoadAassJavaFX.fxml";
+  private static final String CSZ_LOG_LEVEL    = "logLevel";
+  private static final String CSZ_INTESTATARIO = "intestatario";
 
-  @FXML
-  private TextField                     txDirFatt;
-  @FXML
-  private Button                        btCercaDir;
-  @FXML
-  private Button                        btConvPDF;
+  @FXML private TextField txDirFatt;
+  @FXML private Button    btCercaDir;
+  @FXML private Button    btConvPDF;
+  @FXML private Button    btShowResults;
+  @FXML private CheckBox  ckGenTXT;
+  @FXML private CheckBox  ckGenTAGs;
+  @FXML private CheckBox  ckGenHtml;
+  @FXML private CheckBox  ckOverwrite;
+  @FXML private CheckBox  ckLanciaExcel;
 
-  @FXML
-  private CheckBox                      ckGenTXT;
-  @FXML
-  private CheckBox                      ckGenTAGs;
-  @FXML
-  private CheckBox                      ckGenHtml;
-  @FXML
-  private CheckBox                      ckOverwrite;
-  @FXML
-  private CheckBox                      ckLanciaExcel;
+  @FXML private ListView<Path>                liPdf;
+  @FXML private TableView<Log4jRow>           tblView;
+  @FXML private TableColumn<Log4jRow, String> colTime;
+  @FXML private TableColumn<Log4jRow, String> colLev;
+  @FXML private TableColumn<Log4jRow, String> colMsg;
+  @FXML private Button                        btClearMsg;
+  @FXML private ComboBox<Level>               cbLevelMin;
+  private Level                               levelMin;
+  @FXML private ComboBox<RecIntesta>          cbIntesta;
+  private RecIntesta                          recIntesta;
 
-  @FXML
-  private ListView<Path>                liPdf;
-  @FXML
-  private TableView<Log4jRow>           tblView;
-  @FXML
-  private TableColumn<Log4jRow, String> colTime;
-  @FXML
-  private TableColumn<Log4jRow, String> colLev;
-  @FXML
-  private TableColumn<Log4jRow, String> colMsg;
-  @FXML
-  private Button                        btClearMsg;
-  @FXML
-  private ComboBox<Level>               cbLevelMin;
-  private Level                         levelMin;
-  @FXML
-  private ComboBox<RecIntesta>          cbIntesta;
-  private RecIntesta                    recIntesta;
+  private List<Log4jRow> m_liMsgs;
 
-  private List<Log4jRow>                m_liMsgs;
-
-  private Path                          pthDirPDF;
-  private AppProperties                 props;
-  private boolean                       m_bGenTxt;
-  private boolean                       m_bGenTag;
-  private boolean                       m_bGenHtml;
-  private boolean                       m_bOverwrite;
-  private boolean                       m_bLanciaExc;
+  private Path          pthDirPDF;
+  private AppProperties props;
+  private boolean       m_bGenTxt;
+  private boolean       m_bGenTag;
+  private boolean       m_bGenHtml;
+  private boolean       m_bOverwrite;
+  private boolean       m_bLanciaExc;
 
   public LoadAassController() {
     //
@@ -136,6 +120,8 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     LoadAassMainApp main = LoadAassMainApp.getInst();
     main.setController(this);
     getStage().setTitle("Caricamento delle fatture AASS su DB");
+    // vedi: https://stackoverflow.com/questions/27160951/javafx-open-another-fxml-in-the-another-window-with-button
+    getStage().onCloseRequestProperty().setValue(e -> Platform.exit());
     String szLastDir = props.getLastDir();
     if (szLastDir != null)
       txDirFatt.setText(szLastDir);
@@ -512,24 +498,28 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
    * @throws IOException
    */
   @FXML
-  void mnuShowData(ActionEvent event) throws IOException {
-
-    Stage stage = new Stage();
+  void btShowResults(ActionEvent event) {
     LoadAassMainApp mainApp = LoadAassMainApp.getInst();
     Stage primaryStage = mainApp.getPrimaryStage();
-
-    stage.setWidth(800);
-    stage.setHeight(600);
 
     URL url = getClass().getResource(ResultView.CSZ_FXMLNAME);
     if (url == null)
       url = getClass().getClassLoader().getResource(ResultView.CSZ_FXMLNAME);
-    Parent radice = FXMLLoader.load(url);
+    Parent radice;
+    try {
+      radice = FXMLLoader.load(url);
+    } catch (IOException e) {
+      s_log.error("Errore caricamento FXML {}", ResultView.CSZ_FXMLNAME, e);
+      return;
+    }
+    Stage stage = new Stage();
     Scene scene = new Scene(radice, 600, 440);
     stage.setScene(scene);
-    stage.setTitle("Visualizza dati del DB");
-    stage.initModality(Modality.NONE);
+    stage.setWidth(800);
+    stage.setHeight(600);
     stage.initOwner(primaryStage);
+    stage.initModality(Modality.NONE);
+    stage.setTitle("Visualizza dati del DB");
 
     stage.show();
   }

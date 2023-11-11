@@ -3,8 +3,10 @@ package sm.clagenna.loadaass.dbsql;
 import java.io.Closeable;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.logging.log4j.Logger;
@@ -16,18 +18,12 @@ import sm.clagenna.loadaass.sys.AppProperties;
 
 public abstract class DBConn implements Closeable {
 
-  @Getter @Setter
-  private String     host;
-  @Getter @Setter
-  private int        service;
-  @Getter @Setter
-  private String     dbname;
-  @Getter @Setter
-  private String     user;
-  @Getter @Setter
-  private String     passwd;
-  @Getter
-  private Connection conn;
+  @Getter @Setter private String host;
+  @Getter @Setter private int    service;
+  @Getter @Setter private String dbname;
+  @Getter @Setter private String user;
+  @Getter @Setter private String passwd;
+  @Getter private Connection     conn;
 
   public DBConn() {
     //
@@ -43,8 +39,9 @@ public abstract class DBConn implements Closeable {
 
   /**
    * La funzione serve per suplire alla (pessima) caratteristica di SQLite3 che
-   * <b>NON</b> ha il tipo dato "DATE"! 
-   * @see <a href="https://sqlite.org/datatype3.html">SQLite data Types</a> 
+   * <b>NON</b> ha il tipo dato "DATE"!
+   *
+   * @see <a href="https://sqlite.org/datatype3.html">SQLite data Types</a>
    *
    * @param p_stmt
    * @param p_index
@@ -56,6 +53,7 @@ public abstract class DBConn implements Closeable {
   public Connection doConn() {
     String szUrl = getURL();
     try {
+      changePragma();
       conn = DriverManager.getConnection(szUrl, user, passwd);
     } catch (SQLException e) {
       getLog().error("Error in open connection:{}", e.getMessage(), e);
@@ -85,6 +83,14 @@ public abstract class DBConn implements Closeable {
     setUser(szv);
     szv = p_props.getProperty(AppProperties.CSZ_PROP_DB_passwd);
     setPasswd(szv);
+  }
+
+  public void changePragma() {
+    //
+  }
+
+  public Date getDate(ResultSet p_res, int nCol) throws SQLException {
+    return p_res.getDate(nCol);
   }
 
 }

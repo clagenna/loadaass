@@ -13,40 +13,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
-import lombok.Setter;
 import sm.clagenna.loadaass.sys.ex.DatasetException;
 
 public class DtsCols {
   private static final Logger s_log    = LogManager.getLogger(DtsCols.class);
   @Getter
   private static int          colWidth = 16;
-  private static String       s_colFmt;
-
-  class DtsCol {
-    /** Il nome <b>univoco</b> e <b>case insensitive</b> della colonna */
-    @Getter @Setter
-    private String   name;
-    /** la posizione 0-based nel dataset */
-    @Getter @Setter
-    private int      index;
-    @Getter @Setter
-    private SqlTypes type;
-    @Getter @Setter
-    private String   format;
-
-    public DtsCol() {
-      index = -1;
-    }
-
-    @Override
-    public String toString() {
-      String szRet = "col:";
-      szRet += name != null ? name : "??name??";
-      szRet += index >= 0 ? String.format("(%d)", index) : "(?)";
-      szRet += type != null ? "[" + type + "]" : "[??type??]";
-      return szRet;
-    }
-  }
+  @Getter
+  private static String       colFmtL;
+  @Getter
+  private static String       colFmtR;
 
   @SuppressWarnings("unused")
   private Dataset             dtset;
@@ -72,7 +48,8 @@ public class DtsCols {
 
   public static void setWidthCh(int p_coWth) {
     colWidth = p_coWth;
-    s_colFmt = String.format("%%%ds ", p_coWth);
+    colFmtL = String.format("%%-%ds ", p_coWth);
+    colFmtR = String.format("%%%ds ", p_coWth);
   }
 
   public int parseColsStatement(PreparedStatement p_stmt) throws DatasetException {
@@ -104,39 +81,39 @@ public class DtsCols {
         DtsCol col = new DtsCol();
         switch (nTyp) {
           case Types.SMALLINT:
-            szFmt = String.format("%%%dd", colWidth);
+            szFmt = String.format("%%%dd ", colWidth);
             szTyp = "INTEGER";
             break;
           case Types.INTEGER:
-            szFmt = String.format("%%%dd", colWidth);
+            szFmt = String.format("%%%dd ", colWidth);
             szTyp = "INTEGER";
             break;
           case Types.VARCHAR:
-            szFmt = String.format("%%-%ds", colWidth);
+            szFmt = String.format("%%-%ds ", colWidth);
             szTyp = "VARCHAR";
             break;
           case Types.NUMERIC:
-            szFmt = String.format("%%-%ds", colWidth);
+            szFmt = String.format("%%-%ds ", colWidth);
             szTyp = "NUMERIC";
             break;
           case Types.DECIMAL:
-            szFmt = String.format("%%%d.%df", colWidth, decplace);
+            szFmt = String.format("%%%d.%df ", colWidth, decplace);
             szTyp = "DECIMAL";
             break;
           case Types.FLOAT:
-            szFmt = String.format("%%%d.%df", colWidth, decplace);
+            szFmt = String.format("%%%d.%df ", colWidth, decplace);
             szTyp = "FLOAT";
             break;
           case Types.DOUBLE:
-            szFmt = String.format("%%%d.%df", colWidth, decplace);
+            szFmt = String.format("%%%d.%df ", colWidth, decplace);
             szTyp = "DOUBLE";
             break;
           case Types.REAL:
-            szFmt = String.format("%%%d.%df", colWidth, decplace);
+            szFmt = String.format("%%%d.%df ", colWidth, decplace);
             szTyp = "REAL";
             break;
           case Types.DATE:
-            szFmt = String.format("%%%ds", 30);
+            szFmt = String.format("%%%ds ", colWidth);
             szTyp = "DATE";
             break;
           default:
@@ -192,7 +169,7 @@ public class DtsCols {
   public String getIntestazione() {
     StringBuilder sb = new StringBuilder();
     for (DtsCol col : columns) {
-      sb.append(String.format(s_colFmt, col.getName()));
+      sb.append(String.format(colFmtR, col.getName()));
     }
     return sb.toString();
   }

@@ -39,6 +39,10 @@ public class DBConnFactory {
       s_log.error("Non capisco il tipo di DB: {}", p_id);
       throw new UnsupportedOperationException("DBConnFactory() non e' singleton");
     }
+    return get(tip);
+  }
+
+  public DBConn get(EServerId tip) {
     conn = null;
     switch (tip) {
       case HSqlDB:

@@ -1,6 +1,7 @@
 package sm.clagenna.loadaass.dbsql.dtset;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,7 +10,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import sm.clagenna.loadaass.dbsql.dtset.DtsCols.DtsCol;
+import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.sys.ParseData;
 import sm.clagenna.loadaass.sys.ex.DatasetException;
 
@@ -28,7 +29,7 @@ public class DtsRow {
   }
 
   public void addRow(ResultSet p_res) throws DatasetException {
-    for (DtsCol col : dataset.getColumns()) {
+    for (DtsCol col : dataset.getColumns().getColumns()) {
       int nCol = col.getIndex() + 1;
       Object val = null;
       try {
@@ -37,8 +38,10 @@ public class DtsRow {
           case VARCHAR:
           case CHAR:
             val = p_res.getString(nCol);
-            if (dataset.getTipoServer().isDateAsString())
+            if (val != null && dataset.getTipoServer().isDateAsString()) {
               val = provaSeData(val);
+              col.setInferredDate(val != null);
+            }
             break;
 
           case BIGINT:
@@ -54,7 +57,8 @@ public class DtsRow {
             val = p_res.getDouble(nCol);
             break;
           case DATE:
-            val = p_res.getDate(nCol);
+            DBConn ldb = dataset.getDb();
+            val = ldb.getDate(p_res, nCol);
             break;
           case TIMESTAMP:
             val = p_res.getTimestamp(nCol);
@@ -95,13 +99,54 @@ public class DtsRow {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    for (DtsCol col : dataset.getColumns()) {
+    for (DtsCol col : dataset.getColumns().getColumns()) {
       Object vv = valori.get(col.getIndex());
-      String szv = "*null*";
-      if (vv != null)
-        szv = String.format(col.getFormat(), vv);
-      sb.append(szv).append(" ");
+      String szv = String.format(DtsCols.getColFmtL(), "*null*");
+      if (vv != null) {
+        //        if (vv instanceof LocalDateTime) {
+        //          szv = ParseData.s_fmtDtExif.format((TemporalAccessor) vv);
+        //          szv = szv.replace(" 00:00:00", "");
+        //        } else
+        //          szv = String.format(col.getFormat(), vv);
+        //
+        //        szv = switch ( vv) {
+        //          case Integer i ->  String.format(col.getFormat(), i);
+        //          case Timestamp ts -> ParseData.s_fmtDtExif.format(ts.toInstant());
+        //          default String.format(col.getFormat(), vv);
+        //        };
+        String szClss = vv != null ? vv.getClass().getSimpleName() : "Object";
+        switch (szClss) {
+
+          case "LocalDateTime":
+            szv = ParseData.s_fmtDtExif.format((LocalDateTime) vv);
+            szv = szv.replace(" 00:00:00", "");
+            szv = String.format(DtsCols.getColFmtR(), szv);
+            break;
+
+          case "Timestamp":
+            szv = ParseData.s_fmtDtDate.format((Timestamp) vv);
+            szv = szv.replace(" 00:00:00", "");
+            szv = String.format(DtsCols.getColFmtR(), szv);
+            break;
+
+          default:
+            szv = String.format(col.getFormat(), vv);
+            break;
+        }
+
+      }
+      sb.append(szv);
     }
     return sb.toString();
+  }
+
+  public Object getValue(String p_colNam) {
+    DtsCols cols = dataset.getColumns();
+    int indx = cols.getColIndex(p_colNam);
+    return valori.get(indx);
+  }
+
+  public List<Object> getValues() {
+    return valori;
   }
 }
