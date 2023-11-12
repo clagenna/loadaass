@@ -5,11 +5,14 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import sm.clagenna.loadaass.data.MyDate;
+import sm.clagenna.loadaass.data.MyDouble;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.sys.ParseData;
 import sm.clagenna.loadaass.sys.ex.DatasetException;
@@ -51,22 +54,27 @@ public class DtsRow {
             val = p_res.getInt(nCol);
             break;
           case FLOAT:
-            val = p_res.getFloat(nCol);
+            val = MyDouble.valueOf(p_res.getFloat(nCol));
             break;
           case DOUBLE:
-            val = p_res.getDouble(nCol);
+            val = MyDouble.valueOf(p_res.getDouble(nCol));
             break;
           case DATE:
             DBConn ldb = dataset.getDb();
             val = ldb.getDate(p_res, nCol);
+            val = MyDate.valueOf((Date) val);
             break;
           case TIMESTAMP:
             val = p_res.getTimestamp(nCol);
+            if (val instanceof Timestamp ts)
+              val = new MyDate(ts);
             break;
           case REAL:
-            val = p_res.getDouble(nCol);
+            val = MyDouble.valueOf(p_res.getDouble(nCol));
             break;
-
+          case NUMERIC:
+            val = MyDouble.valueOf(p_res.getDouble(nCol));
+            break;
           default:
             s_log.error("Non riconosco tipo della col {}", col);
         }

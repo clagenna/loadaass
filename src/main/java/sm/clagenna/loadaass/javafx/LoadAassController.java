@@ -31,6 +31,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -43,6 +44,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -71,6 +73,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   public static final String  CSZ_FXMLNAME     = "LoadAassJavaFX.fxml";
   private static final String CSZ_LOG_LEVEL    = "logLevel";
   private static final String CSZ_INTESTATARIO = "intestatario";
+  private static final String CSZ_SPLITPOS     = "splitpos";
 
   @FXML private TextField txDirFatt;
   @FXML private Button    btCercaDir;
@@ -82,6 +85,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   @FXML private CheckBox  ckOverwrite;
   @FXML private CheckBox  ckLanciaExcel;
 
+  @FXML private SplitPane                     spltPane;
   @FXML private ListView<Path>                liPdf;
   @FXML private TableView<Log4jRow>           tblView;
   @FXML private TableColumn<Log4jRow, String> colTime;
@@ -92,6 +96,8 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   private Level                               levelMin;
   @FXML private ComboBox<RecIntesta>          cbIntesta;
   private RecIntesta                          recIntesta;
+  private ResultView                          controller;
+  @FXML private ResultView                    controller2;
 
   private List<Log4jRow> m_liMsgs;
 
@@ -150,6 +156,11 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       recIntesta = intesta.get(nomeInt);
     }
     cbIntesta.getSelectionModel().select(recIntesta);
+    String szPos = props.getProperty(CSZ_SPLITPOS);
+    if (szPos != null) {
+      double dbl = Double.valueOf(szPos);
+      spltPane.setDividerPositions(dbl);
+    }
     initTblView();
   }
 
@@ -512,16 +523,29 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       s_log.error("Errore caricamento FXML {}", ResultView.CSZ_FXMLNAME, e);
       return;
     }
-    Stage stage = new Stage();
-    Scene scene = new Scene(radice, 600, 440);
-    stage.setScene(scene);
-    stage.setWidth(800);
-    stage.setHeight(600);
-    stage.initOwner(primaryStage);
-    stage.initModality(Modality.NONE);
-    stage.setTitle("Visualizza dati del DB");
+    controller = null;
+    Node nod = radice;
+    do {
+      controller = (ResultView) nod.getProperties().get("refToCntrl");
+      nod = nod.getParent();
+    } while (controller == null && nod != null);
 
-    stage.show();
+    Stage stageResults = new Stage();
+    Scene scene = new Scene(radice, 600, 440);
+    stageResults.setScene(scene);
+    stageResults.setWidth(800);
+    stageResults.setHeight(600);
+    stageResults.initOwner(primaryStage);
+    stageResults.initModality(Modality.NONE);
+    stageResults.setTitle("Visualizza dati del DB");
+    // verifica che nel FXML ci sia la dichiarazione:
+    // <userData> <fx:reference source="controller" /> </userData>
+    if (controller != null) {
+      controller.setMyScene(scene);
+      controller.initApp(props);
+    }
+
+    stageResults.show();
   }
 
   @FXML
@@ -533,6 +557,9 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   public void closeApp(AppProperties p_props) {
     p_props.setProperty(CSZ_LOG_LEVEL, levelMin.toString());
     p_props.setProperty(CSZ_INTESTATARIO, recIntesta.nome());
+    double[] pos = spltPane.getDividerPositions();
+    String szPos = String.format("%.4f", pos[0]).replace(",", ".");
+    p_props.setProperty(CSZ_SPLITPOS, szPos);
   }
 
 }
