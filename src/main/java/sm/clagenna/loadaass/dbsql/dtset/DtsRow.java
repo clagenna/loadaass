@@ -38,6 +38,7 @@ public class DtsRow {
       try {
         switch (col.getType()) {
           case NCHAR:
+          case NVARCHAR:
           case VARCHAR:
           case CHAR:
             val = p_res.getString(nCol);
@@ -52,6 +53,9 @@ public class DtsRow {
           case SMALLINT:
           case TINYINT:
             val = p_res.getInt(nCol);
+            break;
+          case DECIMAL:
+            val = MyDouble.valueOf(p_res.getDouble(nCol));
             break;
           case FLOAT:
             val = MyDouble.valueOf(p_res.getFloat(nCol));

@@ -9,7 +9,7 @@ cd /d "%curr%"
 set DBFILE=SQLaass.sqlite3
 set DT=%DATE:~6,4%-%DATE:~3,2%-%DATE:~0,2%_%TIME:~0,2%-%TIME:~3,2%-%TIME:~6,2%
 set DT=%DT: =0%
-set filOUT=SQLaass_backup_%DT%.bak
+set filOUT=SQLaass_schema_%DT%.sql
 
 :: -----------------------------------------------
 :: alla ricerca di SQLite
@@ -26,7 +26,15 @@ if "%RES2%" equ "0" goto litok
 goto fine
 
 :litok
-sqlite3.exe %DBFILE% ".dump" > %filOUT%
+:: -----------------------------------------------
+:: Lascio solo l'ultimo schema con desinenza .sql
+if not exist SQLaass_schema*.sql goto litok2
+forfiles /P . /M SQLaass_schema*.sql /C "cmd /c ren @fname.sql @fname.bak"
+
+:: -----------------------------------------------
+:: alla ricerca di SQLite
+:litok2
+sqlite3.exe %DBFILE% ".schema" > %filOUT%
 dir %filOUT%
 
 

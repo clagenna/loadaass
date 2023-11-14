@@ -3,6 +3,8 @@ package sm.clagenna.loadaass.javafx;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,21 +26,16 @@ import sm.clagenna.loadaass.sys.ex.ReadFattException;
 
 public class LoadAassMainApp extends Application implements IStartApp {
 
-  private static final Logger    s_log            = LogManager.getLogger(LoadAassMainApp.class);
-  public static final String     CSZ_MAIN_APP_CSS = "LoadAassFX.css";
-  @Getter
-  private static LoadAassMainApp inst;
+  private static final Logger            s_log            = LogManager.getLogger(LoadAassMainApp.class);
+  public static final String             CSZ_MAIN_APP_CSS = "LoadAassFX.css";
+  @Getter private static LoadAassMainApp inst;
 
-  @Getter @Setter
-  private AppProperties          props;
-  @Getter @Setter
-  private Stage                  primaryStage;
-  @Getter @Setter
-  private IStartApp              controller;
-  @Getter @Setter
-  private DBConn                 connSQL;
-  @Getter
-  private SqlServIntest          intesta;
+  @Getter @Setter private AppProperties props;
+  @Getter @Setter private Stage         primaryStage;
+  @Getter @Setter private IStartApp     controller;
+  @Getter @Setter private DBConn        connSQL;
+  @Getter private SqlServIntest         intesta;
+  List<ResultView>                      m_liResViews;
 
   public LoadAassMainApp() {
     //
@@ -87,7 +84,7 @@ public class LoadAassMainApp extends Application implements IStartApp {
       int py = props.getIntProperty(AppProperties.CSZ_PROP_POSFRAME_Y);
       int dx = props.getIntProperty(AppProperties.CSZ_PROP_DIMFRAME_X);
       int dy = props.getIntProperty(AppProperties.CSZ_PROP_DIMFRAME_Y);
-      if ( (px * py) != 0) {
+      if (px * py != 0) {
         primaryStage.setX(px);
         primaryStage.setY(py);
         primaryStage.setWidth(dx);
@@ -137,6 +134,19 @@ public class LoadAassMainApp extends Application implements IStartApp {
       controller.closeApp(prop);
 
     prop.salvaSuProperties();
+  }
+
+  public void addResView(ResultView resultView) {
+    if (m_liResViews == null)
+      m_liResViews = new ArrayList<>();
+    m_liResViews.add(resultView);
+  }
+
+  public void removeResView(ResultView resultView) {
+    if (m_liResViews == null || m_liResViews.size() == 0)
+      return;
+    if (m_liResViews.contains(resultView))
+      m_liResViews.remove(resultView);
   }
 
 }

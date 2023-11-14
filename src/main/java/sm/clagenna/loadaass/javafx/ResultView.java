@@ -96,6 +96,7 @@ public class ResultView implements Initializable, IStartApp {
   @Override
   public void initApp(AppProperties p_props) {
     m_appmain = LoadAassMainApp.getInst();
+    m_appmain.addResView(this);
     m_mainProps = m_appmain.getProps();
     m_db = m_appmain.getConnSQL();
     try {
@@ -113,12 +114,8 @@ public class ResultView implements Initializable, IStartApp {
     impostaForma(m_mainProps);
     if (lstage != null)
       lstage.setOnCloseRequest(e -> {
-        windowClosing();
+        closeApp(m_mainProps);
       });
-  }
-
-  private void windowClosing() {
-    closeApp(m_mainProps);
   }
 
   private void impostaForma(AppProperties p_props) {
@@ -148,11 +145,12 @@ public class ResultView implements Initializable, IStartApp {
 
   @Override
   public void closeApp(AppProperties p_props) {
+    m_appmain.removeResView(this);
     if (myScene == null) {
       s_log.error("Il campo Scene risulta = **null**");
       return;
     }
-
+    
     double px = myScene.getWindow().getX();
     double py = myScene.getWindow().getY();
     double dx = myScene.getWindow().getWidth();
@@ -167,6 +165,7 @@ public class ResultView implements Initializable, IStartApp {
     p_props.setProperty(CSZ_PROP_DIMRESVIEW_X, (int) dx);
     p_props.setProperty(CSZ_PROP_DIMRESVIEW_Y, (int) dy);
     p_props.setProperty(CSZ_PROP_SPLITPOS, szDiv);
+    
   }
 
   private void caricaComboTitolare() {
