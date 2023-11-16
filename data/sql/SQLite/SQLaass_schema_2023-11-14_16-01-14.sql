@@ -1,3 +1,9 @@
+CREATE TABLE Intesta (
+    idIntesta   INTEGER PRIMARY KEY,
+    NomeIntesta NVARCHAR (64),
+    dirfatture  NVARCHAR (128)
+);
+
 CREATE TABLE EEFattura (
     idEEFattura      INTEGER PRIMARY KEY,
     idIntesta        INT,
@@ -11,7 +17,8 @@ CREATE TABLE EEFattura (
     CredAttKwh       INT,
     addizFER         MONEY,
     impostaQuiet     MONEY,
-    TotPagare        MONEY
+    TotPagare        MONEY,
+	FOREIGN KEY(idIntesta) REFERENCES Intesta(idIntesta)
 );
 CREATE TABLE EELettura (
     idLettura     INTEGER PRIMARY KEY,
@@ -21,18 +28,21 @@ CREATE TABLE EELettura (
     TipoLettura   VARCHAR (16),
     LettDtAttuale DATE,
     LettAttuale   INT,
-    LettConsumo   FLOAT
+    LettConsumo   FLOAT,
+	FOREIGN KEY(idEEFattura) REFERENCES EEFattura(idEEFattura)
 );
-CREATE TABLE GASConsumo (
-    idConsumo    INTEGER PRIMARY KEY,
-    idGASFattura INT                   NOT NULL,
-    tipoSpesa    VARCHAR (4),
-    dtIniz       DATE,
-    dtFine       DATE,
-    prezzoUnit   DECIMAL (10, 6),
-    quantita     DECIMAL (8, 2),
-    importo      MONEY
+CREATE TABLE EEConsumo (
+    idEEConsumo INTEGER         PRIMARY KEY,
+    idEEFattura INT             NOT NULL,
+    tipoSpesa   TEXT (2),
+    dtIniz      DATE,
+    dtFine      DATE,
+    prezzoUnit  DECIMAL (10, 6),
+    quantita    DECIMAL (8, 2),
+    importo     DECIMAL (8,2),
+	FOREIGN KEY(idEEFattura) REFERENCES EEFattura(idEEFattura)
 );
+
 CREATE TABLE GASFattura (
     idGASFattura        INTEGER PRIMARY KEY,
     idIntesta           INT,
@@ -42,8 +52,6 @@ CREATE TABLE GASFattura (
     fattNrNumero        NVARCHAR (50),
     periodFattDtIniz    DATE,
     periodFattDtFine    DATE,
-    periodCongDtIniz    DATE,
-    periodCongDtFine    DATE,
     periodEffDtIniz     DATE,
     periodEffDtFine     DATE,
     periodAccontoDtIniz DATE,
@@ -51,7 +59,8 @@ CREATE TABLE GASFattura (
     accontoBollPrec     MONEY,
     addizFER            MONEY,
     impostaQuiet        MONEY,
-    TotPagare           MONEY
+    TotPagare           MONEY,
+	FOREIGN KEY(idIntesta) REFERENCES Intesta(idIntesta)
 );
 CREATE TABLE GASLettura (
     idLettura    INTEGER PRIMARY KEY,
@@ -59,18 +68,21 @@ CREATE TABLE GASLettura (
     lettQtaMc    INT,
     LettData     DATE,
     TipoLett     VARCHAR (16),
-    Consumofatt  FLOAT
+    Consumofatt  FLOAT,
+	FOREIGN KEY(idGASFattura) REFERENCES GASFattura(idGASFattura)
 );
-CREATE TABLE H2OConsumo (
+CREATE TABLE GASConsumo (
     idConsumo    INTEGER PRIMARY KEY,
-    idH2OFattura INT                   NOT NULL,
+    idGASFattura INT                   NOT NULL,
     tipoSpesa    VARCHAR (4),
     dtIniz       DATE,
     dtFine       DATE,
     prezzoUnit   DECIMAL (10, 6),
     quantita     DECIMAL (8, 2),
-    importo      MONEY
+    importo      MONEY,
+	FOREIGN KEY(idGASFattura) REFERENCES GASFattura(idGASFattura)
 );
+
 CREATE TABLE H2OFattura (
     idH2OFattura        INTEGER PRIMARY KEY,
     idIntesta           INT,
@@ -87,7 +99,8 @@ CREATE TABLE H2OFattura (
     assicurazione       MONEY,
     impostaQuiet        MONEY,
     RestituzAccPrec     MONEY,
-    TotPagare           MONEY
+    TotPagare           MONEY,
+	FOREIGN KEY(idIntesta) REFERENCES Intesta(idIntesta)
 );
 CREATE TABLE H2OLettura (
     idLettura    INTEGER PRIMARY KEY,
@@ -95,13 +108,32 @@ CREATE TABLE H2OLettura (
     lettQtaMc    INT,
     LettData     DATE,
     TipoLett     VARCHAR (16),
-    Consumofatt  FLOAT
+    Consumofatt  FLOAT,
+	FOREIGN KEY(idH2OFattura) REFERENCES H2OFattura(idH2OFattura)
 );
-CREATE TABLE Intesta (
-    idIntesta   INTEGER PRIMARY KEY,
-    NomeIntesta NVARCHAR (64),
-    dirfatture  NVARCHAR (128)
+CREATE TABLE H2OConsumo (
+    idConsumo    INTEGER PRIMARY KEY,
+    idH2OFattura INT                   NOT NULL,
+    tipoSpesa    VARCHAR (4),
+    dtIniz       DATE,
+    dtFine       DATE,
+    prezzoUnit   DECIMAL (10, 6),
+    quantita     DECIMAL (8, 2),
+    importo      MONEY,
+	FOREIGN KEY(idH2OFattura) REFERENCES H2OFattura(idH2OFattura)
 );
+
+CREATE TABLE prova (
+	chiave INTEGER PRIMARY KEY NOT NULL, 
+	stringa TEXT, 
+	intero INTEGER, 
+	prezzo REAL, 
+	dataoggi TEXT, 
+    percento REAL, 
+    flottante REAL
+) STRICT;
+
+
 CREATE VIEW EEConsumoAnnuo AS
     SELECT NomeIntesta,
            CAST (dtIniz AS INT) AS anno,
@@ -110,17 +142,7 @@ CREATE VIEW EEConsumoAnnuo AS
      GROUP BY NomeIntesta,
               CAST (dtIniz AS INT)
 /* EEConsumoAnnuo(NomeIntesta,anno,totAnno) */;
-CREATE TABLE EEConsumo (
-    idEEConsumo INTEGER         PRIMARY KEY,
-    idEEFattura INT             NOT NULL,
-    tipoSpesa   TEXT (2),
-    dtIniz      DATE,
-    dtFine      DATE,
-    prezzoUnit  DECIMAL (10, 6),
-    quantita    DECIMAL (8, 2),
-    importo     DECIMAL (8,2)
-);
-CREATE TABLE prova (chiave INTEGER PRIMARY KEY NOT NULL, stringa TEXT, intero INTEGER, prezzo REAL, dataoggi TEXT, percento REAL) STRICT;
+
 CREATE VIEW EEConsumoMensPivot AS SELECT te.NomeIntesta,
        cs.dtIniz,
 --       cast(cs.dtIniz as int) as anno,

@@ -1,5 +1,11 @@
 package sm.clagenna.loadaass.data;
 
+/**
+ * Classe ausiliaria per verificare la presenza di parole/frasi all'interno di
+ * un {@link TaggedValue}. Se la parola o frase e' contorniata da apice singolo
+ * ( &apos; ) allora il match sara' solo exact (vedi
+ * {@link #verificaCivetta(TaggedValue)}
+ */
 public class Civetta {
   private String  m_civetta;
   private boolean m_exact;
@@ -8,6 +14,11 @@ public class Civetta {
     setCivetta(p_sz);
   }
 
+  /**
+   * Controlla che il {@link TaggedValue} passato contenga il valore della civetta 
+   * @param p_cmp TaggedValue
+   * @return true se la civetta e' inclusa nel {@link TaggedValue}
+   */
   public boolean verificaCivetta(TaggedValue p_cmp) {
     if (m_civetta == null || m_civetta.equals("*"))
       return false;
@@ -21,7 +32,7 @@ public class Civetta {
     m_civetta = p_sz;
     if (p_sz.trim().startsWith("'")) {
       m_exact = true;
-      m_civetta = p_sz.replaceAll("'", "");
+      m_civetta = p_sz.replace("'", "");
     }
   }
 
