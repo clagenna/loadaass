@@ -16,21 +16,16 @@ import lombok.Getter;
 import sm.clagenna.loadaass.sys.ex.DatasetException;
 
 public class DtsCols {
-  private static final Logger s_log    = LogManager.getLogger(DtsCols.class);
-  @Getter
-  private static int          colWidth = 16;
-  @Getter
-  private static String       colFmtL;
-  @Getter
-  private static String       colFmtR;
+  private static final Logger   s_log    = LogManager.getLogger(DtsCols.class);
+  @Getter private static int    colWidth = 16;
+  @Getter private static String colFmtL;
+  @Getter private static String colFmtR;
 
-  @SuppressWarnings("unused")
-  private Dataset             dtset;
+  @SuppressWarnings("unused") private Dataset dtset;
 
-  @Getter
-  private List<DtsCol>        columns;
-  private Map<String, DtsCol> nomecol;
-  private StringBuilder       sbIntesta;
+  @Getter private List<DtsCol> columns;
+  private Map<String, DtsCol>  nomecol;
+  private StringBuilder        sbIntesta;
 
   static {
     DtsCols.setWidthCh(colWidth);
@@ -88,6 +83,8 @@ public class DtsCols {
             szFmt = String.format("%%%dd ", colWidth);
             szTyp = "INTEGER";
             break;
+          case Types.NVARCHAR:
+          case Types.LONGVARCHAR:
           case Types.VARCHAR:
             szFmt = String.format("%%-%ds ", colWidth);
             szTyp = "VARCHAR";

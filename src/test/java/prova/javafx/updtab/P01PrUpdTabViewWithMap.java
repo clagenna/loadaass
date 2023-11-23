@@ -1,19 +1,24 @@
-package prova.javafx;
+package prova.javafx.updtab;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import sm.clagenna.loadaass.dbsql.DBConn;
@@ -25,14 +30,22 @@ import sm.clagenna.loadaass.dbsql.dtset.DtsRow;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
 
-public class P08Dataset2TableView extends Application {
-  private static final String     CSZ_FILE_PROPERTIES = "loadAass.properties";
-  private AppProperties           m_prop;
-  private TableView<List<Object>> tableview;
-  private DBConn                  m_db;
-  private Dataset                 m_dts;
+/**
+ * Vedi <a href=
+ * "https://docs.oracle.com/javafx/2/ui_controls/table-view.htm#:~:text=Editing%20Data%20in%20the%20Table,help%20of%20the%20TextFieldTableCell%20class."
+ * > sito</a>
+ */
+public class P01PrUpdTabViewWithMap extends Application {
+  private static final String CSZ_FILE_PROPERTIES = "loadAass.properties";
 
-  public P08Dataset2TableView() {
+  private TableView<List<Object>> tableview;
+
+  private AppProperties                     m_prop;
+  private DBConn                            m_db;
+  private Dataset                           m_dts;
+  private Map<String, SimpleStringProperty> m_mapCols;
+
+  public P01PrUpdTabViewWithMap() {
     //
   }
 
@@ -41,6 +54,7 @@ public class P08Dataset2TableView extends Application {
     openDB();
     openDataset();
     creaTableView();
+    creaMapFields();
     fillTableView();
   }
 
@@ -76,14 +90,8 @@ public class P08Dataset2TableView extends Application {
         + "       quantita," //
         + "       importo" //
         + "  FROM EEConsumo;";
-    szQry = "SELECT chiave," //
-        + "       stringa," //
-        + "       intero," //
-        + "       prezzo," //
-        + "       dataoggi," //
-        + "       percento" //
+    szQry = "SELECT *" //
         + "  FROM prova;";
-    szQry = m_prop.getProperty("QRY.EE.comsumo");
 
     try (Dataset dtset = new Dataset(m_db)) {
       if ( !dtset.executeQuery(szQry)) {
@@ -97,13 +105,24 @@ public class P08Dataset2TableView extends Application {
   }
 
   private void creaTableView() {
+    //
+
+  }
+
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  private void creaMapFields() {
     DtsCols cols = m_dts.getColumns();
+    m_mapCols = new HashMap<>();
     tableview = new TableView<>();
     int k = 0;
     for (DtsCol col : cols.getColumns()) {
       final int j = k++;
-      String szColNam = col.getName();
+      final String szColNam = col.getName();
+      SimpleStringProperty colTab = new SimpleStringProperty(szColNam);
+      m_mapCols.put(szColNam, colTab);
+
       String cssAlign = "-fx-alignment: center-left;";
+      int colWdth = 100;
       switch (col.getType()) {
         case BIGINT:
         case DATE:
@@ -114,22 +133,36 @@ public class P08Dataset2TableView extends Application {
         case NUMERIC:
         case REAL:
           cssAlign = "-fx-alignment: center-right;";
+          colWdth = 50;
           break;
         default:
           break;
       }
-      TableColumn<List<Object>, Object> tbcol = new TableColumn<>(szColNam);
-      tbcol.setCellValueFactory(param -> new SimpleObjectProperty<Object>(formattaCella(param.getValue().get(j))));
+      TableColumn<List<Object>, String> tbcol = new TableColumn<>(szColNam);
       tbcol.setStyle(cssAlign);
+      tbcol.setMinWidth(colWdth);
+      // tbcol.setCellValueFactory(new PropertyValueFactory<List<Object>, String>(szColNam));
+      tbcol.setCellValueFactory(riga -> {
+        List<Object> setto = riga.getValue();
+        Object val = setto.get(j);
+        System.out.printf("P01PrUpdTabViewWithMap.creaMapFields(%s)", val);
+        return new ReadOnlyObjectWrapper(val);
+      });
+
+      tbcol.setCellFactory(TextFieldTableCell.forTableColumn());
+      tbcol.setOnEditCommit(ev -> cambiaCampo(ev, szColNam));
       tableview.getColumns().add(tbcol);
     }
-
   }
 
-  private Object formattaCella(Object p_o) {
-    if (p_o == null)
-      return "**null**";
-    return p_o;
+  private Object cambiaCampo(CellEditEvent<List<Object>, String> ev, String szColNam) {
+    String val = ev.getNewValue();
+    TableView<List<Object>> tbl = ev.getTableView();
+    int k = ev.getTablePosition().getRow();
+    Object rec = tbl.getItems().get(k);
+    // TODO cambiare il valore del campo in rec
+    System.out.printf("P01PrUpdTabView.cambiaCampo(%s=%s)\trec={%s}\n", szColNam, val, rec.getClass().getSimpleName());
+    return null;
   }
 
   private void fillTableView() {
@@ -144,11 +177,8 @@ public class P08Dataset2TableView extends Application {
 
   @Override
   public void start(Stage stage) throws Exception {
-
     doTheJob();
-
     Scene scene = new Scene(tableview);
-
     stage.setScene(scene);
     stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
       @Override

@@ -29,10 +29,10 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
+import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.data.TableViewFiller;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
-import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.IStartApp;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
@@ -55,6 +55,8 @@ public class ResultView implements Initializable, IStartApp {
       + "SELECT DISTINCT annoComp FROM GASFattura"                                        //
       + " UNION "                                                                         //
       + "SELECT DISTINCT annoComp FROM H2OFattura;";
+  private static final String        QRY_ALLVIEWS          = ""                           //
+      + "SELECT name FROM sys.views";
 
   @FXML private SplitPane            spltPane;
   @FXML private Button               btCerca;
@@ -109,13 +111,76 @@ public class ResultView implements Initializable, IStartApp {
 
     caricaComboTitolare();
     caricaComboAnno();
-    caricaComboQueries();
+    // caricaComboQueries();
+    caricaComboQueriesFromDB();
 
     impostaForma(m_mainProps);
     if (lstage != null)
       lstage.setOnCloseRequest(e -> {
         closeApp(m_mainProps);
       });
+  }
+
+  private void caricaComboTitolare() {
+    SqlServIntest intesta = m_appmain.getSqlIntesta();
+    List<RecIntesta> liInte = intesta.getList();
+    liInte.add(0, (RecIntesta) null);
+    cbIntesta.getItems().addAll(liInte);
+  }
+
+  private void caricaComboAnno() {
+    Connection conn = m_db.getConn();
+    List<Integer> liAnno = new ArrayList<>();
+    liAnno.add((Integer) null);
+    try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(QRY_ANNOCOMP)) {
+      while (rs.next()) {
+        int anno = rs.getInt(1);
+        liAnno.add(anno);
+      }
+      cbAnnoComp.getItems().addAll(liAnno);
+    } catch (SQLException e) {
+      s_log.error("Query {}; err={}", CSZ_FXMLNAME, e.getMessage(), e);
+    }
+  
+  }
+
+  @SuppressWarnings("unused")
+  private void caricaComboQueries() {
+    m_mapQry = new HashMap<>();
+    List<String> liQry = new ArrayList<>();
+    Set<Object> keys = m_prQries.getProperties().keySet();
+    for (Object k : keys) {
+      String szKey = k.toString();
+      if ( !szKey.startsWith("QRY."))
+        continue;
+      String szDiz = szKey.substring(4).replace('.', ' ');
+      m_mapQry.put(szDiz, szKey);
+      liQry.add(szDiz);
+    }
+    cbQuery.getItems().addAll(liQry);
+  }
+
+  private void caricaComboQueriesFromDB() {
+    Connection conn = m_db.getConn();
+    m_mapQry = new HashMap<>();
+    List<String> liQry = new ArrayList<>();
+    liQry.add((String) null);
+    try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(QRY_ALLVIEWS)) {
+      while (rs.next()) {
+        String szViewName = rs.getString(1);
+        if ( !( szViewName.startsWith("EE")  || //
+                szViewName.startsWith("GAS")  || //
+                szViewName.startsWith("H2O")))
+          continue;
+        liQry.add(szViewName);
+        m_mapQry.put(szViewName, szViewName);
+        String szQry = String.format("SELECT * FROM %s WHERE 1=1", szViewName);
+        m_prQries.getProperties().put(szViewName, szQry);
+      }
+      cbQuery.getItems().addAll(liQry);
+    } catch (SQLException e) {
+      s_log.error("Query {}; err={}", CSZ_FXMLNAME, e.getMessage(), e);
+    }
   }
 
   private void impostaForma(AppProperties p_props) {
@@ -168,44 +233,6 @@ public class ResultView implements Initializable, IStartApp {
     
   }
 
-  private void caricaComboTitolare() {
-    SqlServIntest intesta = m_appmain.getIntesta();
-    List<RecIntesta> liInte = intesta.getList();
-    liInte.add(0, (RecIntesta) null);
-    cbIntesta.getItems().addAll(liInte);
-  }
-
-  private void caricaComboAnno() {
-    Connection conn = m_db.getConn();
-    List<Integer> liAnno = new ArrayList<>();
-    liAnno.add((Integer) null);
-    try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(QRY_ANNOCOMP)) {
-      while (rs.next()) {
-        int anno = rs.getInt(1);
-        liAnno.add(anno);
-      }
-      cbAnnoComp.getItems().addAll(liAnno);
-    } catch (SQLException e) {
-      s_log.error("Query {}; err={}", CSZ_FXMLNAME, e.getMessage(), e);
-    }
-
-  }
-
-  private void caricaComboQueries() {
-    m_mapQry = new HashMap<>();
-    List<String> liQry = new ArrayList<>();
-    Set<Object> keys = m_prQries.getProperties().keySet();
-    for (Object k : keys) {
-      String szKey = k.toString();
-      if ( !szKey.startsWith("QRY."))
-        continue;
-      String szDiz = szKey.substring(4).replace('.', ' ');
-      m_mapQry.put(szDiz, szKey);
-      liQry.add(szDiz);
-    }
-    cbQuery.getItems().addAll(liQry);
-  }
-
   @FXML
   void cbIntestaSel(ActionEvent event) {
     m_fltrIntesta = cbIntesta.getSelectionModel().getSelectedItem();
@@ -223,7 +250,7 @@ public class ResultView implements Initializable, IStartApp {
     String szK = cbQuery.getSelectionModel().getSelectedItem();
     String szNam = m_mapQry.get(szK);
     m_qry = m_prQries.getProperty(szNam);
-    System.out.println("ResultView.cbQuerySel():" + szK);
+    // System.out.println("ResultView.cbQuerySel():" + szK);
   }
 
   @FXML
@@ -242,7 +269,7 @@ public class ResultView implements Initializable, IStartApp {
     String szRight = m_qry.substring(n + CSZ_QRY_TRUE.length());
     String szFiltr = "";
     if (m_fltrIntesta != null) {
-      szFiltr += String.format(" AND NomeIntesta='%s'", m_fltrIntesta.nome());
+      szFiltr += String.format(" AND NomeIntesta='%s'", m_fltrIntesta.getNomeIntesta());
     }
     if (m_fltrAnnoComp != null) {
       szFiltr += String.format(" AND annoComp=%d", m_fltrAnnoComp);

@@ -55,9 +55,9 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
-import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 import sm.clagenna.loadaass.main.GestPDFFatt;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.ILog4jReader;
@@ -97,7 +97,8 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   @FXML private ComboBox<RecIntesta>          cbIntesta;
   private RecIntesta                          recIntesta;
   private ResultView                          controller;
-  @FXML private ResultView                    controller2;
+  private ViewRecIntesta                      cntrlIntesta;
+  // @FXML private ResultView                    controller2;
 
   private List<Log4jRow> m_liMsgs;
 
@@ -147,7 +148,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       if (sz != null)
         levelMin = Level.toLevel(sz);
     }
-    SqlServIntest intesta = LoadAassMainApp.getInst().getIntesta();
+    SqlServIntest intesta = LoadAassMainApp.getInst().getSqlIntesta();
     List<RecIntesta> liInte = intesta.getList();
     cbIntesta.getItems().addAll(liInte);
     recIntesta = intesta.get(1);
@@ -485,8 +486,8 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   @FXML
   void cbIntesta(ActionEvent event) {
     recIntesta = cbIntesta.getSelectionModel().getSelectedItem();
-    s_log.info("Selezionato intestatario: {}", recIntesta.nome());
-    Path pth = recIntesta.dirFatture();
+    s_log.info("Selezionato intestatario: {}", recIntesta.getNomeIntesta());
+    Path pth = Paths.get(recIntesta.getDirFatture());
     settaFileIn(pth, true, true);
   }
 
@@ -544,8 +545,47 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       controller.setMyScene(scene);
       controller.initApp(props);
     }
-
     stageResults.show();
+  }
+
+  @FXML
+  void mnuEditIntestaClick(ActionEvent event) {
+    System.out.println("LoadAassController.mnuEditIntestaClick()");
+    LoadAassMainApp mainApp = LoadAassMainApp.getInst();
+    Stage primaryStage = mainApp.getPrimaryStage();
+
+    URL url = getClass().getResource(ViewRecIntesta.CSZ_FXMLNAME);
+    if (url == null)
+      url = getClass().getClassLoader().getResource(ViewRecIntesta.CSZ_FXMLNAME);
+    Parent radice;
+    try {
+      radice = FXMLLoader.load(url);
+    } catch (IOException e) {
+      s_log.error("Errore caricamento FXML {}", ViewRecIntesta.CSZ_FXMLNAME, e);
+      return;
+    }
+    cntrlIntesta = null;
+    Node nod = radice;
+    do {
+      cntrlIntesta = (ViewRecIntesta) nod.getProperties().get("refToCntrl");
+      nod = nod.getParent();
+    } while (cntrlIntesta == null && nod != null);
+
+    Stage stageViewIntes = new Stage();
+    Scene scene = new Scene(radice, 600, 440);
+    stageViewIntes.setScene(scene);
+    stageViewIntes.setWidth(800);
+    stageViewIntes.setHeight(600);
+    stageViewIntes.initOwner(primaryStage);
+    stageViewIntes.initModality(Modality.APPLICATION_MODAL);
+    stageViewIntes.setTitle("Gestione degli Intestatari");
+    // verifica che nel FXML ci sia la dichiarazione:
+    // <userData> <fx:reference source="controller" /> </userData>
+    if (cntrlIntesta != null) {
+      cntrlIntesta.setMyScene(scene);
+      cntrlIntesta.initApp(props);
+    }
+    stageViewIntes.show();
   }
 
   @FXML
@@ -556,7 +596,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   @Override
   public void closeApp(AppProperties p_props) {
     p_props.setProperty(CSZ_LOG_LEVEL, levelMin.toString());
-    p_props.setProperty(CSZ_INTESTATARIO, recIntesta.nome());
+    p_props.setProperty(CSZ_INTESTATARIO, recIntesta.getNomeIntesta());
     double[] pos = spltPane.getDividerPositions();
     String szPos = String.format("%.4f", pos[0]).replace(",", ".");
     p_props.setProperty(CSZ_SPLITPOS, szPos);

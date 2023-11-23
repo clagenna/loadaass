@@ -13,96 +13,96 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.TaggedValue;
 import sm.clagenna.loadaass.data.ValoreByTag;
-import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 import sm.clagenna.loadaass.enums.ETipoEEConsumo;
 import sm.clagenna.loadaass.enums.ETipoLettProvvenienza;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class SqlServToEE extends SqlServBase {
 
-  private static final Logger s_log             = LogManager.getLogger(SqlServToEE.class);
+  private static final Logger s_log = LogManager.getLogger(SqlServToEE.class);
 
-  private static final String QRY_ins_Fattura   = ""                                      //
-      + "INSERT INTO EEFattura"                                                           //
-      + "           (idIntesta"                                                           //
-      + "           ,annoComp"                                                            //
-      + "           ,DataEmiss"                                                           //
-      + "           ,fattNrAnno"                                                          //
-      + "           ,fattNrNumero"                                                        //
-      + "           ,periodFattDtIniz"                                                    //
-      + "           ,periodFattDtFine"                                                    //
-      + "           ,CredPrecKwh"                                                         //
-      + "           ,CredAttKwh"                                                          //
-      + "           ,addizFER"                                                            //
-      + "           ,impostaQuiet"                                                        //
-      + "           ,TotPagare)"                                                          //
-      + "     VALUES"                                                                     //
-      + "           (?"                                                                   // <annoComp, int,>"
-      + "           ,?"                                                                   // <DataEmiss, date,>"
-      + "           ,?"                                                                   // <DataEmiss, date,>"
-      + "           ,?"                                                                   // <fattNrAnno, int,>"
-      + "           ,?"                                                                   // <fattNrNumero, nvarchar(50),>"
-      + "           ,?"                                                                   // <periodFattDtIniz, date,>"
-      + "           ,?"                                                                   // <periodFattDtFine, date,>"
-      + "           ,?"                                                                   // <CredPrecKwh, int,>"
-      + "           ,?"                                                                   // <CredAttKwh, int,>"
-      + "           ,?"                                                                   // <addizFER, money,>"
-      + "           ,?"                                                                   // <impostaQuiet, money,>"
-      + "           ,?)";                                                                 // <TotPagare, money,>)"
+  private static final String QRY_ins_Fattura = ""       //
+      + "INSERT INTO EEFattura"                          //
+      + "           (idIntesta"                          //
+      + "           ,annoComp"                           //
+      + "           ,DataEmiss"                          //
+      + "           ,fattNrAnno"                         //
+      + "           ,fattNrNumero"                       //
+      + "           ,periodFattDtIniz"                   //
+      + "           ,periodFattDtFine"                   //
+      + "           ,CredPrecKwh"                        //
+      + "           ,CredAttKwh"                         //
+      + "           ,addizFER"                           //
+      + "           ,impostaQuiet"                       //
+      + "           ,TotPagare)"                         //
+      + "     VALUES"                                    //
+      + "           (?"                                  // <annoComp, int,>"
+      + "           ,?"                                  // <DataEmiss, date,>"
+      + "           ,?"                                  // <DataEmiss, date,>"
+      + "           ,?"                                  // <fattNrAnno, int,>"
+      + "           ,?"                                  // <fattNrNumero, nvarchar(50),>"
+      + "           ,?"                                  // <periodFattDtIniz, date,>"
+      + "           ,?"                                  // <periodFattDtFine, date,>"
+      + "           ,?"                                  // <CredPrecKwh, int,>"
+      + "           ,?"                                  // <CredAttKwh, int,>"
+      + "           ,?"                                  // <addizFER, money,>"
+      + "           ,?"                                  // <impostaQuiet, money,>"
+      + "           ,?)";                                // <TotPagare, money,>)"
   private PreparedStatement   m_stmt_ins_fattura;
 
-  private static final String QRY_Fattura       = ""                                      //
-      + "SELECT idEEFattura   FROM EEFattura"                                             //
-      + " WHERE DataEmiss = ?"                                                            //
+  private static final String QRY_Fattura = ""     //
+      + "SELECT idEEFattura   FROM EEFattura"      //
+      + " WHERE DataEmiss = ?"                     //
       + "   AND idIntesta = ?";
   private PreparedStatement   m_stmt_cerca_fattura;
 
-  private static final String QRY_ins_Consumo   = ""                                      //
-      + "INSERT INTO EEConsumo"                                                           //
-      + "           (idEEFattura"                                                         //
-      + "           ,tipoSpesa"                                                           //
-      + "           ,dtIniz"                                                              //
-      + "           ,dtFine"                                                              //
-      + "           ,prezzoUnit"                                                          //
-      + "           ,quantita"                                                            //
-      + "           ,importo)"                                                            //
-      + "     VALUES"                                                                     //
-      + "           (?"                                                                   // <idEEFattura, int,>"
-      + "           ,?"                                                                   // <tipoSpesa, nvarchar(2),>"
-      + "           ,?"                                                                   // <dtIniz, date,>"
-      + "           ,?"                                                                   // <dtFine, date,>"
-      + "           ,?"                                                                   // <prezzoUnit, decimal(10,6),>"
-      + "           ,?"                                                                   // <quantita, decimal(8,2),>"
-      + "           ,?)";                                                                 // <importo, money,>)";
+  private static final String QRY_ins_Consumo = ""      //
+      + "INSERT INTO EEConsumo"                         //
+      + "           (idEEFattura"                       //
+      + "           ,tipoSpesa"                         //
+      + "           ,dtIniz"                            //
+      + "           ,dtFine"                            //
+      + "           ,prezzoUnit"                        //
+      + "           ,quantita"                          //
+      + "           ,importo)"                          //
+      + "     VALUES"                                   //
+      + "           (?"                                 // <idEEFattura, int,>"
+      + "           ,?"                                 // <tipoSpesa, nvarchar(2),>"
+      + "           ,?"                                 // <dtIniz, date,>"
+      + "           ,?"                                 // <dtFine, date,>"
+      + "           ,?"                                 // <prezzoUnit, decimal(10,6),>"
+      + "           ,?"                                 // <quantita, decimal(8,2),>"
+      + "           ,?)";                               // <importo, money,>)";
   private PreparedStatement   m_stmt_ins_Consumo;
 
-  private static final String QRY_cerca_Consumo = ""                                      //
-      + "SELECT idEEConsumo  "                                                            //
-      + " FROM EEConsumo"                                                                 //
-      + " WHERE idEEFattura = ?"                                                          //
+  private static final String QRY_cerca_Consumo = ""   //
+      + "SELECT idEEConsumo  "                         //
+      + " FROM EEConsumo"                              //
+      + " WHERE idEEFattura = ?"                       //
       + "  AND DtIniz = ?";
   private PreparedStatement   m_stmt_cerca_consumo;
 
-  private static final String QRY_ins_Lettura   = ""                                      //
-      + "INSERT INTO EELettura"                                                           //
-      + "           (idEEFattura"                                                         //
-      + "           ,LettDtPrec"                                                          //
-      + "           ,LettPrec"                                                            //
-      + "           ,TipoLettura"                                                         //
-      + "           ,LettDtAttuale"                                                       //
-      + "           ,LettAttuale"                                                         //
-      + "           ,LettConsumo)"                                                        //
-      + "     VALUES (?,?,?,?,?,?,?)";                                                    // <LettConsumo, float,>)";
+  private static final String QRY_ins_Lettura = ""   //
+      + "INSERT INTO EELettura"                      //
+      + "           (idEEFattura"                    //
+      + "           ,LettDtPrec"                     //
+      + "           ,LettPrec"                       //
+      + "           ,TipoLettura"                    //
+      + "           ,LettDtAttuale"                  //
+      + "           ,LettAttuale"                    //
+      + "           ,LettConsumo)"                   //
+      + "     VALUES (?,?,?,?,?,?,?)";               // <LettConsumo, float,>)";
   private PreparedStatement   m_stmt_ins_Lettura;
 
-  private static final String QRY_cerca_Lettura = ""                                      //
-      + "SELECT idLettura"                                                                //
-      + " FROM EELettura"                                                                 //
-      + " WHERE idEEFattura = ?"                                                          //
-      + " AND lettDtAttuale = ?";                                                         //
+  private static final String QRY_cerca_Lettura = ""   //
+      + "SELECT idLettura"                             //
+      + " FROM EELettura"                              //
+      + " WHERE idEEFattura = ?"                       //
+      + " AND lettDtAttuale = ?";                      //
   private PreparedStatement   m_stmt_cerca_Lettura;
 
   public SqlServToEE() {
@@ -167,7 +167,7 @@ public class SqlServToEE extends SqlServBase {
     // m_stmt_cerca_fattura.set D a t e(k++, new java.sql.Date(dtEmiss.getTime()));
     conn.setStmtDate(m_stmt_cerca_fattura, k++, dtEmiss);
 
-    m_stmt_cerca_fattura.setInt(k++, reci.idIntesta());
+    m_stmt_cerca_fattura.setInt(k++, reci.getIdIntestaInt());
     setIdFattura(null);
     try (ResultSet res = m_stmt_cerca_fattura.executeQuery()) {
       while (res.next()) {
@@ -243,14 +243,14 @@ public class SqlServToEE extends SqlServBase {
     for (int i = 0; i < 3; i++) {
       Object obj = getValore(Consts.TGV_CredPrecKwh, i);
       if (obj != null && obj instanceof Integer)
-        credAnnoPrec += ((Integer) obj);
+        credAnnoPrec += (Integer) obj;
       obj = getValore(Consts.TGV_CredAttKwh, i);
       if (obj != null && obj instanceof Integer)
-        credAnnoAtt += ((Integer) obj);
+        credAnnoAtt += (Integer) obj;
     }
 
     int k = 1;
-    setVal(reci.idIntesta(), m_stmt_ins_fattura, k++, Types.INTEGER);
+    setVal(reci.getIdIntestaInt(), m_stmt_ins_fattura, k++, Types.INTEGER);
     setVal(annoComp, m_stmt_ins_fattura, k++, Types.INTEGER);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_DataEmiss, 0, k++, Types.DATE);
     setVal(fattNrAnno, m_stmt_ins_fattura, k++, Types.INTEGER);

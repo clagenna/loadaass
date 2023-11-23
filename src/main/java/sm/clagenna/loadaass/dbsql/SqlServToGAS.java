@@ -13,10 +13,10 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.TaggedValue;
 import sm.clagenna.loadaass.data.ValoreByTag;
-import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 import sm.clagenna.loadaass.enums.ETipoGASConsumo;
 import sm.clagenna.loadaass.enums.ETipoLettProvvenienza;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
@@ -155,7 +155,7 @@ public class SqlServToGAS extends SqlServBase {
     DBConn conn = getConnSql();
     conn.setStmtDate(m_stmt_cerca_fattura, k++, dtEmiss);
 
-    m_stmt_cerca_fattura.setInt(k++, reci.idIntesta());
+    m_stmt_cerca_fattura.setInt(k++, reci.getIdIntestaInt());
     setIdFattura(null);
     try (ResultSet res = m_stmt_cerca_fattura.executeQuery()) {
       while (res.next()) {
@@ -240,7 +240,7 @@ public class SqlServToGAS extends SqlServBase {
 
      */
     
-    setVal(reci.idIntesta(), m_stmt_ins_fattura, k++, Types.INTEGER);
+    setVal(reci.getIdIntestaInt(), m_stmt_ins_fattura, k++, Types.INTEGER);
     setVal(annoComp, m_stmt_ins_fattura, k++, Types.INTEGER);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_DataEmiss, 0, k++, Types.DATE);
     setVal(fattNrAnno, m_stmt_ins_fattura, k++, Types.INTEGER);

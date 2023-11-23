@@ -40,6 +40,7 @@ public class DtsRow {
           case NCHAR:
           case NVARCHAR:
           case VARCHAR:
+          case LONGVARCHAR:
           case CHAR:
             val = p_res.getString(nCol);
             if (val != null && dataset.getTipoServer().isDateAsString()) {

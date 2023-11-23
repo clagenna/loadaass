@@ -34,7 +34,7 @@ public class LoadAassMainApp extends Application implements IStartApp {
   @Getter @Setter private Stage         primaryStage;
   @Getter @Setter private IStartApp     controller;
   @Getter @Setter private DBConn        connSQL;
-  @Getter private SqlServIntest         intesta;
+  @Getter private SqlServIntest         sqlIntesta;
   List<ResultView>                      m_liResViews;
 
   public LoadAassMainApp() {
@@ -100,7 +100,7 @@ public class LoadAassMainApp extends Application implements IStartApp {
       connSQL = conFact.get(szDbType);
       connSQL.readProperties(props);
       connSQL.doConn();
-      intesta = new SqlServIntest(connSQL);
+      sqlIntesta = new SqlServIntest(connSQL);
     } catch (Exception e) {
       s_log.error("Errore apertura DB, error={}", e.getMessage(), e);
     }

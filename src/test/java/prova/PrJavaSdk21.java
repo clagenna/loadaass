@@ -47,7 +47,7 @@ public class PrJavaSdk21 {
       System.out.println("y = " + y);
       System.out.println("z = " + z);
     }
-  
+
   }
 
   @SuppressWarnings("unused")

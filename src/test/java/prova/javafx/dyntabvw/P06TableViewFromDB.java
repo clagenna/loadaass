@@ -1,4 +1,4 @@
-package prova.javafx;
+package prova.javafx.dyntabvw;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

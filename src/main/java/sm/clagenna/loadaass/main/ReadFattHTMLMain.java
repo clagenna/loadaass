@@ -13,27 +13,29 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import lombok.Getter;
 import lombok.Setter;
+import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.DBConnSQL;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
-import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 import sm.clagenna.loadaass.sys.ILog4jReader;
 import sm.clagenna.loadaass.sys.MioAppender;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
 
 public class ReadFattHTMLMain implements ILog4jReader {
-
-  private static final Logger s_log = LogManager.getLogger(ReadFattHTMLMain.class);
+  private static final Logger     s_log = LogManager.getLogger(ReadFattHTMLMain.class);
+  @Getter
+  private static ReadFattHTMLMain inst;
   @SuppressWarnings("unused")
-  private static Level        s_logLev;
+  private static Level            s_logLev;
 
-  private ParseCmdLine        m_cmdParse;
+  private ParseCmdLine  m_cmdParse;
   @Getter @Setter
-  private Level               logLevel;
+  private Level         logLevel;
   @SuppressWarnings("unused")
-  private String              m_lastLogMessage;
-  private SqlServIntest       recintesta;
+  private String        m_lastLogMessage;
+  @Getter
+  private SqlServIntest sqlIntesta;
 
   static {
     s_logLev = s_log.getLevel();
@@ -45,6 +47,7 @@ public class ReadFattHTMLMain implements ILog4jReader {
 
   public static void main(String[] args) {
     ReadFattHTMLMain app = new ReadFattHTMLMain();
+    inst = app;
     try {
       MioAppender.setLogReader(app);
       app.initCmdline(args);
@@ -79,8 +82,8 @@ public class ReadFattHTMLMain implements ILog4jReader {
     try (DBConn connSQL = new DBConnSQL()) {
       connSQL.doConn();
       gpdf.setConnSql(connSQL);
-      recintesta = new SqlServIntest(connSQL);
-      RecIntesta intes = recintesta.get(m_cmdParse.getIntesta());
+      sqlIntesta = new SqlServIntest(connSQL);
+      RecIntesta intes = sqlIntesta.get(m_cmdParse.getIntesta());
       if (intes == null)
         throw new ReadFattPropsException(String.format("L'intestatario \"%s\" non esiste nel DB", m_cmdParse.getIntesta()));
       gpdf.setRecIntesta(intes);

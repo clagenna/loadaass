@@ -8,9 +8,9 @@ import java.util.Date;
 
 import lombok.Getter;
 import lombok.Setter;
+import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.ValoreByTag;
-import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 import sm.clagenna.loadaass.enums.ETipoFatt;
 
 public abstract class SqlServBase implements ISql {

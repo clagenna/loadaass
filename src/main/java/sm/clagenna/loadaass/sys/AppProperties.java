@@ -183,12 +183,16 @@ public class AppProperties {
       ret = p_defVal;
     return ret;
   }
-
+  
   public int getIntProperty(String p_propName) {
     int nRet = -1;
     String sz = getProperty(p_propName);
-    if (Utils.isNumeric(sz))
-      nRet = Integer.parseInt(sz);
+    try {
+      if ( sz != null) 
+        nRet = Integer.parseInt(sz);
+    } catch (NumberFormatException e) {
+      // 
+    }
     return nRet;
   }
 

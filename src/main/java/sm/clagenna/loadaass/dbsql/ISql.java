@@ -4,8 +4,8 @@ import java.sql.SQLException;
 
 import org.apache.logging.log4j.Logger;
 
+import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.data.TagValFactory;
-import sm.clagenna.loadaass.dbsql.SqlServIntest.RecIntesta;
 
 public interface ISql {
 
