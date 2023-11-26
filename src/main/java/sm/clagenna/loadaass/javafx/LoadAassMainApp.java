@@ -13,6 +13,8 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import lombok.Getter;
@@ -134,6 +136,31 @@ public class LoadAassMainApp extends Application implements IStartApp {
       controller.closeApp(prop);
 
     prop.salvaSuProperties();
+  }
+
+  public void messageDialog(AlertType typ, String p_msg) {
+    Alert alert = new Alert(typ);
+    switch (typ) {
+      case INFORMATION:
+        alert.setTitle("Informa");
+        alert.setHeaderText("Ok !");
+        break;
+
+      case WARNING:
+        alert.setTitle("Attenzione");
+        alert.setHeaderText("Fai Attenzione !");
+        break;
+
+      case ERROR:
+        alert.setTitle("Errore !");
+        alert.setHeaderText("Ahi ! Ahi !");
+        break;
+
+      default:
+        break;
+    }
+    alert.setContentText(p_msg);
+    alert.showAndWait();
   }
 
   public void addResView(ResultView resultView) {

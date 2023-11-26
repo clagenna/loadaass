@@ -33,7 +33,7 @@ public class SqlServIntest {
       + " ,dirfatture=?"                                                                  //
       + " WHERE  idIntesta=?";
   private static final String QRY_ins_intesta = ""                                        //
-      + "INSERT INTO dbo.Intesta"                                                         //
+      + "INSERT INTO Intesta"                                                         //
       + " (idIntesta"                                                                     //
       + " ,NomeIntesta"                                                                   //
       + " ,dirfatture)"                                                                   //
@@ -109,7 +109,7 @@ public class SqlServIntest {
     } catch (SQLException e) {
       s_log.error("Errore insert di {}, err={}", p_newRec.getNomeIntesta(), e.getMessage(), e);
     }
-    return k;
+    return nRet;
   }
 
   public boolean isValidRecord(RecIntesta p_newRec) {

@@ -6,7 +6,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,9 +22,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,6 +30,8 @@ import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.data.TableViewFiller;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
+import sm.clagenna.loadaass.dbsql.dtset.Dataset;
+import sm.clagenna.loadaass.dbsql.dtset.Dts2Csv;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.IStartApp;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
@@ -40,51 +39,50 @@ import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
 public class ResultView implements Initializable, IStartApp {
   private static final Logger s_log = LogManager.getLogger(ResultView.class);
 
-  public static final String         CSZ_FXMLNAME          = "ResultView.fxml";
-  private static final String        CSZ_PROP_POSRESVIEW_X = "resview.x";
-  private static final String        CSZ_PROP_POSRESVIEW_Y = "resview.y";
-  private static final String        CSZ_PROP_DIMRESVIEW_X = "resview.lx";
-  private static final String        CSZ_PROP_DIMRESVIEW_Y = "resview.ly";
-  private static final String        CSZ_PROP_SPLITPOS     = "resview.splitpos";
-  private static final String        CSZ_QRY_TRUE          = "1=1";
-  private static final String        CSZ_PROP_QRIES        = "Queries.properties";
-  private static final DecimalFormat s_xfmt                = new DecimalFormat("#0.0000");
-  private static final String        QRY_ANNOCOMP          = ""                           //
-      + "SELECT DISTINCT annoComp FROM EEFattura"                                         //
-      + " UNION "                                                                         //
-      + "SELECT DISTINCT annoComp FROM GASFattura"                                        //
-      + " UNION "                                                                         //
+  public static final String  CSZ_FXMLNAME          = "ResultView.fxml";
+  private static final String CSZ_PROP_POSRESVIEW_X = "resview.x";
+  private static final String CSZ_PROP_POSRESVIEW_Y = "resview.y";
+  private static final String CSZ_PROP_DIMRESVIEW_X = "resview.lx";
+  private static final String CSZ_PROP_DIMRESVIEW_Y = "resview.ly";
+  //  private static final String        CSZ_PROP_SPLITPOS     = "resview.splitpos";
+  private static final String CSZ_QRY_TRUE   = "1=1";
+  private static final String CSZ_PROP_QRIES = "Queries.properties";
+  //  private static final DecimalFormat s_xfmt                = new DecimalFormat("#0.0000");
+  private static final String QRY_ANNOCOMP = "" //
+      + "SELECT DISTINCT annoComp FROM EEFattura" //
+      + " UNION " //
+      + "SELECT DISTINCT annoComp FROM GASFattura" //
+      + " UNION " //
       + "SELECT DISTINCT annoComp FROM H2OFattura;";
-  private static final String        QRY_ALLVIEWS          = ""                           //
-      + "SELECT name FROM sys.views";
 
-  @FXML private SplitPane            spltPane;
-  @FXML private Button               btCerca;
-  @FXML private ComboBox<RecIntesta> cbIntesta;
-  @FXML private ComboBox<Integer>    cbAnnoComp;
-  @FXML private ComboBox<String>     cbQuery;
+  @FXML
+  private ComboBox<RecIntesta> cbIntesta;
+  @FXML
+  private ComboBox<Integer>    cbAnnoComp;
+  @FXML
+  private ComboBox<String>     cbQuery;
+  @FXML
+  private Button               btCerca;
+  @FXML
+  private Button               btExportCsv;
 
-  @FXML private TextField txDtEmiss;
-  @FXML private TextField txFattNo;
-  @FXML private TextField txPeriodoFatt;
-  @FXML private TextField txTotPagare;
-  @FXML private TextField txCredPrec;
-  @FXML private TextField txCredAttuale;
-  @FXML private TextField txAddizFER;
+  @FXML
+  private TableView<List<Object>> tblview;
 
-  @FXML private TableView<List<Object>> tblview;
-
-  @Getter @Setter private Scene myScene;
-  private Stage                 lstage;
-  private AppProperties         m_prQries;
-  private LoadAassMainApp       m_appmain;
-  private AppProperties         m_mainProps;
-  private DBConn                m_db;
-  private Map<String, String>   m_mapQry;
+  @Getter @Setter
+  private Scene               myScene;
+  private Stage               lstage;
+  private AppProperties       m_prQries;
+  private LoadAassMainApp     m_appmain;
+  private AppProperties       m_mainProps;
+  private DBConn              m_db;
+  private Map<String, String> m_mapQry;
 
   private RecIntesta m_fltrIntesta;
   private Integer    m_fltrAnnoComp;
   private String     m_qry;
+
+  private TableViewFiller m_tbvf;
 
   public ResultView() {
     //
@@ -141,7 +139,7 @@ public class ResultView implements Initializable, IStartApp {
     } catch (SQLException e) {
       s_log.error("Query {}; err={}", CSZ_FXMLNAME, e.getMessage(), e);
     }
-  
+
   }
 
   @SuppressWarnings("unused")
@@ -165,12 +163,13 @@ public class ResultView implements Initializable, IStartApp {
     m_mapQry = new HashMap<>();
     List<String> liQry = new ArrayList<>();
     liQry.add((String) null);
-    try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(QRY_ALLVIEWS)) {
+    String szQryAllViews = m_db.getQueryListViews();
+    try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(szQryAllViews)) {
       while (rs.next()) {
         String szViewName = rs.getString(1);
-        if ( !( szViewName.startsWith("EE")  || //
-                szViewName.startsWith("GAS")  || //
-                szViewName.startsWith("H2O")))
+        if ( ! (szViewName.startsWith("EE") || //
+            szViewName.startsWith("GAS") || //
+            szViewName.startsWith("H2O")))
           continue;
         liQry.add(szViewName);
         m_mapQry.put(szViewName, szViewName);
@@ -204,8 +203,8 @@ public class ResultView implements Initializable, IStartApp {
       lstage.setWidth(dx);
       lstage.setHeight(dy);
     }
-    double spltPos = Double.valueOf(p_props.getProperty(CSZ_PROP_SPLITPOS));
-    spltPane.setDividerPositions(spltPos);
+    //    double spltPos = Double.valueOf(p_props.getProperty(CSZ_PROP_SPLITPOS));
+    //    spltPane.setDividerPositions(spltPos);
   }
 
   @Override
@@ -215,34 +214,34 @@ public class ResultView implements Initializable, IStartApp {
       s_log.error("Il campo Scene risulta = **null**");
       return;
     }
-    
+
     double px = myScene.getWindow().getX();
     double py = myScene.getWindow().getY();
     double dx = myScene.getWindow().getWidth();
     double dy = myScene.getWindow().getHeight();
 
-    double splPos = spltPane.getDividerPositions()[0];
+    // double splPos = spltPane.getDividerPositions()[0];
     // String szDiv = String.format("%0.6f", splPos).replace(",", ".");
-    String szDiv = s_xfmt.format(splPos).replace(",", ".");
+    // String szDiv = s_xfmt.format(splPos).replace(",", ".");
 
     p_props.setProperty(CSZ_PROP_POSRESVIEW_X, (int) px);
     p_props.setProperty(CSZ_PROP_POSRESVIEW_Y, (int) py);
     p_props.setProperty(CSZ_PROP_DIMRESVIEW_X, (int) dx);
     p_props.setProperty(CSZ_PROP_DIMRESVIEW_Y, (int) dy);
-    p_props.setProperty(CSZ_PROP_SPLITPOS, szDiv);
-    
+    // p_props.setProperty(CSZ_PROP_SPLITPOS, szDiv);
+
   }
 
   @FXML
   void cbIntestaSel(ActionEvent event) {
     m_fltrIntesta = cbIntesta.getSelectionModel().getSelectedItem();
-    System.out.println("ResultView.cbIntestaSel():" + m_fltrIntesta);
+    s_log.debug("ResultView.cbIntestaSel():" + m_fltrIntesta);
   }
 
   @FXML
   void cbAnnoCompSel(ActionEvent event) {
     m_fltrAnnoComp = cbAnnoComp.getSelectionModel().getSelectedItem();
-    System.out.println("ResultView.cbAnnoCompSel():" + m_fltrAnnoComp);
+    s_log.debug("ResultView.cbAnnoCompSel():" + m_fltrAnnoComp);
   }
 
   @FXML
@@ -250,12 +249,12 @@ public class ResultView implements Initializable, IStartApp {
     String szK = cbQuery.getSelectionModel().getSelectedItem();
     String szNam = m_mapQry.get(szK);
     m_qry = m_prQries.getProperty(szNam);
-    // System.out.println("ResultView.cbQuerySel():" + szK);
+    s_log.debug("ResultView.cbQuerySel():" + szK);
   }
 
   @FXML
   void btCercaClick(ActionEvent event) {
-    System.out.println("ResultView.btCercaClick()");
+    // System.out.println("ResultView.btCercaClick()");
     if (m_qry == null) {
       s_log.warn("Non hai selezionato una query");
       return;
@@ -275,9 +274,28 @@ public class ResultView implements Initializable, IStartApp {
       szFiltr += String.format(" AND annoComp=%d", m_fltrAnnoComp);
     }
     String szQryFltr = String.format("%s %s %s", szLeft, szFiltr, szRight);
-    TableViewFiller tbv = new TableViewFiller(tblview);
-    tblview = tbv.openQuery(szQryFltr);
+    m_tbvf = new TableViewFiller(tblview);
+    tblview = m_tbvf.openQuery(szQryFltr);
+  }
 
+  @FXML
+  void btExportCsvClick(ActionEvent event) {
+    if (m_qry == null) {
+      s_log.warn("Non hai selezionato una query");
+      return;
+    }
+    StringBuilder szFilNam = new StringBuilder().append(cbQuery.getSelectionModel().getSelectedItem());
+    if (m_fltrIntesta != null) {
+      szFilNam.append("_").append(m_fltrIntesta.getNomeIntesta());
+    }
+    if (m_fltrAnnoComp != null) {
+      szFilNam.append("_").append(m_fltrAnnoComp);
+    }
+    szFilNam.append(".csv");
+    System.out.println("ResultView.btExportCsvClick():" + szFilNam.toString());
+    Dataset dts = m_tbvf.getDataset();
+    Dts2Csv csv = new Dts2Csv(dts);
+    csv.saveFile(szFilNam.toString());
   }
 
 }

@@ -42,6 +42,10 @@ public class TableViewFiller {
     return tableview;
   }
 
+  public Dataset getDataset() {
+    return m_dts;
+  }
+
   private Dataset openDataSet() {
     m_dts = null;
     s_log.debug("Lancio query:{}", m_szQry);

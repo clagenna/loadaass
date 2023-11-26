@@ -13,23 +13,26 @@ import sm.clagenna.loadaass.enums.EServerId;
 
 public class DBConnSQL extends DBConn {
 
-  private static final Logger s_log      = LogManager.getLogger(DBConnSQL.class);
+  private static final Logger s_log = LogManager.getLogger(DBConnSQL.class);
 
   //  private static final String CSZ_DBNAME  = "aass";
   //  private static final String CSZ_SQLUSER = "sqlgianni";
   //  private static final String CSZ_SQLPSWD = "sicuelserver";
   //  private static final int    CN_SERVICE  = 1433;
   @SuppressWarnings("unused")
-  private static final String CSZ_DRIVER = "com.mysql.cj.jdbc.Driver";
-  private static final String CSZ_URL    = "jdbc:sqlserver://%s:%d;"             //
-      + "database=%s;"                                                           //
-      + "user=%s;"                                                               //
-      + "password=%s;"                                                           //
-      + "encrypt=false;"                                                         //
-      + "trustServerCertificate=false;"                                          //
+  private static final String CSZ_DRIVER   = "com.mysql.cj.jdbc.Driver";
+  private static final String CSZ_URL      = "jdbc:sqlserver://%s:%d;"   //
+      + "database=%s;"                                                   //
+      + "user=%s;"                                                       //
+      + "password=%s;"                                                   //
+      + "encrypt=false;"                                                 //
+      + "trustServerCertificate=false;"                                  //
       + "loginTimeout=10;";
-  private static final String QRY_LASTID = "select @@identity";
-  private PreparedStatement   m_stmt_lastid;
+  private static final String QRY_LASTID   = "select @@identity";
+  private static final String QRY_ALLVIEWS = ""                          //
+      + "SELECT name FROM sys.views";
+
+  private PreparedStatement m_stmt_lastid;
 
   public DBConnSQL() {
     //
@@ -95,5 +98,10 @@ public class DBConnSQL extends DBConn {
   @Override
   public Logger getLog() {
     return s_log;
+  }
+
+  @Override
+  public String getQueryListViews() {
+    return QRY_ALLVIEWS;
   }
 }

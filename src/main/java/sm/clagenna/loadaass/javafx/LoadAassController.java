@@ -34,7 +34,6 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -75,29 +74,47 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   private static final String CSZ_INTESTATARIO = "intestatario";
   private static final String CSZ_SPLITPOS     = "splitpos";
 
-  @FXML private TextField txDirFatt;
-  @FXML private Button    btCercaDir;
-  @FXML private Button    btConvPDF;
-  @FXML private Button    btShowResults;
-  @FXML private CheckBox  ckGenTXT;
-  @FXML private CheckBox  ckGenTAGs;
-  @FXML private CheckBox  ckGenHtml;
-  @FXML private CheckBox  ckOverwrite;
-  @FXML private CheckBox  ckLanciaExcel;
+  @FXML
+  private TextField txDirFatt;
+  @FXML
+  private Button    btCercaDir;
+  @FXML
+  private Button    btConvPDF;
+  @FXML
+  private Button    btShowResults;
+  @FXML
+  private CheckBox  ckGenTXT;
+  @FXML
+  private CheckBox  ckGenTAGs;
+  @FXML
+  private CheckBox  ckGenHtml;
+  @FXML
+  private CheckBox  ckOverwrite;
+  @FXML
+  private CheckBox  ckLanciaExcel;
 
-  @FXML private SplitPane                     spltPane;
-  @FXML private ListView<Path>                liPdf;
-  @FXML private TableView<Log4jRow>           tblView;
-  @FXML private TableColumn<Log4jRow, String> colTime;
-  @FXML private TableColumn<Log4jRow, String> colLev;
-  @FXML private TableColumn<Log4jRow, String> colMsg;
-  @FXML private Button                        btClearMsg;
-  @FXML private ComboBox<Level>               cbLevelMin;
-  private Level                               levelMin;
-  @FXML private ComboBox<RecIntesta>          cbIntesta;
-  private RecIntesta                          recIntesta;
-  private ResultView                          controller;
-  private ViewRecIntesta                      cntrlIntesta;
+  @FXML
+  private SplitPane                     spltPane;
+  @FXML
+  private ListView<Path>                liPdf;
+  @FXML
+  private TableView<Log4jRow>           tblView;
+  @FXML
+  private TableColumn<Log4jRow, String> colTime;
+  @FXML
+  private TableColumn<Log4jRow, String> colLev;
+  @FXML
+  private TableColumn<Log4jRow, String> colMsg;
+  @FXML
+  private Button                        btClearMsg;
+  @FXML
+  private ComboBox<Level>               cbLevelMin;
+  private Level                         levelMin;
+  @FXML
+  private ComboBox<RecIntesta>          cbIntesta;
+  private RecIntesta                    recIntesta;
+  private ResultView                    controller;
+  private ViewRecIntesta                cntrlIntesta;
   // @FXML private ResultView                    controller2;
 
   private List<Log4jRow> m_liMsgs;
@@ -444,29 +461,30 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     s_log.debug("Ricarico la lista files dal dir \"{}\"", pthDirPDF.toString());
   }
 
-  private void messageDialog(AlertType typ, String p_msg) {
-    Alert alert = new Alert(typ);
-    switch (typ) {
-      case INFORMATION:
-        alert.setTitle("Informa");
-        alert.setHeaderText("Ok !");
-        break;
-
-      case WARNING:
-        alert.setTitle("Attenzione");
-        alert.setHeaderText("Fai Attenzione !");
-        break;
-
-      case ERROR:
-        alert.setTitle("Errore !");
-        alert.setHeaderText("Ahi ! Ahi !");
-        break;
-
-      default:
-        break;
-    }
-    alert.setContentText(p_msg);
-    alert.showAndWait();
+  public void messageDialog(AlertType typ, String p_msg) {
+    LoadAassMainApp.getInst().messageDialog(typ, p_msg);
+    //    Alert alert = new Alert(typ);
+    //    switch (typ) {
+    //      case INFORMATION:
+    //        alert.setTitle("Informa");
+    //        alert.setHeaderText("Ok !");
+    //        break;
+    //
+    //      case WARNING:
+    //        alert.setTitle("Attenzione");
+    //        alert.setHeaderText("Fai Attenzione !");
+    //        break;
+    //
+    //      case ERROR:
+    //        alert.setTitle("Errore !");
+    //        alert.setHeaderText("Ahi ! Ahi !");
+    //        break;
+    //
+    //      default:
+    //        break;
+    //    }
+    //    alert.setContentText(p_msg);
+    //    alert.showAndWait();
   }
 
   public Stage getStage() {

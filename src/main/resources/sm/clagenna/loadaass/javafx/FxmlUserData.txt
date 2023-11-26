@@ -5,3 +5,13 @@
         <!-- Memorizzo il controller alla key "refToCntrl" nelle properties map -->
         <refToCntrl><fx:reference source="controller" /></refToCntrl> 
     </properties>
+
+    
+    <!-- Metodo 1) Memorizzo il controller come "userData" property -->
+	 <!-- vedi https://stackoverflow.com/questions/40754454/get-controller-instance-from-node -->
+    <userData> <fx:reference source="controller" /> </userData>
+    <properties>
+        <!-- Memorizzo il controller alla key "refToCntrl" nelle properties map -->
+        <refToCntrl><fx:reference source="controller" /></refToCntrl> 
+    </properties>
+    

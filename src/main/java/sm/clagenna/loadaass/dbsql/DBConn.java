@@ -36,6 +36,8 @@ public abstract class DBConn implements Closeable {
   public abstract EServerId getServerId();
 
   public abstract int getLastIdentity() throws SQLException;
+  
+  public abstract String getQueryListViews();
 
   /**
    * La funzione serve per suplire alla (pessima) caratteristica di SQLite3 che

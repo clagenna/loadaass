@@ -22,7 +22,9 @@ public class DBConnSQLite extends DBConn {
   // private static final String CSZ_DBNAME = "data/sql/SQLite/SQLaass.sqlite3";
   private static final String CSZ_URL = "jdbc:sqlite:%s";
 
-  private static final String QRY_LASTID = "select last_insert_rowid()";
+  private static final String QRY_LASTID   = "select last_insert_rowid()";
+  private static final String QRY_ALLVIEWS = ""                           //
+      + "SELECT name FROM sqlite_schema WHERE type = 'view';";
   private PreparedStatement   m_stmt_lastid;
 
   public DBConnSQLite() {
@@ -129,5 +131,10 @@ public class DBConnSQLite extends DBConn {
   @Override
   public Logger getLog() {
     return s_log;
+  }
+
+  @Override
+  public String getQueryListViews() {
+    return QRY_ALLVIEWS;
   }
 }
