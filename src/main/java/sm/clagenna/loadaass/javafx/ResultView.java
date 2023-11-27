@@ -1,6 +1,7 @@
 package sm.clagenna.loadaass.javafx;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -16,6 +17,7 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -34,6 +36,7 @@ import sm.clagenna.loadaass.dbsql.dtset.Dataset;
 import sm.clagenna.loadaass.dbsql.dtset.Dts2Csv;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.IStartApp;
+import sm.clagenna.loadaass.sys.Utils;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
 
 public class ResultView implements Initializable, IStartApp {
@@ -84,6 +87,8 @@ public class ResultView implements Initializable, IStartApp {
 
   private TableViewFiller m_tbvf;
 
+  private String m_CSVfile;
+
   public ResultView() {
     //
   }
@@ -117,6 +122,7 @@ public class ResultView implements Initializable, IStartApp {
       lstage.setOnCloseRequest(e -> {
         closeApp(m_mainProps);
       });
+    abilitaBottoni();
   }
 
   private void caricaComboTitolare() {
@@ -236,12 +242,14 @@ public class ResultView implements Initializable, IStartApp {
   void cbIntestaSel(ActionEvent event) {
     m_fltrIntesta = cbIntesta.getSelectionModel().getSelectedItem();
     s_log.debug("ResultView.cbIntestaSel():" + m_fltrIntesta);
+    abilitaBottoni();
   }
 
   @FXML
   void cbAnnoCompSel(ActionEvent event) {
     m_fltrAnnoComp = cbAnnoComp.getSelectionModel().getSelectedItem();
     s_log.debug("ResultView.cbAnnoCompSel():" + m_fltrAnnoComp);
+    abilitaBottoni();
   }
 
   @FXML
@@ -250,6 +258,18 @@ public class ResultView implements Initializable, IStartApp {
     String szNam = m_mapQry.get(szK);
     m_qry = m_prQries.getProperty(szNam);
     s_log.debug("ResultView.cbQuerySel():" + szK);
+    abilitaBottoni();
+  }
+
+  private void abilitaBottoni() {
+    boolean bv = Utils.isValue(m_qry);
+    btCerca.setDisable( !bv);
+    btExportCsv.setDisable( !bv);
+    if (bv) {
+      ObservableList<List<Object>> li = tblview.getItems();
+      bv = li != null && li.size() > 2;
+      btExportCsv.setDisable( !bv);
+    }
   }
 
   @FXML
@@ -276,6 +296,7 @@ public class ResultView implements Initializable, IStartApp {
     String szQryFltr = String.format("%s %s %s", szLeft, szFiltr, szRight);
     m_tbvf = new TableViewFiller(tblview);
     tblview = m_tbvf.openQuery(szQryFltr);
+    abilitaBottoni();
   }
 
   @FXML
@@ -291,11 +312,50 @@ public class ResultView implements Initializable, IStartApp {
     if (m_fltrAnnoComp != null) {
       szFilNam.append("_").append(m_fltrAnnoComp);
     }
+    LoadAassController cntrl = (LoadAassController) LoadAassMainApp.getInst().getController();
     szFilNam.append(".csv");
     System.out.println("ResultView.btExportCsvClick():" + szFilNam.toString());
     Dataset dts = m_tbvf.getDataset();
     Dts2Csv csv = new Dts2Csv(dts);
-    csv.saveFile(szFilNam.toString());
+    m_CSVfile = szFilNam.toString();
+    csv.saveFile(m_CSVfile);
+    if (cntrl.isLanciaExc())
+      lanciaExcel2();
+    abilitaBottoni();
+  }
+
+  @SuppressWarnings({ "deprecation", "unused" })
+  private void lanciaExcel() {
+    try {
+      File fi = new File(m_CSVfile);
+      String sz = fi.getAbsolutePath();
+      String szCmd = String.format("cmd /c start excel.exe \"%s\"", sz);
+      Runtime.getRuntime().exec(szCmd);
+    } catch (IOException e) {
+      s_log.error("Errore lancio Excel", e);
+      // e.printStackTrace();
+    }
+  }
+  public void lanciaExcel2() {
+    File fi = new File(m_CSVfile);
+    String sz = fi.getAbsolutePath();
+//    String szCmd = String.format("cmd /c start excel \"%s\"", sz);
+//    szCmd = String.format("\"%s\"", sz);
+    ProcessBuilder pb = new ProcessBuilder();
+    pb.command("cmd.exe", "/c", "start", "excel.exe", sz);
+    pb.redirectErrorStream(true);
+    int rc=-1;
+    try {
+      Process process = pb.start();
+      process.getInputStream().transferTo(System.out);
+      rc = process.waitFor();
+    } catch (IOException e) {
+      s_log.error("Errore lancio Excel: {}", e.getMessage(),e);
+    } catch (InterruptedException e) {
+      s_log.error("Interruzione lancio Excel: {}", e.getMessage(),e);
+    }
+    if (rc != 0)
+        throw new RuntimeException("Start Excel failed rc=" + rc);
   }
 
 }

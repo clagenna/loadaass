@@ -15,7 +15,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,16 +30,22 @@ import sm.clagenna.loadaass.sys.ex.ReadFattException;
 
 public class LoadAassMainApp extends Application implements IStartApp {
 
-  private static final Logger            s_log            = LogManager.getLogger(LoadAassMainApp.class);
-  public static final String             CSZ_MAIN_APP_CSS = "LoadAassFX.css";
-  @Getter private static LoadAassMainApp inst;
+  private static final Logger    s_log            = LogManager.getLogger(LoadAassMainApp.class);
+  public static final String     CSZ_MAIN_APP_CSS = "LoadAassFX.css";
+  @Getter
+  private static LoadAassMainApp inst;
 
-  @Getter @Setter private AppProperties props;
-  @Getter @Setter private Stage         primaryStage;
-  @Getter @Setter private IStartApp     controller;
-  @Getter @Setter private DBConn        connSQL;
-  @Getter private SqlServIntest         sqlIntesta;
-  List<ResultView>                      m_liResViews;
+  @Getter @Setter
+  private AppProperties props;
+  @Getter @Setter
+  private Stage         primaryStage;
+  @Getter @Setter
+  private IStartApp     controller;
+  @Getter @Setter
+  private DBConn        connSQL;
+  @Getter
+  private SqlServIntest sqlIntesta;
+  List<ResultView>      m_liResViews;
 
   public LoadAassMainApp() {
     //
@@ -139,7 +147,37 @@ public class LoadAassMainApp extends Application implements IStartApp {
   }
 
   public void messageDialog(AlertType typ, String p_msg) {
-    Alert alert = new Alert(typ);
+    messageDialog(typ, p_msg, ButtonType.CLOSE);
+  }
+
+  /**
+   * per abilitare il display HTML ho messo un WebView embedded nel alert pero'
+   * ho dovuto specificare <b>javafx.media,javafx.web</b>
+   *
+   * <pre>
+   * --module-path "C:/Program Files/Java/javafx-sdk-20.0.2/lib"
+   * --add-modules=javafx.swing,javafx.graphics,javafx.fxml,javafx.media,javafx.web
+   * </pre>
+   *
+   * @param typ
+   *          Il tipo di {@link AlertType}
+   * @param p_msg
+   *          Il messaggio (anche HTML) da emettere
+   * @param bt
+   *          Il tipo di {@link ButtonType}
+   */
+  public void messageDialog(AlertType typ, String p_msg, ButtonType bt) {
+    Alert alert = new Alert(typ, p_msg, bt);
+    Scene scene = primaryStage.getScene();
+    double posx = scene.getWindow().getX();
+    double posy = scene.getWindow().getY();
+    double widt = scene.getWidth();
+    double px = posx + widt / 2 - 366;
+    double py = posy + 50;
+    alert.setX(px);
+    alert.setY(py);
+    // alert.setWidth(300);
+
     switch (typ) {
       case INFORMATION:
         alert.setTitle("Informa");
@@ -159,7 +197,11 @@ public class LoadAassMainApp extends Application implements IStartApp {
       default:
         break;
     }
-    alert.setContentText(p_msg);
+    //    alert.setContentText(p_msg);
+    WebView webView = new WebView();
+    webView.getEngine().loadContent(p_msg);
+    webView.setPrefSize(300, 60);
+    alert.getDialogPane().setContent(webView);
     alert.showAndWait();
   }
 

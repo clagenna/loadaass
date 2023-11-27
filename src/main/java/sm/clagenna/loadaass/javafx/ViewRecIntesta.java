@@ -14,7 +14,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -189,11 +188,12 @@ public class ViewRecIntesta implements Initializable, IStartApp {
     String szIdInt = txIdIntesta.getText();
     String szNome = txNomeIntesta.getText();
     String szDirFatt = txDirFatture.getText();
+    var app = LoadAassMainApp.getInst();
     int len = szIdInt == null ? 0 : szIdInt.trim().length();
     len *= szNome == null ? 0 : szNome.trim().length();
     len *= szDirFatt == null ? 0 : szDirFatt.trim().length();
     if (len == 0) {
-      showAlert(AlertType.WARNING, "Manca qualche campo per aggiungere il record", ButtonType.OK);
+      app.messageDialog(AlertType.WARNING, "Manca qualche campo per aggiungere il record", ButtonType.OK);
       return null;
     }
     LoadAassMainApp fattmain = LoadAassMainApp.getInst();
@@ -202,7 +202,7 @@ public class ViewRecIntesta implements Initializable, IStartApp {
     newRec.setChanged(true);
     if ( !sqlInt.isValidRecord(newRec)) {
       String szMsg = "Non posso aggiungere questo record\nForse gia' presente ?";
-      showAlert(AlertType.WARNING, szMsg, ButtonType.OK);
+      app.messageDialog(AlertType.WARNING, szMsg, ButtonType.OK);
       return null;
     }
     table.getItems().add(newRec);
@@ -214,26 +214,27 @@ public class ViewRecIntesta implements Initializable, IStartApp {
     txDirFatture.clear();
     if (ret == 1) {
       String szMsg = "Aggiunto nuovo rec nel DB!";
-      showAlert(AlertType.INFORMATION, szMsg, ButtonType.OK);
+      app.messageDialog(AlertType.INFORMATION, szMsg, ButtonType.OK);
     }
     return null;
   }
 
-  private void showAlert(AlertType typ, String msg, ButtonType bt) {
-    Alert alert = new Alert(typ, msg, bt);
-    double posx = myScene.getWindow().getX();
-    double posy = myScene.getWindow().getY();
-    double widt = myScene.getWidth();
-    double px = posx + widt / 2 - 366;
-    double py = posy + 50;
-    alert.setX(px);
-    alert.setY(py);
-    alert.showAndWait();
-  }
+  //  private void showAlert(AlertType typ, String msg, ButtonType bt) {
+  //    Alert alert = new Alert(typ, msg, bt);
+  //    double posx = myScene.getWindow().getX();
+  //    double posy = myScene.getWindow().getY();
+  //    double widt = myScene.getWidth();
+  //    double px = posx + widt / 2 - 366;
+  //    double py = posy + 50;
+  //    alert.setX(px);
+  //    alert.setY(py);
+  //    alert.showAndWait();
+  //  }
 
   @FXML
   private Object btSaveClick(ActionEvent ev) {
-    System.out.println("ViewRecIntesta.btSaveClick()");
+    //System.out.println("ViewRecIntesta.btSaveClick()");
+    var app = LoadAassMainApp.getInst();
     ObservableList<RecIntesta> li = table.getItems();
     for (RecIntesta rec : li) {
       if (rec.isChanged()) {
@@ -244,7 +245,7 @@ public class ViewRecIntesta implements Initializable, IStartApp {
     SqlServIntest sqlInt = fattmain.getSqlIntesta();
     int ret = sqlInt.saveUpdates();
     String szMsg = String.format("Salvati %d rec nel DB", ret);
-    showAlert(AlertType.INFORMATION, szMsg, ButtonType.OK);
+    app.messageDialog(AlertType.INFORMATION, szMsg, ButtonType.OK);
     return null;
   }
 

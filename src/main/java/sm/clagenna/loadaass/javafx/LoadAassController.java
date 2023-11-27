@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.spi.StandardLevel;
 
 import javafx.application.Platform;
+import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -54,6 +55,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import lombok.Getter;
 import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
@@ -125,7 +127,8 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   private boolean       m_bGenTag;
   private boolean       m_bGenHtml;
   private boolean       m_bOverwrite;
-  private boolean       m_bLanciaExc;
+  @Getter
+  private boolean       lanciaExc;
 
   public LoadAassController() {
     //
@@ -179,7 +182,14 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       double dbl = Double.valueOf(szPos);
       spltPane.setDividerPositions(dbl);
     }
+    ckLanciaExcel.selectedProperty().addListener(e -> ckLanciaExcelClick(e));
     initTblView();
+  }
+
+  private Object ckLanciaExcelClick(Observable p_e) {
+    // System.out.printf("LoadAassController.ckLanciaExcelClick(%s)\n", p_e.toString());
+    lanciaExc = ckLanciaExcel.selectedProperty().get();
+    return null;
   }
 
   private void initTblView() {
@@ -334,7 +344,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     m_bGenTag = ckGenTAGs.isSelected();
     m_bGenHtml = ckGenHtml.isSelected();
     m_bOverwrite = ckOverwrite.isSelected();
-    m_bLanciaExc = ckLanciaExcel.isSelected();
+    lanciaExc = ckLanciaExcel.isSelected();
 
     Platform.runLater(new Runnable() {
       @Override
@@ -369,7 +379,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     gpdf.setGenTagFile(m_bGenTag);
     gpdf.setGenHTMLFile(m_bGenHtml);
     gpdf.setOverwrite(m_bOverwrite);
-    gpdf.setLanciaExcel(m_bLanciaExc);
+    gpdf.setLanciaExcel(lanciaExc);
 
     // try (DBConn connSQL = new DBConnSQL()) {
     //  connSQL.doConn();
