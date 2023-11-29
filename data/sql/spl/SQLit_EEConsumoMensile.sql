@@ -1,4 +1,6 @@
-CREATE VIEW EEConsumoMensile AS SELECT te.NomeIntesta,           
+CREATE VIEW EEConsumoMensile 
+AS 
+SELECT te.NomeIntesta,           
        cs.idEEFattura,           
        cs.dtIniz,           
        cast(cs.dtIniz as int) as annoComp,           

@@ -24,7 +24,8 @@ public class DBConnSQLite extends DBConn {
 
   private static final String QRY_LASTID   = "select last_insert_rowid()";
   private static final String QRY_ALLVIEWS = ""                           //
-      + "SELECT name FROM sqlite_schema WHERE type = 'view';";
+      + "SELECT name FROM sqlite_schema WHERE type = 'view'"              //
+      + " ORDER BY name;";
   private PreparedStatement   m_stmt_lastid;
 
   public DBConnSQLite() {

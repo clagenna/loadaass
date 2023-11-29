@@ -54,7 +54,7 @@ public class Dts2Csv {
   public void saveFile(String p_szFilNam) {
     try {
       Files.write(Paths.get(p_szFilNam), m_sb.toString().getBytes(StandardCharsets.UTF_8));
-      String szMsg =String.format( "Scritto il file CSV: <b>%s</b>", p_szFilNam);
+      String szMsg = String.format("Scritto il file CSV: <b>%s</b>", p_szFilNam);
       LoadAassMainApp.getInst().messageDialog(AlertType.INFORMATION, szMsg);
     } catch (IOException e) {
       String szMsg = String.format("Errore scrittura %s, err=%s", p_szFilNam, e.getMessage());

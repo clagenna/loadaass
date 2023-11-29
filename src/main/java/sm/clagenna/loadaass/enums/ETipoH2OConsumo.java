@@ -1,18 +1,19 @@
 package sm.clagenna.loadaass.enums;
 
 public enum ETipoH2OConsumo {
-  Scagl1S("S1", "Gas I scaglione"), //
-  Scagl2S("S2", "Gas II scaglione"), //
-  Scagl3S("S3", "Gas III scaglione"), //
-  Scagl4S("S4", "Gas IV scaglione"), //
-  
-  TariffaAmb1S("TA1", "Tariffa Ambientale"), //
-  TariffaAmb2S("TA2", "Tariffa Ambientale"), //
-  TariffaAmb3S("TA3", "Tariffa Ambientale"), //
-  TariffaAmb4S("TA4", "Tariffa Ambientale"), //
-  
+  Scagl1S("S1", "I scaglione"), //
+  Scagl2S("S2", "II scaglione"), //
+  Scagl3S("S3", "III scaglione"), //
+  Scagl4S("S4", "IV scaglione"), //
+  Scagl5S("S4", "V scaglione"), //
+
+  TariffaAmb1S("TA1", "Tariffa Ambientale I Scaglione"), //
+  TariffaAmb2S("TA2", "Tariffa Ambientale II Scaglione"), //
+  TariffaAmb3S("TA3", "Tariffa Ambientale III Scaglione"), //
+  TariffaAmb4S("TA4", "Tariffa Ambientale IV Scaglione"), //
+
   QuotaFissa("F", "Quota Fissa");
-  
+
   private String sigla;
   private String dicitura;
 
@@ -29,27 +30,46 @@ public enum ETipoH2OConsumo {
     dicitura = p_dic;
   }
 
+  /**
+   * Questa deve discernere le seguenti situazioni di causale
+   *
+   * <pre>
+   * "I Scaglione"
+   * "II Scaglione"
+   * "III Scaglione"
+   * "IV Scaglione"
+   * "Tariffa Ambientale I Scaglione"
+   * "Tariffa Ambientale II Scaglione"
+   * "Tariffa Ambientale III Scaglione"
+   * "Tariffa Ambientale IV Scaglione"
+   * "Quota Fissa"
+   * </pre>
+   *
+   * @param p_dic
+   * @return
+   */
   public static ETipoH2OConsumo parse(String p_dic) {
     ETipoH2OConsumo ret = null;
-    
-    if ( p_dic.toLowerCase().contains(" tariffa ambientale ")) {
-      if ( p_dic.contains(" IV "))
+    String l_dic = p_dic.toLowerCase();
+
+    if (l_dic.contains("tariffa ambientale ")) {
+      if (l_dic.contains(" iv "))
         return TariffaAmb4S;
-      if ( p_dic.contains(" III "))
+      if (l_dic.contains(" iii "))
         return TariffaAmb3S;
-      if ( p_dic.contains(" II "))
+      if (l_dic.contains(" ii "))
         return TariffaAmb2S;
-      if ( p_dic.contains(" I "))
-        return TariffaAmb4S;
+      if (l_dic.contains(" i "))
+        return TariffaAmb1S;
     }
-    if ( p_dic.toLowerCase().contains(" scaglione")) {
-      if ( p_dic.contains("IV"))
+    if (l_dic.contains(" scaglione")) {
+      if (l_dic.contains("iv "))
         return Scagl4S;
-      if ( p_dic.contains("III"))
+      if (l_dic.contains("iii "))
         return Scagl3S;
-      if ( p_dic.contains("II"))
+      if (l_dic.contains("ii "))
         return Scagl2S;
-      if ( p_dic.contains("I "))
+      if (l_dic.contains("i "))
         return Scagl1S;
     }
     for (ETipoH2OConsumo vv : ETipoH2OConsumo.values()) {

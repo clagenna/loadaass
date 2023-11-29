@@ -1,0 +1,11 @@
+View in SQL Server e SQLite
+
+
+					EE 			GAS 		H2O
+ConsumoMensile  	 X           X           X
+ScaglioniImporti	 X           X
+ScaglioniPrezzoUnit  X			 X
+ConsumoAnnuo		 X           X
+CostoAnnuo			 X		     X
+LettureMensili		 X           X
+LettureMensiliTipo  			 X		 

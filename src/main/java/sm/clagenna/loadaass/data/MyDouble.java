@@ -6,6 +6,7 @@ import java.text.DecimalFormat;
 public class MyDouble implements Serializable, Comparable<MyDouble> {
   private static final long          serialVersionUID = -8520062318181572258L;
   private static final DecimalFormat s_fmt            = new DecimalFormat("#0.00");
+  private static final DecimalFormat s_fmt6           = new DecimalFormat("#0.000000");
 
   private Double        val;
   private DecimalFormat l_fmt;
@@ -32,7 +33,12 @@ public class MyDouble implements Serializable, Comparable<MyDouble> {
       return "";
     if (l_fmt != null)
       return l_fmt.format(val);
-    return s_fmt.format(val);
+    String sz = s_fmt6.format(val);
+    if (sz.endsWith("0000"))
+      sz = s_fmt.format(val);
+    if (sz.endsWith(",00"))
+      sz = sz.replace(",00", "");
+    return sz;
   }
 
   @Override

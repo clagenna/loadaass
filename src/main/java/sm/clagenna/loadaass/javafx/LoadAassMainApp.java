@@ -56,7 +56,6 @@ public class LoadAassMainApp extends Application implements IStartApp {
     setPrimaryStage(p_primaryStage);
     LoadAassMainApp.inst = this;
     initApp(null);
-
     URL url = getClass().getResource(LoadAassController.CSZ_FXMLNAME);
     if (url == null)
       url = getClass().getClassLoader().getResource(LoadAassController.CSZ_FXMLNAME);
