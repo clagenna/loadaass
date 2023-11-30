@@ -2,17 +2,17 @@ package sm.clagenna.loadaass.dbsql;
 
 public class Consts {
 
-  public static final String FLD_annoComp            = "annoComp";
-  public static final String FLD_DataEmiss           = "DataEmiss";
-  public static final String FLD_fattNrAnno          = "fattNrAnno";
-  public static final String FLD_fattNrNumero        = "fattNrNumero";
-  public static final String FLD_periodFattDtIniz    = "periodFattDtIniz";
-  public static final String FLD_periodFattDtFine    = "periodFattDtFine";
-  public static final String FLD_CredPrecKwh         = "CredPrecKwh";
-  public static final String FLD_CredAttKwh          = "CredAttKwh";
-  public static final String FLD_addizFER            = "addizFER";
-  public static final String FLD_impostaQuiet        = "impostaQuiet";
-  public static final String FLD_TotPagare           = "TotPagare";
+  public static final String FLD_annoComp         = "annoComp";
+  public static final String FLD_DataEmiss        = "DataEmiss";
+  public static final String FLD_fattNrAnno       = "fattNrAnno";
+  public static final String FLD_fattNrNumero     = "fattNrNumero";
+  public static final String FLD_periodFattDtIniz = "periodFattDtIniz";
+  public static final String FLD_periodFattDtFine = "periodFattDtFine";
+  public static final String FLD_CredPrecKwh      = "CredPrecKwh";
+  public static final String FLD_CredAttKwh       = "CredAttKwh";
+  public static final String FLD_addizFER         = "addizFER";
+  public static final String FLD_impostaQuiet     = "impostaQuiet";
+  public static final String FLD_TotPagare        = "TotPagare";
 
   public static final String TGV_accontoBollPrec     = "accontoBollPrec";
   public static final String TGV_addizFER            = "addizFER";
@@ -36,6 +36,7 @@ public class Consts {
   public static final String TGV_LettDtPrec          = "LettDtPrec";
   public static final String TGV_LettImp             = "LettImp";
   public static final String TGV_LettPrec            = "LettPrec";
+  public static final String TGV_Stimato             = "stimato";
   public static final String TGV_lettPrezzoU         = "lettPrezzoU";
   public static final String TGV_LettProvv           = "LettProvv";
   public static final String TGV_LettQta             = "LettQta";

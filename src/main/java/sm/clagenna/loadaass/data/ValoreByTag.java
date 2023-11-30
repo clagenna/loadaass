@@ -145,7 +145,10 @@ public class ValoreByTag extends Valore {
   public String toString() {
     var sz2 = super.toString();
     if (hasCivetta()) {
-      String sz = m_liCivetta.stream().map(s -> s.getCivetta()).collect(Collectors.joining(";"));
+      String sz = m_liCivetta //
+          .stream() //
+          .map(s -> s.getCivetta()) //
+          .collect(Collectors.joining(";"));
       sz2 = String.format("%s\t<--(\"%s\")", sz2, sz);
     }
     return sz2;

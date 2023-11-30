@@ -13,14 +13,15 @@ import sm.clagenna.loadaass.enums.ETipiDato;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public abstract class Valore {
-  private static final Logger           s_log   = LogManager.getLogger(Valore.class);
+  private static final Logger s_log = LogManager.getLogger(Valore.class);
 
   private static final SimpleDateFormat s_fmtDt = new SimpleDateFormat("dd/MM/yyyy");
 
-  protected String                      m_fldNam;
-  protected ETipiDato                   m_tipoc;
-  protected boolean                     m_isArray;
-  private List<Object>                  valore;
+  protected String      m_fldNam;
+  protected ETipiDato   m_tipoc;
+  protected boolean     m_isArray;
+  private List<Object>  valore;
+  private List<Boolean> stimati;
 
   public Valore() {
     //
@@ -87,17 +88,26 @@ public abstract class Valore {
       throw new ReadFattValoreException(sz);
     }
     valore.set(p_riga, vv);
+    stimati.set(p_riga, Boolean.FALSE);
+  }
+
+  public void setStimato(int rig, boolean p_b) {
+    stimati.set(rig, p_b);
   }
 
   private void initValore(int riga) {
     if (valore == null) {
       valore = new ArrayList<>();
       valore.add(new Object());
+      stimati = new ArrayList<>();
+      stimati.add(Boolean.FALSE);
     }
     if (m_isArray && riga >= valore.size()) {
       // se è un array inserisco Object come place holder
-      for (int i = valore.size(); i <= riga; i++)
+      for (int i = valore.size(); i <= riga; i++) {
         valore.add(new Object());
+        stimati.add(Boolean.FALSE);
+      }
     }
   }
 
@@ -112,7 +122,7 @@ public abstract class Valore {
       return;
     }
     if (isAssegnabile()) {
-      if (m_isArray && (objVal instanceof List<?>)) {
+      if (m_isArray && objVal instanceof List<?>) {
         List<?> lio = (List<?>) objVal;
         int n = 0;
         for (Object ob : lio)
@@ -124,10 +134,23 @@ public abstract class Valore {
     }
   }
 
+  public void setStimato(boolean bv) {
+
+  }
+
   public boolean isArray() {
     return m_isArray;
   }
 
+  /**
+   * Verifica l'assegnabilita in base a
+   * <ol>
+   * <li>se valore contiene null</li>
+   * <li>se array e list.size() == 0</li>
+   * </ol>
+   *
+   * @return se posso assegnare un valore
+   */
   public boolean isAssegnabile() {
     return valore == null || valore.size() == 0 || m_isArray;
   }
@@ -158,6 +181,16 @@ public abstract class Valore {
     return valore.get(rig);
   }
 
+  public boolean isStimato(int rig) {
+    if (!m_isArray || (stimati == null))
+      return false;
+    if (rig < 0 || rig >= valore.size()) {
+      s_log.error("isStimato index out of bounds : {}", rig);
+      return false;
+    }
+    return stimati.get(rig);
+  }
+
   public Object getValoreNoEx() {
     if (valore == null || valore.size() == 0)
       return null;
@@ -167,7 +200,7 @@ public abstract class Valore {
   public Object getValoreNoEx(int rig) {
     if (valore == null || //
         valore.size() == 0 || //
-        ( !m_isArray && rig > 0))
+        !m_isArray && rig > 0)
       return null;
     if (rig < 0 || rig >= valore.size())
       return null;
@@ -190,7 +223,7 @@ public abstract class Valore {
 
   @Override
   public String toString() {
-    String sz = String.format("%s%s[%s]\t=", m_fldNam, (m_isArray ? "[]" : " "), m_tipoc);
+    String sz = String.format("%s%s[%s]\t=", m_fldNam, m_isArray ? "[]" : " ", m_tipoc);
     if (valore == null || valore.size() == 0) {
       sz += "*NULL*";
       return sz;

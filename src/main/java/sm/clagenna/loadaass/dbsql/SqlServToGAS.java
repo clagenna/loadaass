@@ -73,17 +73,11 @@ public class SqlServToGAS extends SqlServBase {
       + "           ,tipoSpesa"                                                            //
       + "           ,dtIniz"                                                               //
       + "           ,dtFine"                                                               //
+      + "           ,stimato"                                                               //
       + "           ,prezzoUnit"                                                           //
       + "           ,quantita"                                                             //
       + "           ,importo)"                                                             //
-      + "     VALUES"                                                                      //
-      + "           (?"                                                                    // <idGASFattura, int,>"
-      + "           ,?"                                                                    // <tipoSpesa, nvarchar(2),>"
-      + "           ,?"                                                                    // <dtIniz, date,>"
-      + "           ,?"                                                                    // <dtFine, date,>"
-      + "           ,?"                                                                    // <prezzoUnit, decimal(10,6),>"
-      + "           ,?"                                                                    // <quantita, decimal(8,2),>"
-      + "           ,?)";                                                                  // <importo, money,>)";
+      + "     VALUES  (?, ?, ?, ?, ?, ?, ?, ?)";
   private PreparedStatement   m_stmt_ins_Consumo;
 
   private static final String QRY_cerca_Consumo = ""                                       //
@@ -324,6 +318,7 @@ public class SqlServToGAS extends SqlServBase {
       setVal(tipoCausale.getSigla(), m_stmt_ins_Consumo, k++, Types.VARCHAR);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_periodoDa, riga, k++, Types.DATE);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_periodoA, riga, k++, Types.DATE);
+      setStimato(m_stmt_ins_Consumo, Consts.TGV_periodoA, riga, k++, Types.INTEGER);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_lettPrezzoU, riga, k++, Types.DECIMAL);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_LettQta, riga, k++, Types.DECIMAL);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_LettImp, riga, k++, Types.DECIMAL);

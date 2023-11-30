@@ -16,14 +16,12 @@ public class ValoreBySeq {
 
   private static final Logger s_log = LogManager.getLogger(ValoreBySeq.class);
 
-  private List<ValoreByTag>   m_liSeq;
+  private List<ValoreByTag> m_liSeq;
   @Getter
-  private RigaHolder          rigaHolder;
-
+  private RigaHolder        rigaHolder;
   @Getter @Setter
-  private int                 numSeq;
-
-  private TagValFactory       m_tagFact;
+  private int               numSeq;
+  private TagValFactory     m_tagFact;
 
   public ValoreBySeq() {
     //
@@ -132,15 +130,29 @@ public class ValoreBySeq {
         tg.assegnaValDaCampo(tgv, rigaHolder.getRiga());
         // System.out.println("ValoreBySeq.estraiValori()=" + this.toString());
       } catch (ReadFattValoreException e) {
-        System.err.printf("Errore assegna seq:%s", tg.getFieldName(), tgv.toString());
+        s_log.error("Errore assegna seq:{} = {}", tg.getFieldName(), tgv.toString());
       }
     }
     return j;
   }
 
+  /**
+   * Imposta il flag di <code>stimato</code> su tutti i <b>valori</b> della
+   * sequenza alla riga specificata dal {@link RigaHolder}
+   *
+   * @param p_b
+   *          il valore di "Stimato"
+   */
+  public void setStimato(boolean p_b) {
+    int nRig = rigaHolder.getRiga();
+    for (ValoreByTag tg : m_liSeq) {
+      tg.setStimato(nRig, p_b);
+    }
+  }
+
   @Override
   public String toString() {
-    String sz = String.format("\nSeq(%d) {%s}\n\t", getNumSeq(), (rigaHolder != null ? rigaHolder.toString() : "*noRigH*"));
+    String sz = String.format("\nSeq(%d) {%s}\n\t", getNumSeq(), rigaHolder != null ? rigaHolder.toString() : "*noRigH*");
     String vir = "";
     if (m_liSeq == null || m_liSeq.size() == 0) {
       sz += "**NULL**";

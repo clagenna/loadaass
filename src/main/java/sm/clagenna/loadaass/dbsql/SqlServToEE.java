@@ -66,6 +66,7 @@ public class SqlServToEE extends SqlServBase {
       + "           ,tipoSpesa"                         //
       + "           ,dtIniz"                            //
       + "           ,dtFine"                            //
+      + "           ,stimato"                           //
       + "           ,prezzoUnit"                        //
       + "           ,quantita"                          //
       + "           ,importo)"                          //
@@ -74,6 +75,7 @@ public class SqlServToEE extends SqlServBase {
       + "           ,?"                                 // <tipoSpesa, nvarchar(2),>"
       + "           ,?"                                 // <dtIniz, date,>"
       + "           ,?"                                 // <dtFine, date,>"
+      + "           ,?"                                 // <stimato, int,>"
       + "           ,?"                                 // <prezzoUnit, decimal(10,6),>"
       + "           ,?"                                 // <quantita, decimal(8,2),>"
       + "           ,?)";                               // <importo, money,>)";
@@ -272,7 +274,8 @@ public class SqlServToEE extends SqlServBase {
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_LettDtPrec);
-      @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
+      @SuppressWarnings("unchecked")
+      List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
       s_log.warn("Sembra non ci siano letture!", e);
@@ -310,7 +313,8 @@ public class SqlServToEE extends SqlServBase {
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_PotCostUnit);
-      @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
+      @SuppressWarnings("unchecked")
+      List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
       s_log.warn("Sembra non ci siano righe di consumi!", e);
@@ -336,6 +340,7 @@ public class SqlServToEE extends SqlServBase {
       setVal(tipoSpesa.getSigla(), m_stmt_ins_Consumo, k++, Types.VARCHAR);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotDtDa, riga, k++, Types.DATE);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotDtA, riga, k++, Types.DATE);
+      setStimato(m_stmt_ins_Consumo, Consts.TGV_PotDtA, riga, k++, Types.DATE);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotCostUnit, riga, k++, Types.DECIMAL);
       setVal(quantita, m_stmt_ins_Consumo, k++, Types.DECIMAL);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotTotale, riga, k++, Types.DECIMAL);

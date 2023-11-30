@@ -10,23 +10,24 @@ import lombok.Getter;
 import lombok.Setter;
 import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.data.TagValFactory;
+import sm.clagenna.loadaass.data.Valore;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.enums.ETipoFatt;
 
 public abstract class SqlServBase implements ISql {
 
   @Getter @Setter
-  private TagValFactory       tagFactory;
+  private TagValFactory tagFactory;
   @Getter @Setter
-  private DBConn              connSql;
+  private DBConn        connSql;
   @Getter @Setter
-  private ETipoFatt           tipoFatt;
+  private ETipoFatt     tipoFatt;
   @Getter @Setter
-  private RecIntesta          recIntesta;
+  private RecIntesta    recIntesta;
   @Getter @Setter
-  private Integer             idFattura;
+  private Integer       idFattura;
 
-  private static final String QRY_del_Fattura = ""   //
+  private static final String QRY_del_Fattura = "" //
       + "DELETE  FROM %s WHERE idEEFattura = ?";
 
   public SqlServBase() {
@@ -99,8 +100,34 @@ public abstract class SqlServBase implements ISql {
     setVal(vv, p_stmt, p_indxStmt, p_sqlType);
   }
 
+  /**
+   * Va a verificare se il {@link Valore#isStimato(int)} alla riga {riga} ha impostato il flag
+   * di <b>Stimato</b> e lo imposta sullo statement 
+   *
+   * @param p_stmt
+   *          statement della query
+   * @param p_tgvf
+   *          il nome del campo {@ValoreByTag}
+   * @param riga
+   *          riga del array da testare
+   * @param p_indxStmt
+   *          numero della colonna all'interno dello statement
+   * @param p_sqlType
+   *          typo SQL da aggiornare
+   * @throws SQLException
+   */
+  protected void setStimato(PreparedStatement p_stmt, String p_tgvf, int riga, int p_indxStmt, int p_sqlType) throws SQLException {
+    ValoreByTag vtag = getTagFactory().get(p_tgvf);
+    if (vtag == null) {
+      getLog().error("Non esiste il campo \"{}\"", p_tgvf);
+      return;
+    }
+    int bv = vtag.isStimato(riga) ? 1 : 0;
+    setVal(bv, p_stmt, p_indxStmt, p_sqlType);
+  }
+
   protected void setVal(Object vv, PreparedStatement p_stmt, int p_indxStmt, int p_sqlType) throws SQLException {
-//    java.sql.Date dt = null;
+    //    java.sql.Date dt = null;
     String szClsNam = vv != null ? vv.getClass().getSimpleName() : null;
     if (szClsNam == null || vv == null) {
       p_stmt.setNull(p_indxStmt, p_sqlType);
@@ -114,12 +141,12 @@ public abstract class SqlServBase implements ISql {
         p_stmt.setInt(p_indxStmt, (Integer) vv);
         break;
       case "Date":
-//        if (vv instanceof java.util.Date) {
-//          dt = new java.sql.Date( ((java.util.Date) vv).getTime());
-//          p_stmt.setDate(p_indxStmt, dt);
-//        } else
-//          p_stmt.setDate(p_indxStmt, (java.sql.Date) vv);
-        connSql.setStmtDate(p_stmt, p_indxStmt, (java.util.Date) vv);
+        //        if (vv instanceof java.util.Date) {
+        //          dt = new java.sql.Date( ((java.util.Date) vv).getTime());
+        //          p_stmt.setDate(p_indxStmt, dt);
+        //        } else
+        //          p_stmt.setDate(p_indxStmt, (java.sql.Date) vv);
+        connSql.setStmtDate(p_stmt, p_indxStmt, vv);
         break;
       case "Double":
         p_stmt.setDouble(p_indxStmt, (Double) vv);

@@ -23,65 +23,66 @@ import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class SqlServToH2O extends SqlServBase {
 
-  private static final Logger s_log             = LogManager.getLogger(SqlServToH2O.class);
+  private static final Logger s_log = LogManager.getLogger(SqlServToH2O.class);
 
-  private static final String QRY_ins_Fattura   = ""                                       //
-      + "INSERT INTO H2OFattura"                                                           //
-      + "           (idIntesta"                                                            //
-      + "           ,annoComp"                                                             //
-      + "           ,DataEmiss"                                                            //
-      + "           ,fattNrAnno"                                                           //
-      + "           ,fattNrNumero"                                                         //
-      + "           ,periodFattDtIniz"                                                     //
-      + "           ,periodFattDtFine"                                                     //
-      + "           ,periodCongDtIniz"                                                     //
-      + "           ,periodCongDtFine"                                                     //
-      + "           ,periodAccontoDtIniz"                                                  //
-      + "           ,periodAccontoDtFine"                                                  //
-      + "           ,assicurazione"                                                        //
-      + "           ,impostaQuiet" + "           ,RestituzAccPrec"                         //
-      + "           ,TotPagare)"                                                           //
+  private static final String QRY_ins_Fattura = ""                   //
+      + "INSERT INTO H2OFattura"                                     //
+      + "           (idIntesta"                                      //
+      + "           ,annoComp"                                       //
+      + "           ,DataEmiss"                                      //
+      + "           ,fattNrAnno"                                     //
+      + "           ,fattNrNumero"                                   //
+      + "           ,periodFattDtIniz"                               //
+      + "           ,periodFattDtFine"                               //
+      + "           ,periodCongDtIniz"                               //
+      + "           ,periodCongDtFine"                               //
+      + "           ,periodAccontoDtIniz"                            //
+      + "           ,periodAccontoDtFine"                            //
+      + "           ,assicurazione"                                  //
+      + "           ,impostaQuiet" + "           ,RestituzAccPrec"   //
+      + "           ,TotPagare)"                                     //
       + "     VALUES (?, ?, ? ,? ,? ,?, ?, ? ,? ,? ,?, ? ,?, ? ,?)";
   private PreparedStatement   m_stmt_ins_fattura;
 
-  private static final String QRY_Fattura       = ""                                       //
-      + "SELECT idH2OFattura   FROM H2OFattura"                                            //
+  private static final String QRY_Fattura = ""          //
+      + "SELECT idH2OFattura   FROM H2OFattura"         //
       + " WHERE DataEmiss = ?" + "   AND idIntesta = ?";
   private PreparedStatement   m_stmt_cerca_fattura;
 
-  private static final String QRY_ins_Lettura   = ""                                       //
-      + "INSERT INTO H2OLettura"                                                           //
-      + "           (idH2OFattura"                                                         //
-      + "           ,lettQtaMc"                                                            //
-      + "           ,LettData"                                                             //
-      + "           ,TipoLett"                                                             //
-      + "           ,Consumofatt)"                                                         //
-      + "     VALUES (?,?,?,?,?)";                                                         //
+  private static final String QRY_ins_Lettura = "" //
+      + "INSERT INTO H2OLettura" //
+      + "           (idH2OFattura" //
+      + "           ,lettQtaMc" //
+      + "           ,LettData" //
+      + "           ,TipoLett" //
+      + "           ,Consumofatt)" //
+      + "     VALUES (?,?,?,?,?)"; //
 
-  private PreparedStatement   m_stmt_ins_Lettura;
+  private PreparedStatement m_stmt_ins_Lettura;
 
-  private static final String QRY_cerca_Lettura = ""                                       //
-      + "SELECT idLettura"                                                                 //
-      + " FROM H2OLettura"                                                                 //
-      + " WHERE idH2OFattura = ?"                                                          //
-      + " AND lettData = ?";                                                               //
+  private static final String QRY_cerca_Lettura = ""   //
+      + "SELECT idLettura"                             //
+      + " FROM H2OLettura"                             //
+      + " WHERE idH2OFattura = ?"                      //
+      + " AND lettData = ?";                           //
   private PreparedStatement   m_stmt_cerca_Lettura;
 
-  private static final String QRY_ins_Consumo   = "INSERT INTO H2OConsumo"                 //
-      + "           (idH2OFattura"                                                         //
-      + "           ,tipoSpesa"                                                            //
-      + "           ,dtIniz"                                                               //
-      + "           ,dtFine"                                                               //
-      + "           ,prezzoUnit"                                                           //
-      + "           ,quantita"                                                             //
-      + "           ,importo)"                                                             //
-      + "     VALUES  (?, ?, ?, ?, ?, ?, ?)";
+  private static final String QRY_ins_Consumo = "INSERT INTO H2OConsumo"   //
+      + "           (idH2OFattura"                                         //
+      + "           ,tipoSpesa"                                            //
+      + "           ,dtIniz"                                               //
+      + "           ,dtFine"                                               //
+      + "           ,stimato"                                              //
+      + "           ,prezzoUnit"                                           //
+      + "           ,quantita"                                             //
+      + "           ,importo)"                                             //
+      + "     VALUES  (?, ?, ?, ?, ?, ?, ?, ?)";
   private PreparedStatement   m_stmt_ins_Consumo;
 
-  private static final String QRY_cerca_Consumo = ""                                       //
-      + "SELECT idConsumo  "                                                               //
-      + " FROM H2OConsumo"                                                                 //
-      + " WHERE idH2OFattura = ?"                                                          //
+  private static final String QRY_cerca_Consumo = ""   //
+      + "SELECT idConsumo  "                           //
+      + " FROM H2OConsumo"                             //
+      + " WHERE idH2OFattura = ?"                      //
       + "  AND DtIniz = ?";
   private PreparedStatement   m_stmt_cerca_consumo;
 
@@ -248,7 +249,8 @@ public class SqlServToH2O extends SqlServBase {
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_TipoLett);
-      @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
+      @SuppressWarnings("unchecked")
+      List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
       s_log.warn("Sembra non ci siano letture di H2O!");
@@ -282,7 +284,8 @@ public class SqlServToH2O extends SqlServBase {
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_TipoCausale);
-      @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
+      @SuppressWarnings("unchecked")
+      List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
       s_log.warn("Sembra non ci siano letture di H2O!");
@@ -301,11 +304,13 @@ public class SqlServToH2O extends SqlServBase {
       setVal(tipoCausale.getSigla(), m_stmt_ins_Consumo, k++, Types.VARCHAR);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_periodoDa, riga, k++, Types.DATE);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_periodoA, riga, k++, Types.DATE);
+      setStimato(m_stmt_ins_Consumo, Consts.TGV_periodoA, riga, k++, Types.INTEGER);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_lettPrezzoU, riga, k++, Types.DECIMAL);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_LettQta, riga, k++, Types.DECIMAL);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_LettImp, riga, k++, Types.DECIMAL);
 
-      m_stmt_ins_Consumo.executeUpdate();
+      /* int retsql = */ m_stmt_ins_Consumo.executeUpdate();
+      // System.out.println("SqlServToH2O.insertNewConsumo() ret=" + retsql);
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
     s_log.info("Inserito {} righe di lettura H2O per Fattura del {}", QtaRighe, TaggedValue.fmtData.format((Date) obj));

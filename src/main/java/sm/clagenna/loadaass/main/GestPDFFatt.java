@@ -42,19 +42,19 @@ import sm.clagenna.loadaass.tohtml.FromPdf2Html;
 
 public class GestPDFFatt {
 
-  public static final String        CSZ_TEXT_H2O = "Servizio Idrico Integrato";
-  public static final String        CSZ_TEXT_EE  = "Servizio Energia Elettrica";
-  public static final String        CSZ_TEXT_GAS = "Servizio Gas Naturale";
-  private static final Logger       s_log        = LogManager.getLogger(GestPDFFatt.class);
-  private FromPdf2Html              m_fromHtml;
+  public static final String  CSZ_TEXT_H2O = "Servizio Idrico Integrato";
+  public static final String  CSZ_TEXT_EE  = "Servizio Energia Elettrica";
+  public static final String  CSZ_TEXT_GAS = "Servizio Gas Naturale";
+  private static final Logger s_log        = LogManager.getLogger(GestPDFFatt.class);
+  private FromPdf2Html        m_fromHtml;
 
   @Getter
-  private Path                      pdfFile;
+  private Path   pdfFile;
   @Getter
-  private Path                      propertyFile;
-  private String                    m_TextFile;
-  private String                    m_TagFile;
-  private String                    m_HtmlFile;
+  private Path   propertyFile;
+  private String m_TextFile;
+  private String m_TagFile;
+  private String m_HtmlFile;
 
   private List<TaggedValue>         m_liVals;
   private List<ValoreByTag>         m_liTagVals;
@@ -62,25 +62,25 @@ public class GestPDFFatt {
   private List<RigaHolder>          m_liRigaHolder;
   private List<CreaDataset>         m_liDataset;
 
-  private AppProperties             m_props;
+  private AppProperties m_props;
   @Getter @Setter
-  private ETipoFatt                 tipoFatt;
+  private ETipoFatt     tipoFatt;
   @Getter @Setter
-  private TagValFactory             tagFactory;
+  private TagValFactory tagFactory;
 
   @Getter @Setter
-  private boolean                   genPDFText;
+  private boolean    genPDFText;
   @Getter @Setter
-  private boolean                   genTagFile;
+  private boolean    genTagFile;
   @Getter @Setter
-  private boolean                   genHTMLFile;
+  private boolean    genHTMLFile;
   @Getter @Setter
-  private boolean                   lanciaExcel;
+  private boolean    lanciaExcel;
   @Getter @Setter
-  private boolean                   overwrite;
-  private DBConn                    connSQL;
+  private boolean    overwrite;
+  private DBConn     connSQL;
   @Getter @Setter
-  private RecIntesta                recIntesta;
+  private RecIntesta recIntesta;
 
   public GestPDFFatt() throws ReadFattException {
     //
@@ -390,9 +390,9 @@ public class GestPDFFatt {
     String szDegString = "Periodo di fatturazione dal";
     if (szDegString != null && p_liCmp.get(p_k + 1).getTxt().contains(szDegString)) {
       System.out.println();
-      for (int i = p_k - 2; i <= (p_k + 2); i++)
+      for (int i = p_k - 2; i <= p_k + 2; i++)
         if (i < p_liCmp.size())
-          System.out.printf("%s%s\n", (i == p_k ? ">" : " "), p_liCmp.get(i));
+          System.out.printf("%s%s\n", i == p_k ? ">" : " ", p_liCmp.get(i));
     }
     for (ValoreByTag cv : m_liTagVals) {
       try {
@@ -421,31 +421,34 @@ public class GestPDFFatt {
       kk = tagIndx;
       TaggedValue tgv = m_liVals.get(tagIndx);
       // per scartare le righe delle letture stimate
-      if (tgv.getTxt().contains("CONSUMI STIMATI"))
+      String szDiz = tgv.getTxt();
+      if (szDiz.contains("CONSUMI STIMATI"))
         bSemaConsEffettivi = false;
-      if (tgv.getTxt().contains("TOTALE SERVIZI FORNITURA GAS"))
+      else if (szDiz.contains("CONSUMI EFFETTIVI"))
+        bSemaConsEffettivi = true;
+      else if (szDiz.contains("TOTALE SERVIZI FORNITURA GAS"))
         bSemaConsEffettivi = true;
 
       for (Integer ii : m_liSeqs.keySet()) {
         ValoreBySeq seq = m_liSeqs.get(ii);
-        if ( !seq.goodStart(tgv)) {
+        if ( !seq.goodStart(tgv))
           continue;
-        }
+
         int nTagsAvanti = seq.estraiValori(m_liVals, tagIndx);
         if (nTagsAvanti != 0) {
           // trovato la sequenza !
           // per cui incremento la riga di pertinenza
-          if (bSemaConsEffettivi)
-            seq.addRiga();
+          // if (bSemaConsEffettivi)
+          seq.setStimato(!bSemaConsEffettivi);
+          seq.addRiga();
           // - 1 perche' poi ho tagIndx++
           tagIndx += nTagsAvanti - 1;
           break;
-        } else {
-          s_log.trace("La seq N.{}\n\t{} non match-a col val:\n\t{}", //
-              seq.getNumSeq(), //
-              seq.getValoreTag(0).toString(), //
-              tgv.toString());
         }
+        s_log.trace("La seq N.{}\n\t{} non match-a col val:\n\t{}", //
+            seq.getNumSeq(), //
+            seq.getValoreTag(0).toString(), //
+            tgv.toString());
       }
     }
     s_log.trace("GestPDFFatt cercaSeqValues  qta tags =" + kk);

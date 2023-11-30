@@ -8,8 +8,9 @@ public enum ETipoGASConsumo {
   EnergiaPUN("PU", "Energia PUN"), //
   EnergiaSpread1S("S1", "Spread I scaglione"), //
   EnergiaSpread2S("S2", "Spread II scaglione"), //
+  EnergiaSpread3S("S3", "Spread III scaglione"), //
   QuotaFissa("F", "Quota Fissa");
-  
+
   private String sigla;
   private String dicitura;
 
@@ -28,13 +29,21 @@ public enum ETipoGASConsumo {
 
   public static ETipoGASConsumo parse(String p_dic) {
     ETipoGASConsumo ret = null;
-    if ( p_dic.contains(" I "))
+    if (p_dic.toLowerCase().contains("spread")) {
+      if (p_dic.contains(" I "))
+        return EnergiaSpread1S;
+      if (p_dic.contains(" II "))
+        return EnergiaSpread2S;
+      if (p_dic.contains(" III "))
+        return EnergiaSpread3S;
+    }
+    if (p_dic.contains(" I "))
       return MatPrima1S;
-    if ( p_dic.contains(" II "))
+    if (p_dic.contains(" II "))
       return MatPrima2S;
-    if ( p_dic.contains(" III "))
+    if (p_dic.contains(" III "))
       return MatPrima3S;
-    if ( p_dic.contains(" IV "))
+    if (p_dic.contains(" IV "))
       return MatPrima4S;
     for (ETipoGASConsumo vv : ETipoGASConsumo.values()) {
       if (p_dic.toLowerCase().contains(vv.dicitura.toLowerCase())) {
