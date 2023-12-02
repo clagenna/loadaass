@@ -114,9 +114,12 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   private Level                         levelMin;
   @FXML
   private ComboBox<RecIntesta>          cbIntesta;
-  private RecIntesta                    recIntesta;
-  private ResultView                    controller;
-  private ViewRecIntesta                cntrlIntesta;
+  @FXML
+  private Label                         lbProgressione;
+
+  private RecIntesta     recIntesta;
+  private ResultView     controller;
+  private ViewRecIntesta cntrlIntesta;
   // @FXML private ResultView                    controller2;
 
   private List<Log4jRow> m_liMsgs;
@@ -183,6 +186,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       spltPane.setDividerPositions(dbl);
     }
     ckLanciaExcel.selectedProperty().addListener(e -> ckLanciaExcelClick(e));
+
     initTblView();
   }
 
@@ -383,14 +387,14 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
 
     // try (DBConn connSQL = new DBConnSQL()) {
     //  connSQL.doConn();
-    try {
-      DBConn connSQL = LoadAassMainApp.getInst().getConnSQL();
-      gpdf.setConnSql(connSQL);
-      gpdf.convertiPDF();
-    } catch (Exception e) {
-      s_log.error("Errore di conversione PDF Fattura {}", gpdf.getPdfFile(), e);
-      throw e;
-    }
+    //    try {
+    DBConn connSQL = LoadAassMainApp.getInst().getConnSQL();
+    gpdf.setConnSql(connSQL);
+    gpdf.convertiPDF();
+    //    } catch (Exception e) {
+    //      s_log.error("Errore di conversione PDF Fattura {}", gpdf.getPdfFile(), e);
+    //      throw e;
+    //    }
   }
 
   @FXML
@@ -444,6 +448,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     } catch (IOException e) {
       e.printStackTrace();
     }
+
     // DefaultListModel<Path> l1 = new DefaultListModel<>();
     ObservableList<Path> li = FXCollections.observableArrayList(result);
     liPdf.setItems(li);

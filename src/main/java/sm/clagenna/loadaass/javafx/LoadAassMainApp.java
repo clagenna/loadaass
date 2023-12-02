@@ -29,7 +29,7 @@ import sm.clagenna.loadaass.sys.IStartApp;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
 
 public class LoadAassMainApp extends Application implements IStartApp {
-
+  // TODO cambia colore sui files gia presenti nel DB
   private static final Logger    s_log            = LogManager.getLogger(LoadAassMainApp.class);
   public static final String     CSZ_MAIN_APP_CSS = "LoadAassFX.css";
   @Getter

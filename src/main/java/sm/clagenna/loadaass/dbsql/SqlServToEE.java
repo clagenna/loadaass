@@ -1,6 +1,7 @@
 package sm.clagenna.loadaass.dbsql;
 
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,6 +20,7 @@ import sm.clagenna.loadaass.data.TaggedValue;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.enums.ETipoEEConsumo;
 import sm.clagenna.loadaass.enums.ETipoLettProvvenienza;
+import sm.clagenna.loadaass.sys.ex.ReadFattSQLException;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class SqlServToEE extends SqlServBase {
@@ -38,7 +40,8 @@ public class SqlServToEE extends SqlServBase {
       + "           ,CredAttKwh"                         //
       + "           ,addizFER"                           //
       + "           ,impostaQuiet"                       //
-      + "           ,TotPagare)"                         //
+      + "           ,TotPagare"                          //
+      + "           ,nomeFile)"                          //
       + "     VALUES"                                    //
       + "           (?"                                  // <annoComp, int,>"
       + "           ,?"                                  // <DataEmiss, date,>"
@@ -51,7 +54,8 @@ public class SqlServToEE extends SqlServBase {
       + "           ,?"                                  // <CredAttKwh, int,>"
       + "           ,?"                                  // <addizFER, money,>"
       + "           ,?"                                  // <impostaQuiet, money,>"
-      + "           ,?)";                                // <TotPagare, money,>)"
+      + "           ,?"                                  // <TotPagare, money,>)"
+      + "           ,?)";                                // <nomeFile, money,>)"
   private PreparedStatement   m_stmt_ins_fattura;
 
   private static final String QRY_Fattura = ""     //
@@ -111,8 +115,8 @@ public class SqlServToEE extends SqlServBase {
     //
   }
 
-  public SqlServToEE(TagValFactory p_fact, DBConn p_con) {
-    super(p_fact, p_con);
+  public SqlServToEE(TagValFactory p_fact, DBConn p_con, Path p_pdf) {
+    super(p_fact, p_con, p_pdf);
   }
 
   @Override
@@ -170,13 +174,13 @@ public class SqlServToEE extends SqlServBase {
     conn.setStmtDate(m_stmt_cerca_fattura, k++, dtEmiss);
 
     m_stmt_cerca_fattura.setInt(k++, reci.getIdIntestaInt());
-    setIdFattura(null);
+    clearIdFattura();
     try (ResultSet res = m_stmt_cerca_fattura.executeQuery()) {
       while (res.next()) {
-        setIdFattura(res.getInt(1));
+        addIdFattura(res.getInt(1));
       }
     }
-    return getIdFattura() != null;
+    return existFattDaCancellare();
   }
 
   @Override
@@ -184,16 +188,18 @@ public class SqlServToEE extends SqlServBase {
     java.sql.Date dtLett = getValoreDt(Consts.TGV_LettDtAttuale, 0);
     if (dtLett == null)
       return false;
-    int k = 1;
     int idLettura = -1;
-    m_stmt_cerca_Lettura.setInt(k++, getIdFattura());
-    // m_stmt_cerca_Lettura.set D a t e(k++, dtLett);
-    DBConn conn = getConnSql();
-    conn.setStmtDate(m_stmt_cerca_Lettura, k++, dtLett);
+    for (int idFattura : getListFatture()) {
+      int k = 1;
+      m_stmt_cerca_Lettura.setInt(k++, idFattura);
+      // m_stmt_cerca_Lettura.set D a t e(k++, dtLett);
+      DBConn conn = getConnSql();
+      conn.setStmtDate(m_stmt_cerca_Lettura, k++, dtLett);
 
-    try (ResultSet res = m_stmt_cerca_Lettura.executeQuery()) {
-      while (res.next()) {
-        idLettura = res.getInt(1);
+      try (ResultSet res = m_stmt_cerca_Lettura.executeQuery()) {
+        while (res.next()) {
+          idLettura = res.getInt(1);
+        }
       }
     }
     return idLettura >= 0;
@@ -201,18 +207,18 @@ public class SqlServToEE extends SqlServBase {
 
   @Override
   public boolean consumoExist() throws SQLException {
-    Integer idFattura = getIdFattura();
     java.sql.Date dtIni = getValoreDt(Consts.TGV_LettDtAttuale, 0);
     int idConsumo = -1;
-    int k = 1;
-    m_stmt_cerca_consumo.setInt(k++, idFattura);
-    // m_stmt_cerca_consumo.set D a t e(k++, dtIni);
-    DBConn conn = getConnSql();
-    conn.setStmtDate(m_stmt_cerca_consumo, k++, dtIni);
-
-    try (ResultSet res = m_stmt_cerca_consumo.executeQuery()) {
-      while (res.next())
-        idConsumo = res.getInt(1);
+    for (int idFattura : getListFatture()) {
+      int k = 1;
+      m_stmt_cerca_consumo.setInt(k++, idFattura);
+      // m_stmt_cerca_consumo.set D a t e(k++, dtIni);
+      DBConn conn = getConnSql();
+      conn.setStmtDate(m_stmt_cerca_consumo, k++, dtIni);
+      try (ResultSet res = m_stmt_cerca_consumo.executeQuery()) {
+        while (res.next())
+          idConsumo = res.getInt(1);
+      }
     }
     return idConsumo >= 0;
   }
@@ -226,9 +232,10 @@ public class SqlServToEE extends SqlServBase {
     String fattNrNumero = null;
     BigDecimal impostaQuiet = new BigDecimal(0.16);
     Calendar cal = Calendar.getInstance();
+    String szPdfFileName = getPdfFileName().getFileName().toString();
     int credAnnoPrec = 0;
     int credAnnoAtt = 0;
-
+    clearIdFattura();
     String sz = (String) getValore(Consts.TGV_FattNr);
     if (sz != null) {
       String[] arr = sz.split("/");
@@ -264,13 +271,20 @@ public class SqlServToEE extends SqlServBase {
     setValTgv(m_stmt_ins_fattura, Consts.TGV_addizFER, 0, k++, Types.INTEGER);
     setVal(impostaQuiet, m_stmt_ins_fattura, k++, Types.DECIMAL);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_TotPagare, 0, k++, Types.DECIMAL);
+    setVal(szPdfFileName, m_stmt_ins_fattura, k++, Types.VARCHAR);
     m_stmt_ins_fattura.executeUpdate();
-    setIdFattura(getConnSql().getLastIdentity());
+    addIdFattura(getConnSql().getLastIdentity());
   }
 
   @Override
   public void insertNewLettura() throws SQLException {
-    Integer idEEFattura = getIdFattura();
+    Integer idEEFattura;
+    try {
+      idEEFattura = getIdFattura();
+    } catch (ReadFattSQLException e) {
+      s_log.error("Sembra non ci sia la fattura!", e);
+      return;
+    }
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_LettDtPrec);
@@ -308,6 +322,12 @@ public class SqlServToEE extends SqlServBase {
   @Override
   public void insertNewConsumo() throws SQLException {
     Integer idEEFattura = null;
+    try {
+      idEEFattura = getIdFattura();
+    } catch (ReadFattSQLException e) {
+      s_log.error("Sembra non ci sia la fattura!", e);
+      return;
+    }
     ETipoEEConsumo tipoSpesa = null;
     BigDecimal quantita = null;
     int QtaRighe = -1;
@@ -321,7 +341,6 @@ public class SqlServToEE extends SqlServBase {
       return;
     }
 
-    idEEFattura = getIdFattura();
     for (int riga = 0; riga < QtaRighe; riga++) {
       String sz = (String) getValore(Consts.TGV_tipoPotImpegn, riga);
       Object obj = getValore(Consts.TGV_tipoScaglione, riga);

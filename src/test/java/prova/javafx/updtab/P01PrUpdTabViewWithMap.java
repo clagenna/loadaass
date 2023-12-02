@@ -160,7 +160,7 @@ public class P01PrUpdTabViewWithMap extends Application {
     TableView<List<Object>> tbl = ev.getTableView();
     int k = ev.getTablePosition().getRow();
     Object rec = tbl.getItems().get(k);
-    // TODO cambiare il valore del campo in rec
+    // DAFARE cambiare il valore del campo in rec
     System.out.printf("P01PrUpdTabView.cambiaCampo(%s=%s)\trec={%s}\n", szColNam, val, rec.getClass().getSimpleName());
     return null;
   }

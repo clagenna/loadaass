@@ -185,7 +185,6 @@ public class FromPdf2Html {
   }
 
   public Object parseRiga(String p_l) {
-    // TODO Auto-generated method stub
     return null;
   }
 

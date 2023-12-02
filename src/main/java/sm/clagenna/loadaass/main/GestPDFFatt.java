@@ -88,14 +88,17 @@ public class GestPDFFatt {
 
   public GestPDFFatt(String p_string) throws ReadFattException {
     setPdfFile(Paths.get(p_string));
+    init();
   }
 
   public GestPDFFatt(Path p_pth) throws ReadFattException {
     setPdfFile(p_pth);
+    init();
   }
 
   public void convertiPDF(Path p_pdf) throws ReadFattException {
     setPdfFile(p_pdf);
+    init();
     convertiPDF();
   }
 
@@ -133,10 +136,10 @@ public class GestPDFFatt {
           newName = Paths.get(pdfFile.getParent().toString(), szB);
         }
         Files.move(pdfFile, newName);
+        setPdfFile(newName);
       }
-    } catch (IOException e) {
+    } catch (IOException | ReadFattException e) {
       s_log.error("Errore rename \"{}\" in \"{}\"", szOldName, szNewName, e);
-      // e.printStackTrace();
     }
   }
 
@@ -255,8 +258,9 @@ public class GestPDFFatt {
 
   private void inserisciInDB() throws ReadFattException {
     ISql genfatt = FactoryFattura.getFatturaInserter(tipoFatt);
-    genfatt.init(tagFactory, connSQL);
+    genfatt.init(tagFactory, connSQL, getPdfFile());
     genfatt.setRecIntesta(getRecIntesta());
+    genfatt.setTipoFatt(getTipoFatt());
     // ------ Fattura ---------
     try {
       if ( !genfatt.fatturaExist())
@@ -331,7 +335,6 @@ public class GestPDFFatt {
     pdfFile = p_pdf;
     if (tipoFatt == null)
       discerniTipoPropDaNomeFile();
-    init();
   }
 
   public void setPropertyFile(Path p_prop) {
@@ -439,7 +442,7 @@ public class GestPDFFatt {
           // trovato la sequenza !
           // per cui incremento la riga di pertinenza
           // if (bSemaConsEffettivi)
-          seq.setStimato(!bSemaConsEffettivi);
+          seq.setStimato( !bSemaConsEffettivi);
           seq.addRiga();
           // - 1 perche' poi ho tagIndx++
           tagIndx += nTagsAvanti - 1;

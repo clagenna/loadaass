@@ -1,10 +1,13 @@
 package sm.clagenna.loadaass.dbsql;
 
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,9 +16,11 @@ import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.data.Valore;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.enums.ETipoFatt;
+import sm.clagenna.loadaass.sys.ex.ReadFattSQLException;
 
 public abstract class SqlServBase implements ISql {
-
+  @Getter @Setter
+  private Path          pdfFileName;
   @Getter @Setter
   private TagValFactory tagFactory;
   @Getter @Setter
@@ -24,8 +29,8 @@ public abstract class SqlServBase implements ISql {
   private ETipoFatt     tipoFatt;
   @Getter @Setter
   private RecIntesta    recIntesta;
-  @Getter @Setter
-  private Integer       idFattura;
+
+  private List<Integer> listIdFattura;
 
   private static final String QRY_del_Fattura = "" //
       + "DELETE  FROM %s WHERE idEEFattura = ?";
@@ -34,33 +39,52 @@ public abstract class SqlServBase implements ISql {
     //
   }
 
-  public SqlServBase(TagValFactory p_fact, DBConn p_con) {
-    init(p_fact, p_con);
+  public SqlServBase(TagValFactory p_fact, DBConn p_con, Path p_pdf) {
+    init(p_fact, p_con, p_pdf);
   }
 
   @Override
-  public void init(TagValFactory p_fact, DBConn p_con) {
+  public void init(TagValFactory p_fact, DBConn p_con, Path p_pdf) {
     tagFactory = p_fact;
     setConnSql(p_con);
+    setPdfFileName(p_pdf);
     init();
   }
 
   public abstract void init();
 
+  public List<Integer> getListFatture() {
+    return listIdFattura;
+  }
+
+  protected boolean existFattDaCancellare() {
+    if (listIdFattura == null || listIdFattura.size() == 0)
+      return false;
+    return true;
+  }
+
   @Override
   public void deleteFattura() throws SQLException {
-    String[] arrtabs = { "EEConsumo", "EELettura", "EEFattura" };
+    String tpf = tipoFatt.getTitolo();
+    if (listIdFattura == null || listIdFattura.size() == 0) {
+      getLog().warn("Nessuna fattura {} da cancellale", tpf);
+      return;
+    }
+    String[] arrtabs = { "Consumo", "Lettura", "Fattura" };
     Connection conn = getConnSql().getConn();
-    int idFatt = getIdFattura();
+
     String qry = null;
-    for (String tab : arrtabs) {
-      qry = String.format(QRY_del_Fattura, tab);
-      try (PreparedStatement stmt = conn.prepareStatement(qry)) {
-        stmt.setInt(1, idFatt);
-        int qtaDel = stmt.executeUpdate();
-        getLog().debug("Cancellato {} righe da {}", qtaDel, tab);
-      } catch (SQLException e) {
-        getLog().error("Errore per stmt {}", qry, e);
+    for (Integer iidFatt : listIdFattura) {
+      for (String tab : arrtabs) {
+        String nomeTab = tpf + tab;
+        qry = String.format(QRY_del_Fattura, nomeTab);
+        try (PreparedStatement stmt = conn.prepareStatement(qry)) {
+          stmt.setInt(1, iidFatt);
+          int qtaDel = stmt.executeUpdate();
+          getLog().debug("Cancellato {} righe da {}", qtaDel, nomeTab);
+        } catch (SQLException e) {
+          getLog().error("Errore per stmt {}", qry, e);
+        }
       }
     }
 
@@ -90,6 +114,27 @@ public abstract class SqlServBase implements ISql {
     return dtq;
   }
 
+  public void clearIdFattura() {
+    if (listIdFattura != null)
+      listIdFattura.clear();
+    listIdFattura = null;
+  }
+
+  public void addIdFattura(Integer p_id) {
+    if (listIdFattura == null)
+      listIdFattura = new ArrayList<>();
+    if ( !listIdFattura.contains(p_id))
+      listIdFattura.add(p_id);
+  }
+
+  public Integer getIdFattura() throws ReadFattSQLException {
+    if (listIdFattura == null || listIdFattura.size() == 0)
+      throw new ReadFattSQLException("Non ci sono idFattura!");
+    if (listIdFattura.size() > 1)
+      throw new ReadFattSQLException("Ci sono troppe idFattura!");
+    return listIdFattura.get(0);
+  }
+
   protected void setValTgv(PreparedStatement p_stmt, String p_tgvf, int riga, int p_indxStmt, int p_sqlType) throws SQLException {
     ValoreByTag vtag = getTagFactory().get(p_tgvf);
     if (vtag == null) {
@@ -101,8 +146,8 @@ public abstract class SqlServBase implements ISql {
   }
 
   /**
-   * Va a verificare se il {@link Valore#isStimato(int)} alla riga {riga} ha impostato il flag
-   * di <b>Stimato</b> e lo imposta sullo statement 
+   * Va a verificare se il {@link Valore#isStimato(int)} alla riga {riga} ha
+   * impostato il flag di <b>Stimato</b> e lo imposta sullo statement
    *
    * @param p_stmt
    *          statement della query

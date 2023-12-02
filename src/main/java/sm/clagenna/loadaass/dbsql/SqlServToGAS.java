@@ -1,6 +1,7 @@
 package sm.clagenna.loadaass.dbsql;
 
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,71 +20,73 @@ import sm.clagenna.loadaass.data.TaggedValue;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.enums.ETipoGASConsumo;
 import sm.clagenna.loadaass.enums.ETipoLettProvvenienza;
+import sm.clagenna.loadaass.sys.ex.ReadFattSQLException;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class SqlServToGAS extends SqlServBase {
 
-  private static final Logger s_log             = LogManager.getLogger(SqlServToGAS.class);
+  private static final Logger s_log = LogManager.getLogger(SqlServToGAS.class);
 
-  private static final String QRY_ins_Fattura   = ""                                       //
-      + "INSERT INTO GASFattura"                                                       //
-      + "           (idIntesta"                                                            //
-      + "           ,annoComp"                                                             //
-      + "           ,DataEmiss"                                                            //
-      + "           ,fattNrAnno"                                                           //
-      + "           ,fattNrNumero"                                                         //
-      + "           ,periodFattDtIniz"                                                     //
-      + "           ,periodFattDtFine"                                                     //
-      + "           ,periodEffDtIniz"                                                      //
-      + "           ,periodEffDtFine"                                                      //
-      + "           ,periodAccontoDtIniz"                                                  //
-      + "           ,periodAccontoDtFine"                                                  //
-      + "           ,accontoBollPrec"                                                      //
-      + "           ,addizFER"                                                             //
-      + "           ,impostaQuiet"                                                         //
-      + "           ,TotPagare)"                                                           //
-      + "     VALUES (?,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,?)";
+  private static final String QRY_ins_Fattura = ""                     //
+      + "INSERT INTO GASFattura"                                       //
+      + "           (idIntesta"                                        //
+      + "           ,annoComp"                                         //
+      + "           ,DataEmiss"                                        //
+      + "           ,fattNrAnno"                                       //
+      + "           ,fattNrNumero"                                     //
+      + "           ,periodFattDtIniz"                                 //
+      + "           ,periodFattDtFine"                                 //
+      + "           ,periodEffDtIniz"                                  //
+      + "           ,periodEffDtFine"                                  //
+      + "           ,periodAccontoDtIniz"                              //
+      + "           ,periodAccontoDtFine"                              //
+      + "           ,accontoBollPrec"                                  //
+      + "           ,addizFER"                                         //
+      + "           ,impostaQuiet"                                     //
+      + "           ,TotPagare"                                        //
+      + "           ,nomeFile)"                                        //
+      + "     VALUES (? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,? ,?)";
   private PreparedStatement   m_stmt_ins_fattura;
 
-  private static final String QRY_Fattura       = ""                                       //
-      + "SELECT idGASFattura   FROM GASFattura"                                        //
+  private static final String QRY_Fattura = ""          //
+      + "SELECT idGASFattura   FROM GASFattura"         //
       + " WHERE DataEmiss = ?" + "   AND idIntesta = ?";
   private PreparedStatement   m_stmt_cerca_fattura;
 
-  private static final String QRY_ins_Lettura   = ""                                       //
-      + "INSERT INTO GASLettura"                                                       //
-      + "           (idGASFattura"                                                         //
-      + "           ,lettQtaMc"                                                            //
-      + "           ,LettData"                                                             //
-      + "           ,TipoLett"                                                             //
-      + "           ,Consumofatt)"                                                         //
-      + "     VALUES (?,?,?,?,?)";                                                         //
+  private static final String QRY_ins_Lettura = "" //
+      + "INSERT INTO GASLettura" //
+      + "           (idGASFattura" //
+      + "           ,lettQtaMc" //
+      + "           ,LettData" //
+      + "           ,TipoLett" //
+      + "           ,Consumofatt)" //
+      + "     VALUES (?,?,?,?,?)"; //
 
-  private PreparedStatement   m_stmt_ins_Lettura;
+  private PreparedStatement m_stmt_ins_Lettura;
 
-  private static final String QRY_cerca_Lettura = ""                                       //
-      + "SELECT idLettura"                                                                 //
-      + " FROM GASLettura"                                                             //
-      + " WHERE idGASFattura = ?"                                                          //
-      + " AND lettData = ?";                                                               //
+  private static final String QRY_cerca_Lettura = ""   //
+      + "SELECT idLettura"                             //
+      + " FROM GASLettura"                             //
+      + " WHERE idGASFattura = ?"                      //
+      + " AND lettData = ?";                           //
   private PreparedStatement   m_stmt_cerca_Lettura;
 
-  private static final String QRY_ins_Consumo   = "INSERT INTO GASConsumo"             //
-      + "           (idGASFattura"                                                         //
-      + "           ,tipoSpesa"                                                            //
-      + "           ,dtIniz"                                                               //
-      + "           ,dtFine"                                                               //
-      + "           ,stimato"                                                               //
-      + "           ,prezzoUnit"                                                           //
-      + "           ,quantita"                                                             //
-      + "           ,importo)"                                                             //
+  private static final String QRY_ins_Consumo = "INSERT INTO GASConsumo"   //
+      + "           (idGASFattura"                                         //
+      + "           ,tipoSpesa"                                            //
+      + "           ,dtIniz"                                               //
+      + "           ,dtFine"                                               //
+      + "           ,stimato"                                              //
+      + "           ,prezzoUnit"                                           //
+      + "           ,quantita"                                             //
+      + "           ,importo)"                                             //
       + "     VALUES  (?, ?, ?, ?, ?, ?, ?, ?)";
   private PreparedStatement   m_stmt_ins_Consumo;
 
-  private static final String QRY_cerca_Consumo = ""                                       //
-      + "SELECT idConsumo  "                                                               //
-      + " FROM GASConsumo"                                                             //
-      + " WHERE idGASFattura = ?"                                                          //
+  private static final String QRY_cerca_Consumo = ""   //
+      + "SELECT idConsumo  "                           //
+      + " FROM GASConsumo"                             //
+      + " WHERE idGASFattura = ?"                      //
       + "  AND DtIniz = ?";
   private PreparedStatement   m_stmt_cerca_consumo;
 
@@ -91,8 +94,8 @@ public class SqlServToGAS extends SqlServBase {
     //
   }
 
-  public SqlServToGAS(TagValFactory p_fact, DBConn p_con) {
-    super(p_fact, p_con);
+  public SqlServToGAS(TagValFactory p_fact, DBConn p_con, Path p_pdf) {
+    super(p_fact, p_con, p_pdf);
   }
 
   @Override
@@ -150,14 +153,15 @@ public class SqlServToGAS extends SqlServBase {
     conn.setStmtDate(m_stmt_cerca_fattura, k++, dtEmiss);
 
     m_stmt_cerca_fattura.setInt(k++, reci.getIdIntestaInt());
-    setIdFattura(null);
+    clearIdFattura();
     try (ResultSet res = m_stmt_cerca_fattura.executeQuery()) {
       while (res.next()) {
-        setIdFattura(res.getInt(1));
-
+        var idf = res.getInt(1);
+        s_log.debug("Fattura GAS exist={}", idf);
+        addIdFattura(idf);
       }
     }
-    return getIdFattura() != null;
+    return existFattDaCancellare();
   }
 
   @Override
@@ -165,16 +169,18 @@ public class SqlServToGAS extends SqlServBase {
     java.sql.Date dtLett = getValoreDt(Consts.TGV_LettData, 0);
     if (dtLett == null)
       return false;
-    int k = 1;
     int idLettura = -1;
-    m_stmt_cerca_Lettura.setInt(k++, getIdFattura());
-    // m_stmt_cerca_Lettura.set D a t e(k++, dtLett);
-    DBConn conn = getConnSql();
-    conn.setStmtDate(m_stmt_cerca_Lettura, k++, dtLett);
+    for (Integer idFattura : getListFatture()) {
+      int k = 1;
+      m_stmt_cerca_Lettura.setInt(k++, idFattura);
+      // m_stmt_cerca_Lettura.set D a t e(k++, dtLett);
+      DBConn conn = getConnSql();
+      conn.setStmtDate(m_stmt_cerca_Lettura, k++, dtLett);
 
-    try (ResultSet res = m_stmt_cerca_Lettura.executeQuery()) {
-      while (res.next()) {
-        idLettura = res.getInt(1);
+      try (ResultSet res = m_stmt_cerca_Lettura.executeQuery()) {
+        while (res.next()) {
+          idLettura = res.getInt(1);
+        }
       }
     }
     return idLettura >= 0;
@@ -182,18 +188,19 @@ public class SqlServToGAS extends SqlServBase {
 
   @Override
   public boolean consumoExist() throws SQLException {
-    Integer idFattura = getIdFattura();
     java.sql.Date dtIni = getValoreDt(Consts.TGV_periodoDa, 0);
     int idConsumo = -1;
-    int k = 1;
-    m_stmt_cerca_consumo.setInt(k++, idFattura);
-    // m_stmt_cerca_consumo.set D a t e(k++, dtIni);
-    DBConn conn = getConnSql();
-    conn.setStmtDate(m_stmt_cerca_consumo, k++, dtIni);
+    for (Integer idFattura : getListFatture()) {
+      int k = 1;
+      m_stmt_cerca_consumo.setInt(k++, idFattura);
+      // m_stmt_cerca_consumo.set D a t e(k++, dtIni);
+      DBConn conn = getConnSql();
+      conn.setStmtDate(m_stmt_cerca_consumo, k++, dtIni);
 
-    try (ResultSet res = m_stmt_cerca_consumo.executeQuery()) {
-      while (res.next())
-        idConsumo = res.getInt(1);
+      try (ResultSet res = m_stmt_cerca_consumo.executeQuery()) {
+        while (res.next())
+          idConsumo = res.getInt(1);
+      }
     }
     return idConsumo >= 0;
   }
@@ -207,7 +214,8 @@ public class SqlServToGAS extends SqlServBase {
     String fattNrNumero = null;
     BigDecimal impostaQuiet = new BigDecimal(0.36);
     Calendar cal = Calendar.getInstance();
-
+    String szPdfFileName = getPdfFileName().getFileName().toString();
+    clearIdFattura();
     String sz = (String) getValore(Consts.TGV_FattNr);
     if (sz != null) {
       String[] arr = sz.split("/");
@@ -223,17 +231,6 @@ public class SqlServToGAS extends SqlServBase {
     }
 
     int k = 1;
-    
-    /*
-     *+ "           ,periodFattDtIniz"                                                     //
-      + "           ,periodFattDtFine"                                                     //
-      + "           ,periodEffDtIniz"                                                      //
-      + "           ,periodEffDtFine"                                                      //
-      + "           ,periodAccontoDtIniz"                                                  //
-      + "           ,periodAccontoDtFine"                                                  //
-
-     */
-    
     setVal(reci.getIdIntestaInt(), m_stmt_ins_fattura, k++, Types.INTEGER);
     setVal(annoComp, m_stmt_ins_fattura, k++, Types.INTEGER);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_DataEmiss, 0, k++, Types.DATE);
@@ -252,19 +249,26 @@ public class SqlServToGAS extends SqlServBase {
     setValTgv(m_stmt_ins_fattura, Consts.TGV_addizFER, 0, k++, Types.INTEGER);
     setVal(impostaQuiet, m_stmt_ins_fattura, k++, Types.DECIMAL);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_TotPagare, 0, k++, Types.DECIMAL);
+    setVal(szPdfFileName, m_stmt_ins_fattura, k++, Types.VARCHAR);
     m_stmt_ins_fattura.executeUpdate();
-    setIdFattura(getConnSql().getLastIdentity());
+    addIdFattura(getConnSql().getLastIdentity());
   }
 
   @Override
   public void insertNewLettura() throws SQLException {
     String szMsg = null;
-    Integer idGASFattura = getIdFattura();
-
+    Integer idGASFattura = null;
+    try {
+      idGASFattura = getIdFattura();
+    } catch (ReadFattSQLException e) {
+      s_log.error("Sembra non ci sia la fattura!", e);
+      return;
+    }
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_TipoLett);
-      @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
+      @SuppressWarnings("unchecked")
+      List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
       s_log.warn("Sembra non ci siano letture di GAS!");
@@ -295,17 +299,24 @@ public class SqlServToGAS extends SqlServBase {
   @Override
   public void insertNewConsumo() throws SQLException {
     Integer idGASFattura = null;
+    try {
+      idGASFattura = getIdFattura();
+    } catch (ReadFattSQLException e) {
+      s_log.error("Sembra non ci sia la fattura!", e);
+      return;
+    }
     ETipoGASConsumo tipoCausale = null;
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_TipoCausale);
-      @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
+      @SuppressWarnings("unchecked")
+      List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
       s_log.warn("Sembra non ci siano righe di consumi di GAS!");
       return;
     }
-    idGASFattura = getIdFattura();
+
     for (int riga = 0; riga < QtaRighe; riga++) {
       Object obj = getValore(Consts.TGV_TipoCausale, riga);
       tipoCausale = ETipoGASConsumo.parse(obj.toString());

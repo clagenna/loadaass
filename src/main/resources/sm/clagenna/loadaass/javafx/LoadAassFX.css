@@ -2,8 +2,10 @@
 .button {
 	-fx-text-fill: olive;
 	-fx-background-color: #cdf;
+	background-color: #cdf;
 	-fx-background-radius: 10 10 0 10;
 	-fx-padding: 5 10 5 10;
+	padding: 5 10 5 10;
 /*	-fx-border-color: #f4f4; */
 /*	-fx-border-width: 3; */
 }
@@ -11,10 +13,23 @@
 .button:hover {
 	-fx-text-fill: #333;
 	-fx-background-color: chartreuse;
+	background-color: chartreuse;
 }
 
 .button:pressed {
 	-fx-text-fill: #333;
 	-fx-background-color: darkcyan;
+	background-color: darkcyan;
 	-fx-padding: 5 10 13 10;
+	padding: 5 10 13 10;
+}
+
+.list-cell:nuovo {
+	-webkit-text-fill-color: darkgreen;
+	-fx-text-fill: darkgreen;
+}
+
+.list-cell:analizzato {
+	-webkit-text-fill-color: blue;
+	-fx-text-fill: blue;
 }
