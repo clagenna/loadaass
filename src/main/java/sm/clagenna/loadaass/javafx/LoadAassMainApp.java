@@ -24,6 +24,7 @@ import lombok.Setter;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.DBConnFactory;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
+import sm.clagenna.loadaass.dbsql.SqlServPDFonDB;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.IStartApp;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
@@ -36,16 +37,18 @@ public class LoadAassMainApp extends Application implements IStartApp {
   private static LoadAassMainApp inst;
 
   @Getter @Setter
-  private AppProperties props;
+  private AppProperties  props;
   @Getter @Setter
-  private Stage         primaryStage;
+  private Stage          primaryStage;
   @Getter @Setter
-  private IStartApp     controller;
+  private IStartApp      controller;
   @Getter @Setter
-  private DBConn        connSQL;
+  private DBConn         connSQL;
   @Getter
-  private SqlServIntest sqlIntesta;
-  List<ResultView>      m_liResViews;
+  private SqlServIntest  sqlIntesta;
+  @Getter
+  private SqlServPDFonDB sqlPdfs;
+  List<ResultView>       m_liResViews;
 
   public LoadAassMainApp() {
     //

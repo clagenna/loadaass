@@ -41,6 +41,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
@@ -59,6 +60,7 @@ import lombok.Getter;
 import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
+import sm.clagenna.loadaass.dbsql.SqlServPDFonDB;
 import sm.clagenna.loadaass.main.GestPDFFatt;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.ILog4jReader;
@@ -75,6 +77,8 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   private static final String CSZ_LOG_LEVEL    = "logLevel";
   private static final String CSZ_INTESTATARIO = "intestatario";
   private static final String CSZ_SPLITPOS     = "splitpos";
+  private static final String CSS_NEW_PDF      = "newPdf";
+  private static final String CSS_OLD_PDF      = "oldPdf";
 
   @FXML
   private TextField txDirFatt;
@@ -124,14 +128,15 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
 
   private List<Log4jRow> m_liMsgs;
 
-  private Path          pthDirPDF;
-  private AppProperties props;
-  private boolean       m_bGenTxt;
-  private boolean       m_bGenTag;
-  private boolean       m_bGenHtml;
-  private boolean       m_bOverwrite;
+  private Path           pthDirPDF;
+  private AppProperties  props;
+  private boolean        m_bGenTxt;
+  private boolean        m_bGenTag;
+  private boolean        m_bGenHtml;
+  private boolean        m_bOverwrite;
   @Getter
-  private boolean       lanciaExc;
+  private boolean        lanciaExc;
+  private SqlServPDFonDB sqlPdfs;
 
   public LoadAassController() {
     //
@@ -166,6 +171,40 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
         }
       }
     });
+    // -------- lista dei PDF  ----------------
+    sqlPdfs = new SqlServPDFonDB(LoadAassMainApp.getInst().getConnSQL());
+    liPdf.setOnMouseClicked(ev -> {
+      if (ev.getClickCount() > 1)
+        showPdfDoc();
+    });
+    liPdf.setCellFactory(p -> new ListCell<Path>() {
+
+      @Override
+      protected void updateItem(Path item, boolean empty) {
+        super.updateItem(item, empty);
+        if (item != null) {
+          String szFiPdf = item.getFileName().toString();
+          // System.out.println("updateItem()");
+          setText(item.toString());
+          if ( !sqlPdfs.contains(szFiPdf)) {
+            //This won't work for the first time but will be the one
+            //used in the next calls
+            getStyleClass().remove(CSS_OLD_PDF);
+            getStyleClass().add(CSS_NEW_PDF);
+            // setTextFill(Color.DARKGREEN);
+            // setFont(Font.font(16));
+          } else {
+            // setTextFill(Color.BLACK);
+            // setFont(Font.font(13));
+            System.out.println("black=" + item.toString());
+            getStyleClass().remove(CSS_NEW_PDF);
+            getStyleClass().add(CSS_OLD_PDF);
+          }
+        }
+      }
+
+    });
+    // -------- combo level -------
     if (props != null) {
       String sz = props.getProperty(CSZ_LOG_LEVEL);
       if (sz != null)
@@ -178,6 +217,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     String nomeInt = props.getProperty(CSZ_INTESTATARIO);
     if (nomeInt != null) {
       recIntesta = intesta.get(nomeInt);
+      sqlPdfs.aggiornaPdfs(recIntesta.getIdIntestaInt());
     }
     cbIntesta.getSelectionModel().select(recIntesta);
     String szPos = props.getProperty(CSZ_SPLITPOS);
@@ -186,7 +226,6 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       spltPane.setDividerPositions(dbl);
     }
     ckLanciaExcel.selectedProperty().addListener(e -> ckLanciaExcelClick(e));
-
     initTblView();
   }
 
@@ -197,7 +236,6 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   }
 
   private void initTblView() {
-
     tblView.setPlaceholder(new Label("Nessun messaggio da mostrare" + ""));
     tblView.setFixedCellSize(21.0);
     tblView.setRowFactory(row -> new TableRow<Log4jRow>() {
@@ -456,24 +494,28 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
 
     MenuItem mi1 = new MenuItem("Vedi Fattura");
     mi1.setOnAction((ActionEvent ev) -> {
-      Path it = liPdf.getSelectionModel().getSelectedItem();
-      // System.out.println("Ctx menu: path="+it);
-      try {
-        if (Desktop.isDesktopSupported()) {
-          s_log.info("Apro lettore PDF per {}", it.toString());
-          Desktop.getDesktop().open(it.toFile());
-        } else {
-          s_log.error("Desktop not supported");
-        }
-      } catch (IOException e) {
-        s_log.error("Desktop PDF launch error:" + e.getMessage(), e);
-      }
+      showPdfDoc();
     });
     ContextMenu menu = new ContextMenu();
     menu.getItems().add(mi1);
     liPdf.setContextMenu(menu);
 
     s_log.debug("Ricarico la lista files dal dir \"{}\"", pthDirPDF.toString());
+  }
+
+  private void showPdfDoc() {
+    Path it = liPdf.getSelectionModel().getSelectedItem();
+    // System.out.println("Ctx menu: path="+it);
+    try {
+      if (Desktop.isDesktopSupported()) {
+        s_log.info("Apro lettore PDF per {}", it.toString());
+        Desktop.getDesktop().open(it.toFile());
+      } else {
+        s_log.error("Desktop not supported");
+      }
+    } catch (IOException e) {
+      s_log.error("Desktop PDF launch error:" + e.getMessage(), e);
+    }
   }
 
   public void messageDialog(AlertType typ, String p_msg) {
@@ -521,6 +563,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     recIntesta = cbIntesta.getSelectionModel().getSelectedItem();
     s_log.info("Selezionato intestatario: {}", recIntesta.getNomeIntesta());
     Path pth = Paths.get(recIntesta.getDirFatture());
+    sqlPdfs.aggiornaPdfs(recIntesta.getIdIntestaInt());
     settaFileIn(pth, true, true);
   }
 

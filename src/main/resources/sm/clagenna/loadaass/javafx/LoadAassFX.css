@@ -33,3 +33,13 @@
 	-webkit-text-fill-color: blue;
 	-fx-text-fill: blue;
 }
+
+.newPdf {
+	-webkit-text-fill-color: darkgreen;
+	-fx-text-fill: darkgreen;
+}
+
+.oldPdf {
+	-webkit-text-fill-color: black;
+	-fx-text-fill: black;
+}
