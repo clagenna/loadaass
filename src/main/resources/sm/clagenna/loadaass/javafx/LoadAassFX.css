@@ -1,8 +1,8 @@
 
 .button {
-	-fx-text-fill: olive;
-	-fx-background-color: #cdf;
-	background-color: #cdf;
+	-fx-text-fill: black;
+	-fx-background-color: #ccc;
+	background-color: #ccc;
 	-fx-background-radius: 10 10 0 10;
 	-fx-padding: 5 10 5 10;
 	padding: 5 10 5 10;
@@ -15,6 +15,13 @@
 	-fx-background-color: chartreuse;
 	background-color: chartreuse;
 }
+
+.button:disabled {
+	-fx-text-fill: #333;
+	-fx-background-color: darkgray;
+	background-color: darkgray;
+}
+
 
 .button:pressed {
 	-fx-text-fill: #333;

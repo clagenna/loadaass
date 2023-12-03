@@ -18,6 +18,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javafx.concurrent.Task;
 import lombok.Getter;
 import lombok.Setter;
 import sm.clagenna.loadaass.data.FactoryFattura;
@@ -40,7 +41,7 @@ import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 import sm.clagenna.loadaass.tohtml.FromPdf2Html;
 
-public class GestPDFFatt {
+public class GestPDFFatt extends Task<String> {
 
   public static final String  CSZ_TEXT_H2O = "Servizio Idrico Integrato";
   public static final String  CSZ_TEXT_EE  = "Servizio Energia Elettrica";
@@ -103,18 +104,25 @@ public class GestPDFFatt {
   }
 
   public void convertiPDF() throws ReadFattException {
+    String szMsg = "Converto " + getPdfFile().toString();
+    s_log.info(szMsg);
+    updateMessage(szMsg + " Inizio...");
     convertiInHTML();
     if (tipoFatt == null) {
       s_log.error("Rinuncio interpretare {}", pdfFile.toString());
       return;
     }
+    updateMessage(szMsg + " Analisi valori...");
     leggiCercaValori();
     cercaTagValues();
+    updateMessage(szMsg + " Ricerca sequenze...");
     cercaSeqValues();
     renamePdfFiles();
     if (genHTMLFile)
       creaDbValori();
+    updateMessage(szMsg + " scrivo su DB...");
     inserisciInDB();
+    updateMessage(szMsg + " Fatto !");
   }
 
   private void renamePdfFiles() throws ReadFattValoreException {
@@ -475,6 +483,15 @@ public class GestPDFFatt {
 
   public void setFromPdf2HTML(FromPdf2Html p_pdf2h) {
     m_fromHtml = p_pdf2h;
+  }
+
+  @Override
+  protected String call() throws Exception {
+    System.out.println("GestPDFFatt Runner .call()");
+    convertiPDF();
+    //    System.out.println("RunTask() ... Sleep!");
+    // Thread.sleep(500);
+    return "...done!";
   }
 
 }

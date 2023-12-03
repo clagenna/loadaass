@@ -13,6 +13,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -196,7 +198,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
           } else {
             // setTextFill(Color.BLACK);
             // setFont(Font.font(13));
-            System.out.println("black=" + item.toString());
+            // System.out.println("black=" + item.toString());
             getStyleClass().remove(CSS_NEW_PDF);
             getStyleClass().add(CSS_OLD_PDF);
           }
@@ -388,13 +390,17 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     m_bOverwrite = ckOverwrite.isSelected();
     lanciaExc = ckLanciaExcel.isSelected();
 
+    boolean bBackGround = true;
+    if (bBackGround) {
+      eseguiConversioneRunTask();
+      return;
+    }
     Platform.runLater(new Runnable() {
       @Override
       public void run() {
         getStage().getScene().setCursor(Cursor.WAIT);
       }
     });
-
     ObservableList<Path> sels = liPdf.getSelectionModel().getSelectedItems();
     for (Path pth : sels) {
       try {
@@ -402,14 +408,14 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       } catch (ReadFattException | IOException e) {
         s_log.error("Errore conversione PDF {}", pth.toString(), e);
       }
+      Platform.runLater(new Runnable() {
+        @Override
+        public void run() {
+          getStage().getScene().setCursor(Cursor.DEFAULT);
+        }
+      });
     }
 
-    Platform.runLater(new Runnable() {
-      @Override
-      public void run() {
-        getStage().getScene().setCursor(Cursor.DEFAULT);
-      }
-    });
   }
 
   private void eseguiConversione(Path p_pth) throws ReadFattException, IOException {
@@ -433,6 +439,58 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     //      s_log.error("Errore di conversione PDF Fattura {}", gpdf.getPdfFile(), e);
     //      throw e;
     //    }
+  }
+
+  private void eseguiConversioneRunTask() {
+    s_log.debug("Lancio la conversione in background con un thread");
+    ObservableList<Path> sels = liPdf.getSelectionModel().getSelectedItems();
+    ExecutorService backGrService = Executors.newFixedThreadPool(1);
+    btConvPDF.setDisable(true);
+    for (Path pth : sels) {
+      try {
+        System.out.println("eseguiConversioneRunTask() ... new Task!");
+        GestPDFFatt gpdf = new GestPDFFatt(pth);
+        lbProgressione.textProperty().bind(gpdf.messageProperty());
+        gpdf.setOnRunning(ev -> {
+//          lbProgressione.setText(gpdf.getValue());
+          btConvPDF.setDisable(true);
+
+          Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+              getStage().getScene().setCursor(Cursor.WAIT);
+            }
+          });
+        });
+        gpdf.setOnSucceeded(ev -> {
+//          lbProgressione.setText(gpdf.getValue());
+          btConvPDF.setDisable(false);
+          Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+              getStage().getScene().setCursor(Cursor.DEFAULT);
+            }
+          });
+        });
+
+        gpdf.setRecIntesta(recIntesta);
+        gpdf.setGenPDFText(m_bGenTxt);
+        gpdf.setGenTagFile(m_bGenTag);
+        gpdf.setGenHTMLFile(m_bGenHtml);
+        gpdf.setOverwrite(m_bOverwrite);
+        gpdf.setLanciaExcel(lanciaExc);
+        DBConn connSQL = LoadAassMainApp.getInst().getConnSQL();
+        gpdf.setConnSql(connSQL);
+        // gpdf.convertiPDF();
+        backGrService.execute(gpdf);
+        // lbProgressione.textProperty().unbind();
+      } catch (ReadFattException e) {
+        lbProgressione.textProperty().unbind();
+        s_log.error("Errore conversione PDF {}", pth.toString(), e);
+      }
+    }
+    btConvPDF.setDisable(false);
+    backGrService.shutdown();
   }
 
   @FXML

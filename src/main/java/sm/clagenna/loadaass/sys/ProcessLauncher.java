@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 class StreamGobbler implements Runnable {
@@ -54,8 +53,8 @@ public class ProcessLauncher {
     try {
       process = builder.start();
       streamGobbler = new StreamGobbler(process.getInputStream(), System.out::println);
-      ExecutorService executorService = new ExecutorService();
-      Future<?> future = executorService.submit(streamGobbler);
+      // ExecutorService executorService = new ExecutorService();
+      // Future<?> future = executorService.submit(streamGobbler);
       int exitCode = process.waitFor();
     } catch (IOException e) {
       e.printStackTrace();

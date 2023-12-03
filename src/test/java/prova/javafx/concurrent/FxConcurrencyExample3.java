@@ -31,16 +31,17 @@ import javafx.stage.Stage;
  * Hai superato le restrizioni imposte dal modello di threading di invio eventi
  * di JavaFX?</br>
  * La risposta è sì e no. Hai usato un esempio banale per dimostrare il
- * problema. Hai risolto in modo banale ilproblema.</br>
+ * problema. Hai risolto in modo banale il problema.</br>
  * Tuttavia, nel mondo reale, eseguire un'attività di lunga durata in
  * un'applicazione GUI non è così banale.</br>
  * Ad esempio, la logica di esecuzione delle attività e l'interfaccia utente
  * sono <b>strettamente</b> collegate poiché si fa riferimento all'interno del
- * runTask() il metodo <code>setText()</code>, il che non <b>è desiderabile</b>
- * nel mondo reale. L'attività non restituisce un risultato né dispone di un
- * meccanismo <b>affidabile</b> per gestire gli errori che potrebbero
- * verificarsi. La tua attività <u>non può essere annullata</u>, riavviata o
- * pianificata in modo affidabile per essere eseguita in un momento futuro.
+ * runTask() il metodo <code>setText()</code>,</br>
+ * il che non <b>è desiderabile!</b> nel mondo reale.</br>
+ * L'attività non restituisce un risultato né dispone di un meccanismo
+ * <b>affidabile</b> per gestire gli errori che potrebbero verificarsi. La tua
+ * attività <u>non può essere annullata</u>, riavviata o pianificata in modo
+ * affidabile per essere eseguita in un momento futuro.
  */
 public class FxConcurrencyExample3 extends Application {
   // Create the TextArea
