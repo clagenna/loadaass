@@ -31,8 +31,8 @@ public class MyDate implements Serializable, Comparable<MyDate> {
   public int compareTo(MyDate o) {
     if (dt == null)
       return 0;
-    if (o instanceof MyDate d)
+  //  if (o instanceof MyDate d)
       return dt.compareTo(o.dt);
-    return 0;
+  //  return 0;
   }
 }

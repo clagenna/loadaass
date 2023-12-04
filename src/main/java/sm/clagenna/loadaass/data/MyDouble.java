@@ -45,8 +45,8 @@ public class MyDouble implements Serializable, Comparable<MyDouble> {
   public int compareTo(MyDouble o) {
     if (val == null)
       return 0;
-    if (o instanceof MyDouble l_o)
-      return val.compareTo(l_o.val);
-    return 0;
+    // if (o instanceof MyDouble l_o)
+      return val.compareTo(o.val);
+    // return 0;
   }
 }
