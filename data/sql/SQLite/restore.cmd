@@ -8,7 +8,7 @@ cd /d "%curr%"
 :: -----------------------------------------------
 :: settaggi iniziali 
 set DBFILNAM=SQLaassNEW.sqlite3
-set FILREST=SQLaass_backup_2023-11-16_16-00-38.bak
+set FILREST=pippo_backup.bak
 set SQLITE=C:\Program Files\SQLiteStudio\sqlite3.exe
 
 
