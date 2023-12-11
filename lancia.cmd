@@ -12,7 +12,7 @@ pause
 goto fine
 
 :okjava
-set JFX=--module-path "%JAVAFX_HOME%/lib" --add-modules=javafx.controls,javafx.graphics,javafx.fxml
+set JFX=--module-path "%JAVAFX_HOME%/lib" --add-modules=javafx.controls,javafx.graphics,javafx.fxml,javafx.web
 
 set ESEG=%APP%-jar-with-dependencies.jar
 if exist "%ESEG%" goto lancia

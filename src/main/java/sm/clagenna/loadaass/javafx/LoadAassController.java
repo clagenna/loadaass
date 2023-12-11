@@ -527,6 +527,10 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     if (p_setTx)
       txDirFatt.setText(szFiin);
     pthDirPDF = p_fi;
+    if ( ! Files.exists(pthDirPDF, LinkOption.NOFOLLOW_LINKS)) {
+      s_log.error("Il path \"{}\" non esiste !", pthDirPDF.toString());
+      return p_fi;
+    }
     reloadListFilesPDF();
     return p_fi;
   }
