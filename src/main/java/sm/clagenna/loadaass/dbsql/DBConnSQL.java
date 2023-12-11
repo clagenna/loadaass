@@ -19,17 +19,20 @@ public class DBConnSQL extends DBConn {
   //  private static final String CSZ_SQLUSER = "sqlgianni";
   //  private static final String CSZ_SQLPSWD = "sicuelserver";
   //  private static final int    CN_SERVICE  = 1433;
+
+  // "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+  // "com.mysql.cj.jdbc.Driver";
   @SuppressWarnings("unused")
-  private static final String CSZ_DRIVER   = "com.mysql.cj.jdbc.Driver";
-  private static final String CSZ_URL      = "jdbc:sqlserver://%s:%d;"   //
-      + "database=%s;"                                                   //
-      + "user=%s;"                                                       //
-      + "password=%s;"                                                   //
-      + "encrypt=false;"                                                 //
-      + "trustServerCertificate=false;"                                  //
+  private static final String CSZ_DRIVER   = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+  private static final String CSZ_URL      = "jdbc:sqlserver://%s:%d;"                      //
+      + "database=%s;"                                                                      //
+      + "user=%s;"                                                                          //
+      + "password=%s;"                                                                      //
+      + "encrypt=false;"                                                                    //
+      + "trustServerCertificate=false;"                                                     //
       + "loginTimeout=10;";
   private static final String QRY_LASTID   = "select @@identity";
-  private static final String QRY_ALLVIEWS = ""                          //
+  private static final String QRY_ALLVIEWS = ""                                             //
       + "SELECT name FROM sys.views";
 
   private PreparedStatement m_stmt_lastid;
@@ -40,6 +43,11 @@ public class DBConnSQL extends DBConn {
 
   @Override
   public String getURL() {
+    try {
+      Class.forName(CSZ_DRIVER);
+    } catch (ClassNotFoundException e) {
+      s_log.error("Driver SQL Server \"{}\" not found", CSZ_DRIVER, e);
+    }
     String szUrl = String.format(CSZ_URL, "localhost", //
         getService(), //
         getDbname(), //

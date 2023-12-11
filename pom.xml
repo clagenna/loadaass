@@ -9,10 +9,12 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<lo4j2.vers>2.21.0</lo4j2.vers>
 		<main.class>sm.clagenna.loadaass.javafx.LoadAassMainApp</main.class>
-		<maven.compiler.source>20</maven.compiler.source>
-		<maven.compiler.target>20</maven.compiler.target>
+		<java.version>21</java.version>
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.compilerVersion>21</maven.compiler.compilerVersion>  
 		<javafx.version>20.0.1</javafx.version>
-		<lombok.version>1.18.22</lombok.version>
+		<lombok.version>1.18.30</lombok.version>
 		<sqlite3.version>3.43.2.1</sqlite3.version>
 	</properties>
 	<dependencies>
@@ -115,7 +117,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.11.0</version>
 				 <executions>
 					<execution>
                         <id>default-testCompile</id>

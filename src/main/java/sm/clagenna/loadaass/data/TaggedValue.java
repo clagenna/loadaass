@@ -15,33 +15,33 @@ import sm.clagenna.loadaass.sys.Utils;
 
 public class TaggedValue implements Comparable<TaggedValue> {
 
-  private static final Logger s_log      = LogManager.getLogger(TaggedValue.class);
+  private static final Logger s_log = LogManager.getLogger(TaggedValue.class);
 
-  private double              fx;
-  private double              fy;
-  private int                 left;
-  private int                 top;
-  private int                 page;
-  private String              txt;
+  private double fx;
+  private double fy;
+  private int    left;
+  private int    top;
+  private int    page;
+  private String txt;
 
-  private ETipiDato           m_ETipiDato;
-  private Date                vData;
-  private Double              vDbl;
-  private Integer             vInt;
-  private BigDecimal          vImporto;
-  private String              vFattNo;
-  private String              vInt15;
+  private ETipiDato  m_ETipiDato;
+  private Date       vData;
+  private Double     vDbl;
+  private Integer    vInt;
+  private BigDecimal vImporto;
+  private String     vFattNo;
+  private String     vInt15;
 
-  public static DateFormat    fmtData    = new SimpleDateFormat("dd/MM/yyyy");
+  public static DateFormat fmtData = new SimpleDateFormat("dd/MM/yyyy");
 
-  private static Pattern      patInt15   = Pattern.compile(ETipiDato.IntN15.getRegex());
-  private static Pattern      patBarrato = Pattern.compile(ETipiDato.Barrato.getRegex());
-  private static Pattern      patData    = Pattern.compile(ETipiDato.Data.getRegex());
-  private static Pattern      patReal    = Pattern.compile(ETipiDato.Float.getRegex());
-  private static Pattern      patImpor   = Pattern.compile(ETipiDato.Importo.getRegex());
-  private static Pattern      patNum     = Pattern.compile(ETipiDato.Intero.getRegex());
+  private static Pattern patInt15   = Pattern.compile(ETipiDato.IntN15.getRegex());
+  private static Pattern patBarrato = Pattern.compile(ETipiDato.Barrato.getRegex());
+  private static Pattern patData    = Pattern.compile(ETipiDato.Data.getRegex());
+  private static Pattern patReal    = Pattern.compile(ETipiDato.Float.getRegex());
+  private static Pattern patImpor   = Pattern.compile(ETipiDato.Importo.getRegex());
+  private static Pattern patNum     = Pattern.compile(ETipiDato.Intero.getRegex());
   // per suplire all'anno nel txt:  "Credito attuale anno 2022:"
-  private static Pattern      patNum2p   = Pattern.compile("(\\d+):");
+  private static Pattern patNum2p = Pattern.compile("(\\d+):");
 
   public TaggedValue(double p_x, double p_y, int page, String txt) {
     setFx(p_x);
@@ -52,10 +52,10 @@ public class TaggedValue implements Comparable<TaggedValue> {
   }
 
   private void calcola() {
-    int px = (int)  Math.round(( (getFx() / Utils.DBL_XMAX) * Utils.F_XCharMax));
-    int py = (int)  Math.round(( (getFy() / Utils.DBL_YMAX) * Utils.F_YRigheMax));
+    int px = (int) Math.round(getFx() / Utils.DBL_XMAX * Utils.F_XCharMax);
+    int py = (int) Math.round(getFy() / Utils.DBL_YMAX * Utils.F_YRigheMax);
     // salto alla pagina
-    py += (getPage() - 1) * Utils.F_YRigheMax;
+    py += (int) ( (getPage() - 1) * Utils.F_YRigheMax);
     setLeft(px);
     setTop(py);
   }
@@ -68,7 +68,7 @@ public class TaggedValue implements Comparable<TaggedValue> {
     return fx;
   }
 
-  public void setFx(double p_fx) {
+  public final void setFx(double p_fx) {
     fx = p_fx;
   }
 
@@ -76,7 +76,7 @@ public class TaggedValue implements Comparable<TaggedValue> {
     return fy;
   }
 
-  public void setFy(double p_fy) {
+  public final void setFy(double p_fy) {
     fy = p_fy;
   }
 
@@ -100,7 +100,15 @@ public class TaggedValue implements Comparable<TaggedValue> {
     return page;
   }
 
-  public void setPage(int p_page) {
+  /**
+   * I set <code>final</code> because of compile error:
+   * <code>[this-escape] possible 'this' escape before subclass is fully initialized</code><br/>
+   * I'm using this mehod on constructor and compiler complains about the fact
+   * that some child class may override it.
+   *
+   * @param p_page
+   */
+  public final void setPage(int p_page) {
     page = p_page;
   }
 
@@ -189,7 +197,7 @@ public class TaggedValue implements Comparable<TaggedValue> {
       try {
         long ll = Long.MAX_VALUE;
         if (txt.length() <= 10)
-          ll = Long.parseLong(txt.replaceAll("\\.", ""));
+          ll = Long.parseLong(txt.replace(".", ""));
         if (ll < Integer.MAX_VALUE) {
           vInt = (int) ll;
           m_ETipiDato = ETipiDato.Intero;
@@ -328,7 +336,7 @@ public class TaggedValue implements Comparable<TaggedValue> {
     if ( !isText() || //
         !p_succ.isText() || //
         diffY >= 1 || //
-        (left > p_succ.left) || //
+        left > p_succ.left || //
         dimCh > dimChMax) {
       return false;
     }

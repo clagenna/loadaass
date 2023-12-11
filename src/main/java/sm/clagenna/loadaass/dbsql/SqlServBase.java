@@ -40,7 +40,7 @@ public abstract class SqlServBase implements ISql {
   }
 
   public SqlServBase(TagValFactory p_fact, DBConn p_con, Path p_pdf) {
-    init(p_fact, p_con, p_pdf);
+    this.init(p_fact, p_con, p_pdf);
   }
 
   @Override

@@ -18,8 +18,9 @@ import sm.clagenna.loadaass.sys.ParseData;
 import sm.clagenna.loadaass.sys.Utils;
 
 public class DBConnSQLite extends DBConn {
-  private static final Logger s_log = LogManager.getLogger(DBConnSQLite.class);
-  // private static final String CSZ_DBNAME = "data/sql/SQLite/SQLaass.sqlite3";
+  private static final Logger s_log          = LogManager.getLogger(DBConnSQLite.class);
+
+  private static final String CSZ_DRIVERJDBC = "org.sqlite.JDBC";
   private static final String CSZ_URL = "jdbc:sqlite:%s";
 
   private static final String QRY_LASTID   = "select last_insert_rowid()";
@@ -37,6 +38,11 @@ public class DBConnSQLite extends DBConn {
   @Override
   public String getURL() {
     String szUrl = String.format(CSZ_URL, getDbname());
+    try {
+      Class.forName(CSZ_DRIVERJDBC);
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+    }
     return szUrl;
   }
 
