@@ -33,7 +33,7 @@ public class SqlServIntest {
       + " ,dirfatture=?"                                                                  //
       + " WHERE  idIntesta=?";
   private static final String QRY_ins_intesta = ""                                        //
-      + "INSERT INTO Intesta"                                                         //
+      + "INSERT INTO Intesta"                                                             //
       + " (idIntesta"                                                                     //
       + " ,NomeIntesta"                                                                   //
       + " ,dirfatture)"                                                                   //
@@ -95,7 +95,9 @@ public class SqlServIntest {
         .stream() //
         .mapToInt(r -> r.getIdIntestaInt()) //
         .max();
-    int maxId = omaxid.getAsInt() + 1;
+    int maxId = 1;
+    if ( !omaxid.isEmpty())
+      maxId = omaxid.getAsInt() + 1;
     p_newRec.setIdIntestaInt(maxId);
     m_map.put(p_newRec.getIdIntesta(), p_newRec);
     Connection conn = connSql.getConn();

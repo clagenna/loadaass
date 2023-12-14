@@ -21,8 +21,6 @@ frame.dimx=742
 frame.dimy=589
 frame.posx=709
 frame.posy=17
-intestatario=claudio
-last.dir=C\:\\Temp
 logLevel=INFO
 resview.lx=1021
 resview.ly=1039
@@ -35,7 +33,8 @@ $props | Set-Content -Path "xzip\LoadAass.properties" -Encoding utf8
 Copy-Item .\target\LoadAass-jar-with-dependencies.jar -Destination "xzip\LoadAass.jar" -Force
 Copy-Item .\lancia.cmd -Destination "xzip\lancia.cmd"
 Copy-Item .\data\settaEnvJava.ps1 -Destination "xzip\settaEnvJava.ps1"
-Copy-Item .\data\sql\SQLite\SQLaass.sqlite3 -Destination "xzip\SQLaass.sqlite3"
+# Copy-Item .\data\sql\SQLite\SQLaass.sqlite3 -Destination "xzip\SQLaass.sqlite3"
+Copy-Item .\data\sql\SQLite\SQLaass_BASE.sqlite3 -Destination "xzip\SQLaass.sqlite3"
 Copy-Item .\readme_it.md -Destination "xzip\readme_it.md"
 
 if ( (Test-Path "LoadAass.zip" )) {

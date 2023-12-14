@@ -1,30 +1,31 @@
 set LUOGO=%~dp0
 cd /d "%LUOGO%\.."
+set APP=loadaass
 cd
 set qta=0
 
-set JARTEST=target\loadass-jar-with-dependencies.jar
+set JARTEST=target\%APP%-jar-with-dependencies.jar
 if exist "%JARTEST%" (
   set JAREXE=%JARTEST%
   call :info  "%JARTEST%"
   set /a qta=%qta%+1
   )
 
-set JARTEST=loadass-jar-with-dependencies.jar
+set JARTEST=%APP%-jar-with-dependencies.jar
 if exist "%JARTEST%" (
   set JAREXE=%JARTEST%
   call :info  "%JARTEST%"
   set /a qta=%qta%+1
   )
 
-set JARTEST=target\loadass.jar
+set JARTEST=target\%APP%.jar
 if exist "%JARTEST%" (
   set JAREXE=%JARTEST%
   call :info  "%JARTEST%"
   set /a qta=%qta%+1
   )
 
-set JARTEST=loadass.jar
+set JARTEST=%APP%.jar
 if exist "%JARTEST%" (
   set JAREXE=%JARTEST%
   call :info  "%JARTEST%"
@@ -61,17 +62,18 @@ goto :eof
 
 :vai
 @echo on
+
 set MODPATH=C:\Program Files\Java\javafx-sdk-20.0.1\lib
 set MODS=javafx.controls
 set MODS=%MODS%,javafx.base
 set MODS=%MODS%,javafx.fxml
 set MODS=%MODS%,javafx.graphics
+set MODS=%MODS%,javafx.web
 rem set MODS=%MODS%,javafx.media
 
 java --module-path "%MODPATH%" --add-modules="%MODS%" -jar "%JAREXE%"
 
-
 rem  java --enable-preview -jar "%JAREXE%"
 
-
 :fine
+rem pause

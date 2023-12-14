@@ -126,7 +126,6 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   private RecIntesta     recIntesta;
   private ResultView     controller;
   private ViewRecIntesta cntrlIntesta;
-  // @FXML private ResultView                    controller2;
 
   private List<Log4jRow> m_liMsgs;
 
@@ -139,6 +138,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   @Getter
   private boolean        lanciaExc;
   private SqlServPDFonDB sqlPdfs;
+  private boolean        m_cbIntestaAdding;
 
   public LoadAassController() {
     //
@@ -212,14 +212,13 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       if (sz != null)
         levelMin = Level.toLevel(sz);
     }
-    SqlServIntest intesta = LoadAassMainApp.getInst().getSqlIntesta();
-    List<RecIntesta> liInte = intesta.getList();
-    cbIntesta.getItems().addAll(liInte);
+    SqlServIntest intesta = aggiornaCbIntesta();
     recIntesta = intesta.get(1);
     String nomeInt = props.getProperty(CSZ_INTESTATARIO);
     if (nomeInt != null) {
       recIntesta = intesta.get(nomeInt);
-      sqlPdfs.aggiornaPdfs(recIntesta.getIdIntestaInt());
+      if (recIntesta != null)
+        sqlPdfs.aggiornaPdfs(recIntesta.getIdIntestaInt());
     }
     cbIntesta.getSelectionModel().select(recIntesta);
     String szPos = props.getProperty(CSZ_SPLITPOS);
@@ -229,6 +228,20 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     }
     ckLanciaExcel.selectedProperty().addListener(e -> ckLanciaExcelClick(e));
     initTblView();
+  }
+
+  public SqlServIntest aggiornaCbIntesta() {
+    SqlServIntest intesta = null;
+    try {
+      m_cbIntestaAdding = true;
+      intesta = LoadAassMainApp.getInst().getSqlIntesta();
+      List<RecIntesta> liInte = intesta.getList();
+      cbIntesta.getItems().clear();
+      cbIntesta.getItems().addAll(liInte);
+    } finally {
+      m_cbIntestaAdding = false;
+    }
+    return intesta;
   }
 
   private Object ckLanciaExcelClick(Observable p_e) {
@@ -452,7 +465,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
         GestPDFFatt gpdf = new GestPDFFatt(pth);
         lbProgressione.textProperty().bind(gpdf.messageProperty());
         gpdf.setOnRunning(ev -> {
-//          lbProgressione.setText(gpdf.getValue());
+          //          lbProgressione.setText(gpdf.getValue());
           btConvPDF.setDisable(true);
 
           Platform.runLater(new Runnable() {
@@ -463,7 +476,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
           });
         });
         gpdf.setOnSucceeded(ev -> {
-//          lbProgressione.setText(gpdf.getValue());
+          //          lbProgressione.setText(gpdf.getValue());
           btConvPDF.setDisable(false);
           Platform.runLater(new Runnable() {
             @Override
@@ -527,7 +540,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     if (p_setTx)
       txDirFatt.setText(szFiin);
     pthDirPDF = p_fi;
-    if ( ! Files.exists(pthDirPDF, LinkOption.NOFOLLOW_LINKS)) {
+    if ( !Files.exists(pthDirPDF, LinkOption.NOFOLLOW_LINKS)) {
       s_log.error("Il path \"{}\" non esiste !", pthDirPDF.toString());
       return p_fi;
     }
@@ -622,6 +635,8 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
 
   @FXML
   void cbIntesta(ActionEvent event) {
+    if (m_cbIntestaAdding)
+      return;
     recIntesta = cbIntesta.getSelectionModel().getSelectedItem();
     s_log.info("Selezionato intestatario: {}", recIntesta.getNomeIntesta());
     Path pth = Paths.get(recIntesta.getDirFatture());
@@ -688,7 +703,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
 
   @FXML
   void mnuEditIntestaClick(ActionEvent event) {
-    System.out.println("LoadAassController.mnuEditIntestaClick()");
+    // System.out.println("LoadAassController.mnuEditIntestaClick()");
     LoadAassMainApp mainApp = LoadAassMainApp.getInst();
     Stage primaryStage = mainApp.getPrimaryStage();
 
@@ -734,7 +749,8 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   @Override
   public void closeApp(AppProperties p_props) {
     p_props.setProperty(CSZ_LOG_LEVEL, levelMin.toString());
-    p_props.setProperty(CSZ_INTESTATARIO, recIntesta.getNomeIntesta());
+    if (recIntesta != null)
+      p_props.setProperty(CSZ_INTESTATARIO, recIntesta.getNomeIntesta());
     double[] pos = spltPane.getDividerPositions();
     String szPos = String.format("%.4f", pos[0]).replace(",", ".");
     p_props.setProperty(CSZ_SPLITPOS, szPos);

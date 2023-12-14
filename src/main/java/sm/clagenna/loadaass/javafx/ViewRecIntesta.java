@@ -83,6 +83,7 @@ public class ViewRecIntesta implements Initializable, IStartApp {
     m_appmain = LoadAassMainApp.getInst();
     m_mainProps = m_appmain.getProps();
     m_db = m_appmain.getConnSQL();
+    txIdIntesta.setEditable(false);
 
     openDataset2();
     impostaTableView();
@@ -179,7 +180,7 @@ public class ViewRecIntesta implements Initializable, IStartApp {
         rec.setDirFatture(val);
         break;
     }
-    System.out.printf("ViewRecIntesta.cambiaRecIntesta(%s=%s)\trec={%s}\n", p_colNam, val, rec.getClass().getSimpleName());
+    // System.out.printf("ViewRecIntesta.cambiaRecIntesta(%s=%s)\trec={%s}\n", p_colNam, val, rec.getClass().getSimpleName());
     return null;
   }
 
@@ -189,7 +190,7 @@ public class ViewRecIntesta implements Initializable, IStartApp {
     String szNome = txNomeIntesta.getText();
     String szDirFatt = txDirFatture.getText();
     var app = LoadAassMainApp.getInst();
-    int len = szIdInt == null ? 0 : szIdInt.trim().length();
+    int len = 1; // szIdInt == null ? 0 : szIdInt.trim().length();
     len *= szNome == null ? 0 : szNome.trim().length();
     len *= szDirFatt == null ? 0 : szDirFatt.trim().length();
     if (len == 0) {
@@ -213,8 +214,10 @@ public class ViewRecIntesta implements Initializable, IStartApp {
     txNomeIntesta.clear();
     txDirFatture.clear();
     if (ret == 1) {
-      String szMsg = "Aggiunto nuovo rec nel DB!";
+      String szMsg = "Aggiunto nuovo intestatario nel DB!";
       app.messageDialog(AlertType.INFORMATION, szMsg, ButtonType.OK);
+      LoadAassController cnt = (LoadAassController) app.getController();
+      cnt.aggiornaCbIntesta();
     }
     return null;
   }
@@ -246,6 +249,8 @@ public class ViewRecIntesta implements Initializable, IStartApp {
     int ret = sqlInt.saveUpdates();
     String szMsg = String.format("Salvati %d rec nel DB", ret);
     app.messageDialog(AlertType.INFORMATION, szMsg, ButtonType.OK);
+    LoadAassController cnt = (LoadAassController) app.getController();
+    cnt.aggiornaCbIntesta();
     return null;
   }
 

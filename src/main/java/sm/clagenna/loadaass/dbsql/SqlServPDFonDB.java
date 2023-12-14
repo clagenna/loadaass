@@ -51,7 +51,7 @@ public class SqlServPDFonDB {
   }
 
   public boolean contains(String p_pdf) {
-    if (p_pdf == null)
+    if (p_pdf == null || liPdfs == null)
       return false;
     // vedi https://mattryall.net/blog/the-infamous-turkish-locale-bug
     return liPdfs.contains(p_pdf.toLowerCase(Locale.ITALIAN));
