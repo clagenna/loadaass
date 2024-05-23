@@ -134,6 +134,7 @@ public class GestPDFFatt extends Task<String> {
         Utils.s_fmtY4MD.format(dtFin));
     String szOldName = pdfFile.getFileName().toString().toLowerCase();
     try {
+      // FIXME quando rinomino il nome del file rimane quello vecchio nella lista
       if ( !szOldName.equals(szNewName.toLowerCase())) {
         s_log.warn("Rinomino \"{}\" in \"{}\"", szOldName, szNewName);
         Path newName = Paths.get(pdfFile.getParent().toString(), szNewName);

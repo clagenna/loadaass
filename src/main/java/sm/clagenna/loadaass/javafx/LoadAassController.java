@@ -421,13 +421,13 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       } catch (ReadFattException | IOException e) {
         s_log.error("Errore conversione PDF {}", pth.toString(), e);
       }
-      Platform.runLater(new Runnable() {
-        @Override
-        public void run() {
-          getStage().getScene().setCursor(Cursor.DEFAULT);
-        }
-      });
     }
+    Platform.runLater(new Runnable() {
+      @Override
+      public void run() {
+        getStage().getScene().setCursor(Cursor.DEFAULT);
+      }
+    });
 
   }
 
@@ -671,18 +671,21 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     if (url == null)
       url = getClass().getClassLoader().getResource(ResultView.CSZ_FXMLNAME);
     Parent radice;
+    controller = null;
+    FXMLLoader fxmlLoad = new FXMLLoader(url);
     try {
-      radice = FXMLLoader.load(url);
+      // radice = FXMLLoader.load(url);
+      radice = fxmlLoad.load();
+      controller = fxmlLoad.getController();
     } catch (IOException e) {
       s_log.error("Errore caricamento FXML {}", ResultView.CSZ_FXMLNAME, e);
       return;
     }
-    controller = null;
-    Node nod = radice;
-    do {
-      controller = (ResultView) nod.getProperties().get("refToCntrl");
-      nod = nod.getParent();
-    } while (controller == null && nod != null);
+//    Node nod = radice;
+//    do {
+//      controller = (ResultView) nod.getProperties().get("refToCntrl");
+//      nod = nod.getParent();
+//    } while (controller == null && nod != null);
 
     Stage stageResults = new Stage();
     Scene scene = new Scene(radice, 600, 440);
@@ -711,18 +714,21 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     if (url == null)
       url = getClass().getClassLoader().getResource(ViewRecIntesta.CSZ_FXMLNAME);
     Parent radice;
+    cntrlIntesta = null;
     try {
-      radice = FXMLLoader.load(url);
+      FXMLLoader fxmlLoad = new FXMLLoader(url);
+//      radice = FXMLLoader.load(url);
+      radice = fxmlLoad.load();
+      cntrlIntesta = fxmlLoad.getController();
     } catch (IOException e) {
       s_log.error("Errore caricamento FXML {}", ViewRecIntesta.CSZ_FXMLNAME, e);
       return;
     }
-    cntrlIntesta = null;
-    Node nod = radice;
-    do {
-      cntrlIntesta = (ViewRecIntesta) nod.getProperties().get("refToCntrl");
-      nod = nod.getParent();
-    } while (cntrlIntesta == null && nod != null);
+//    Node nod = radice;
+//    do {
+//      cntrlIntesta = (ViewRecIntesta) nod.getProperties().get("refToCntrl");
+//      nod = nod.getParent();
+//    } while (cntrlIntesta == null && nod != null);
 
     Stage stageViewIntes = new Stage();
     Scene scene = new Scene(radice, 600, 440);

@@ -3,6 +3,8 @@ package sm.clagenna.loadaass.javafx;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,6 +26,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 import lombok.Getter;
@@ -296,7 +299,57 @@ public class ResultView implements Initializable, IStartApp {
     String szQryFltr = String.format("%s %s %s", szLeft, szFiltr, szRight);
     m_tbvf = new TableViewFiller(tblview);
     tblview = m_tbvf.openQuery(szQryFltr);
+
+    //    tblview.setRowFactory( tbl -> new  TableRow<Object>() {
+    //            TableRow<Object> row = this;
+    //            setOnMouseClicked( roev -> {
+    //              if ( row.isEmpty())
+    //                return;
+    //              if ( roev.getClickCount() == 2 ) {
+    //                tableRow_dblclick(row);
+    //              }
+    //              }
+    //            );
+    //          }
+    //        );
+
+    tblview.setRowFactory(tbl -> new TableRow<List<Object>>() {
+      {
+        setOnMouseClicked(ev -> {
+          if (isEmpty())
+            return;
+          if (ev.getClickCount() == 2) {
+            tableRow_dblclick(this);
+          }
+        });
+      }
+    });
     abilitaBottoni();
+  }
+
+  protected void tableRow_dblclick(TableRow<List<Object>> row) {
+    //    System.out.println("ResultView.tableRow_dblclick(row):" + (null != row ? row.getClass().getSimpleName() : "**null**"));
+    List<Object> r = tblview.getSelectionModel().getSelectedItem();
+    String szPdf = null;
+    if (null != r) {
+      // System.out.println("r.=" + r.toString());
+      for (Object e : r) {
+        if (null != e) {
+          String sz = e.toString();
+          if (sz.toLowerCase().endsWith(".pdf")) {
+            szPdf = sz;
+            break;
+          }
+        }
+      }
+      System.out.println("PDF = " + szPdf);
+    }
+    if (null != szPdf) {
+      String szLastDir = m_mainProps.getLastDir();
+      Path pth = Paths.get(szLastDir, szPdf);
+      System.out.println("ResultView.tableRow_dblclick()="+pth.toString());
+      m_appmain.getHostServices().showDocument(pth.toString());
+    }
   }
 
   @FXML
@@ -336,26 +389,27 @@ public class ResultView implements Initializable, IStartApp {
       // e.printStackTrace();
     }
   }
+
   public void lanciaExcel2() {
     File fi = new File(m_CSVfile);
     String sz = fi.getAbsolutePath();
-//    String szCmd = String.format("cmd /c start excel \"%s\"", sz);
-//    szCmd = String.format("\"%s\"", sz);
+    //    String szCmd = String.format("cmd /c start excel \"%s\"", sz);
+    //    szCmd = String.format("\"%s\"", sz);
     ProcessBuilder pb = new ProcessBuilder();
     pb.command("cmd.exe", "/c", "start", "excel.exe", sz);
     pb.redirectErrorStream(true);
-    int rc=-1;
+    int rc = -1;
     try {
       Process process = pb.start();
       process.getInputStream().transferTo(System.out);
       rc = process.waitFor();
     } catch (IOException e) {
-      s_log.error("Errore lancio Excel: {}", e.getMessage(),e);
+      s_log.error("Errore lancio Excel: {}", e.getMessage(), e);
     } catch (InterruptedException e) {
-      s_log.error("Interruzione lancio Excel: {}", e.getMessage(),e);
+      s_log.error("Interruzione lancio Excel: {}", e.getMessage(), e);
     }
     if (rc != 0)
-        throw new RuntimeException("Start Excel failed rc=" + rc);
+      throw new RuntimeException("Start Excel failed rc=" + rc);
   }
 
 }

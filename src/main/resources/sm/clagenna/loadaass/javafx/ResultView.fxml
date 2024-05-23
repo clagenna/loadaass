@@ -13,7 +13,7 @@
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity"
 	minHeight="-Infinity" minWidth="-Infinity" prefHeight="409.0"
 	prefWidth="846.0" xmlns="http://javafx.com/javafx/19"
-	xmlns:fx="http://javafx.com/fxml/1"
+	xmlns:fx="http://javafx.com/fxml/1"	
 	fx:controller="sm.clagenna.loadaass.javafx.ResultView">
 	<children>
 		<HBox prefHeight="51.0" prefWidth="843.0"
@@ -69,15 +69,4 @@
 			</columns>
 		</TableView>
 	</children>
-	<!-- Metodo 1) Memorizzo il controller come "userData" property -->
-	<!-- vedi https://stackoverflow.com/questions/40754454/get-controller-instance-from-node -->
-	<userData>
-		<fx:reference source="controller" />
-	</userData>
-	<properties>
-		<!-- Memorizzo il controller alla key "refToCntrl" nelle properties map -->
-		<refToCntrl>
-			<fx:reference source="controller" />
-		</refToCntrl>
-	</properties>
 </AnchorPane>
