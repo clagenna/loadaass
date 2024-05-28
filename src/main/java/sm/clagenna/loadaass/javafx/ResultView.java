@@ -342,12 +342,13 @@ public class ResultView implements Initializable, IStartApp {
           }
         }
       }
-      System.out.println("PDF = " + szPdf);
+      // System.out.println("PDF = " + szPdf);
     }
     if (null != szPdf) {
       String szLastDir = m_mainProps.getLastDir();
       Path pth = Paths.get(szLastDir, szPdf);
-      System.out.println("ResultView.tableRow_dblclick()="+pth.toString());
+      // System.out.println("ResultView.tableRow_dblclick()="+pth.toString());
+      s_log.info("Apro il file fattura {}", szPdf);
       m_appmain.getHostServices().showDocument(pth.toString());
     }
   }

@@ -12,16 +12,17 @@ import java.util.Map;
  *
  */
 public enum ETipiDato {
-  IntN15("i15", "(\\d{15})"), //
-  Intero("i", "(\\d+[\\.]*\\d*)"), //
-  Float("f", "([\\d\\.]*\\d+[,]\\d+)"), //
-  Importo("cy", "(-{0,1}[\\d\\.]*\\d+,\\d{2})"), //
-  Barrato("br", "(\\d+/\\d+)"), //
-  Stringa("s", "([a-zA-Z]+)"), //
-  Data("d", "(\\d{2}/\\d{2}/\\d{4})");
+  IntN15("i15", "(\\d{15})", true), //
+  Intero("i", "(\\d+[\\.]*\\d*)", true), //
+  Float("f", "([\\d\\.]*\\d+[,]\\d+)", true), //
+  Importo("cy", "(-{0,1}[\\d\\.]*\\d+,\\d{2})", true), //
+  Barrato("br", "(\\d+/\\d+)", false), //
+  Stringa("s", "([a-zA-Z]+)", false), //
+  Data("d", "(\\d{2}/\\d{2}/\\d{4})", false);
 
   private String                        cod;
   private String                        regex;
+  private boolean numeric;
   private static Map<String, ETipiDato> map;
 
   static {
@@ -31,9 +32,10 @@ public enum ETipiDato {
     }
   }
 
-  private ETipiDato(String p_cod, String p_rex) {
+  private ETipiDato(String p_cod, String p_rex, boolean p_num) {
     cod = p_cod;
     regex = p_rex;
+    numeric = p_num;
   }
 
   public String getCod() {
@@ -42,6 +44,10 @@ public enum ETipiDato {
 
   public String getRegex() {
     return regex;
+  }
+  
+  public boolean isNumeric() {
+    return numeric;
   }
 
   public static ETipiDato decode(String pcod) {

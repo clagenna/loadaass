@@ -22,7 +22,7 @@ public class DBConnSQL extends DBConn {
 
   // "com.microsoft.sqlserver.jdbc.SQLServerDriver"
   // "com.mysql.cj.jdbc.Driver";
-  @SuppressWarnings("unused")
+
   private static final String CSZ_DRIVER   = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
   private static final String CSZ_URL      = "jdbc:sqlserver://%s:%d;"                      //
       + "database=%s;"                                                                      //

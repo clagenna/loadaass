@@ -33,7 +33,7 @@ public abstract class SqlServBase implements ISql {
   private List<Integer> listIdFattura;
 
   private static final String QRY_del_Fattura = "" //
-      + "DELETE  FROM %s WHERE idEEFattura = ?";
+      + "DELETE  FROM %s WHERE id%sFattura = ?";
 
   public SqlServBase() {
     //
@@ -67,7 +67,7 @@ public abstract class SqlServBase implements ISql {
   public void deleteFattura() throws SQLException {
     String tpf = tipoFatt.getTitolo();
     if (listIdFattura == null || listIdFattura.size() == 0) {
-      getLog().warn("Nessuna fattura {} da cancellale", tpf);
+      getLog().warn("Nessuna fattura {} da cancellare", tpf);
       return;
     }
     String[] arrtabs = { "Consumo", "Lettura", "Fattura" };
@@ -77,7 +77,7 @@ public abstract class SqlServBase implements ISql {
     for (Integer iidFatt : listIdFattura) {
       for (String tab : arrtabs) {
         String nomeTab = tpf + tab;
-        qry = String.format(QRY_del_Fattura, nomeTab);
+        qry = String.format(QRY_del_Fattura, nomeTab, tpf);
         try (PreparedStatement stmt = conn.prepareStatement(qry)) {
           stmt.setInt(1, iidFatt);
           int qtaDel = stmt.executeUpdate();

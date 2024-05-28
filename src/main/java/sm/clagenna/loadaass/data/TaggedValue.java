@@ -15,14 +15,18 @@ import sm.clagenna.loadaass.sys.Utils;
 
 public class TaggedValue implements Comparable<TaggedValue> {
 
-  private static final Logger s_log = LogManager.getLogger(TaggedValue.class);
+  private static final Logger s_log  = LogManager.getLogger(TaggedValue.class);
+  private static int          lastId = 0;
 
-  private double fx;
-  private double fy;
-  private int    left;
-  private int    top;
-  private int    page;
-  private String txt;
+  private int     id;
+  private double  fx;
+  private double  fy;
+  private int     left;
+  private int     top;
+  private int     page;
+  private String  txt;
+  private String  rigaHtml;
+  private boolean noSeq;
 
   private ETipiDato  m_ETipiDato;
   private Date       vData;
@@ -43,11 +47,12 @@ public class TaggedValue implements Comparable<TaggedValue> {
   // per suplire all'anno nel txt:  "Credito attuale anno 2022:"
   private static Pattern patNum2p = Pattern.compile("(\\d+):");
 
-  public TaggedValue(double p_x, double p_y, int page, String txt) {
+  public TaggedValue(double p_x, double p_y, int page, String txt, String szRiHtml) {
     setFx(p_x);
     setFy(p_y);
     setPage(page);
     setTxt(txt);
+    rigaHtml = szRiHtml;
     calcola();
   }
 
@@ -58,6 +63,11 @@ public class TaggedValue implements Comparable<TaggedValue> {
     py += (int) ( (getPage() - 1) * Utils.F_YRigheMax);
     setLeft(px);
     setTop(py);
+    id = TaggedValue.lastId++;
+  }
+
+  public int getId() {
+    return id;
   }
 
   public boolean isNbsp() {
@@ -114,6 +124,18 @@ public class TaggedValue implements Comparable<TaggedValue> {
 
   public String getTxt() {
     return txt;
+  }
+
+  public String getRigaHtml() {
+    return rigaHtml;
+  }
+
+  public void setNoSeq(boolean bv) {
+    noSeq = bv;
+  }
+
+  public boolean isNoSeq() {
+    return noSeq;
   }
 
   public ETipiDato getTipo() {

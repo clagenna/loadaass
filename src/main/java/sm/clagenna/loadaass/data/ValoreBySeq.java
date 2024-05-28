@@ -118,7 +118,13 @@ public class ValoreBySeq {
         return 0;
       tgv = p_liCmp.get(indx);
       if (tg.getTipoDato() != tgv.getTipo()) {
-        s_log.trace("Scarto il valore {} perche' tipodato incompatibile di {}", tgv.toString(), tg.toString());
+        s_log.trace("Seq({})[{}]:\"{}\"({}) <> Tgv:\"{}\"({})", // 
+            getNumSeq(), //
+            (j-1),
+            tg.getFieldName(), // 
+            tg.getTipoDato(), //
+            tgv.getTxt(), //
+            tgv.getTipo()); //
         return 0;
       }
     }

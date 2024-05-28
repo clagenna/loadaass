@@ -93,7 +93,7 @@ public class TestTagsFromFile {
     String szTip = mat.group(k++);
     String szVal = mat.group(k++);
     //    System.out.printf("%s,%s\tp=%s (%s,%s)\t[%s] \"%s\"\n", szX, szY, szPag, szRig, szCol, szTip, szVal);
-    m_pdf2h.trattaRiga(szX, szY, szVal);
+    m_pdf2h.trattaRiga(szX, szY, szVal, p_l);
     return null;
   }
 

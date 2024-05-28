@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -21,13 +23,16 @@ import org.fit.pdfdom.PDFDomTree;
 import sm.clagenna.loadaass.data.TaggedValue;
 
 public class FromPdf2Html {
-  private static final Logger s_log    = LogManager.getLogger(FromPdf2Html.class);
+  private static final Logger s_log = LogManager.getLogger(FromPdf2Html.class);
 
-  private static String       CSZ_PAT2 = ".*<div .* style=\"top:(\\d+\\.\\d+)pt;left:(\\d+\\.\\d+)pt;.*>(.*)</div>";
-  private List<String>        m_outHtml;
-  private int                 m_nPage;
-  private List<TaggedValue>   m_liCampi;
-  private TaggedValue         m_lastCp;
+  private static String       CSZ_PAT2       = ".*<div .* style=\"top:(\\d+\\.\\d+)pt;left:(\\d+\\.\\d+)pt;.*>(.*)</div>";
+  private static final String CSZ_EVID_NOSEQ = ";background-color: #f02020;color: yellow;\">";
+
+  private List<String> m_outHtml;
+  private int          m_nPage;
+  // private List<TaggedValue>   m_liCampi;
+  private Map<Integer, TaggedValue> m_map;
+  private TaggedValue               m_lastCp;
 
   public FromPdf2Html() {
     //
@@ -42,8 +47,17 @@ public class FromPdf2Html {
     return true;
   }
 
+  public Map<Integer, TaggedValue> getMap() {
+    return m_map;
+  }
+
   public List<TaggedValue> getListCampi() {
-    return m_liCampi;
+    // return m_liCampi;
+    if (null == m_map)
+      return null;
+    List<TaggedValue> li = new ArrayList<TaggedValue>(m_map.values());
+    Collections.sort(li);
+    return li;
   }
 
   /**
@@ -88,62 +102,71 @@ public class FromPdf2Html {
     m_nPage = 0;
     Pattern pat2 = Pattern.compile(CSZ_PAT2);
     String szLeft = null, szTop = null, szText = null;
-    m_liCampi = new ArrayList<>();
-    for (String sz : m_outHtml) {
-      if (sz.indexOf(">&nbsp;</div>") >= 0)
+    // m_liCampi = new ArrayList<>();
+    m_map = new TreeMap<>();
+    for (String szRigaHtml : m_outHtml) {
+      if (szRigaHtml.indexOf(">&nbsp;</div>") >= 0)
         continue;
-      if (sz.indexOf("class=\"page\"") >= 0) {
+      if (szRigaHtml.indexOf("class=\"page\"") >= 0) {
         m_nPage++;
         continue;
       }
-      if ( (sz.indexOf("div class=\"p\"") < 0))
+      if (szRigaHtml.indexOf("div class=\"p\"") < 0)
         continue;
-      Matcher mtch = pat2.matcher(sz);
+      Matcher mtch = pat2.matcher(szRigaHtml);
       if ( !mtch.find())
         continue;
       int k = 1;
       szTop = mtch.group(k++);
       szLeft = mtch.group(k++);
       szText = mtch.group(k++);
-      trattaRiga(szLeft, szTop, szText);
+      trattaRiga(szLeft, szTop, szText, szRigaHtml);
     }
-    if (m_liCampi.size() < 5) {
+    if (m_map.size() < 5) {
       s_log.error("Non sembra essere una fattura");
       return false;
     }
-    Collections.sort(m_liCampi);
+    // Collections.sort(m_liCampi);
     return true;
   }
 
   @SuppressWarnings("unused")
-  public void trattaRiga(String szLeft, String szTop, String szTxt) {
+  public void trattaRiga(String szLeft, String szTop, String szTxt, String szRiHtml) {
     String szDebug = null;
     if (szDebug != null && szTxt.toLowerCase().contains(szDebug))
       System.out.printf("FromHtml.trattaRiga(\"%s\")=%s\n", szDebug, szTxt);
 
     if (szTxt != null && szTxt.indexOf("nbsp;") >= 0)
       return;
-    if (m_liCampi == null)
-      m_liCampi = new ArrayList<>();
+    //    if (m_liCampi == null)
+    //      m_liCampi = new ArrayList<>();
+    if (null == m_map)
+      m_map = new TreeMap<>();
     double nLeft = Double.parseDouble(szLeft);
     double nTop = Double.parseDouble(szTop);
     if (m_nPage <= 0)
       s_log.error("Pagina fuori range:{} su tag {}", m_nPage, szTxt);
-    TaggedValue rec = new TaggedValue(nLeft, nTop, m_nPage, szTxt);
+    TaggedValue rec = new TaggedValue(nLeft, nTop, m_nPage, szTxt, szRiHtml);
     if (m_lastCp != null && m_lastCp.isConsecutivo(rec))
       m_lastCp.append(rec);
     else {
-      m_liCampi.add(rec);
+      // m_liCampi.add(rec);
+      m_map.put(rec.getId(), rec);
       m_lastCp = rec;
     }
   }
 
   public String getTextTAGs() {
     String sz = "**NULL**";
-    if (m_liCampi == null || m_liCampi.size() == 0)
+    //    if (m_liCampi == null || m_liCampi.size() == 0)
+    //      return sz;
+    if (null == m_map || m_map.size() == 0)
       return sz;
-    sz = m_liCampi //
-        .stream() //
+    //    sz = m_liCampi //
+    //        .stream() //
+    //        .map(t -> t.toString()) //
+    //        .collect(Collectors.joining("\n"));
+    sz = getListCampi().stream() //
         .map(t -> t.toString()) //
         .collect(Collectors.joining("\n"));
     return sz;
@@ -173,6 +196,7 @@ public class FromPdf2Html {
   }
 
   public void saveHtmlFile(String p_htmlFile) {
+    evidenziaNoSeqs(p_htmlFile);
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(p_htmlFile))) {
       String szHtml = m_outHtml //
           .stream() //
@@ -182,6 +206,28 @@ public class FromPdf2Html {
     } catch (IOException e) {
       s_log.error("Errore scrittura TAGs", e);
     }
+  }
+
+  private void evidenziaNoSeqs(String p_htmlFile) {
+    boolean bEvid = false;
+    int qta = 0;
+    // style="background-color: #f02020;color: yellow;"
+    for (TaggedValue tgv : getListCampi()) {
+      if ( !tgv.isNoSeq())
+        continue;
+      String szHTML = tgv.getRigaHtml();
+      int ii = m_outHtml.indexOf(szHTML);
+      if (ii < 0) {
+        s_log.warn("Non trovo HTML:{}", szHTML);
+        continue;
+      }
+      qta++;
+      String sz = szHTML.replace(";\">", CSZ_EVID_NOSEQ);
+      m_outHtml.set(ii, sz);
+      bEvid = true;
+    }
+    if (bEvid)
+      s_log.warn("Evidenziati nel file HTML \"{}\", {} campi numerici trascurati dalle sequenze", p_htmlFile, qta);
   }
 
   public Object parseRiga(String p_l) {

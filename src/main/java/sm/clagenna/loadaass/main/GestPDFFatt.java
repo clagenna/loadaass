@@ -34,6 +34,8 @@ import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.ISql;
 import sm.clagenna.loadaass.enums.ETipiDato;
 import sm.clagenna.loadaass.enums.ETipoFatt;
+import sm.clagenna.loadaass.javafx.LoadAassController;
+import sm.clagenna.loadaass.javafx.LoadAassMainApp;
 import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.Utils;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
@@ -50,12 +52,15 @@ public class GestPDFFatt extends Task<String> {
   private FromPdf2Html        m_fromHtml;
 
   @Getter
-  private Path   pdfFile;
+  private Path               pdfFile;
   @Getter
-  private Path   propertyFile;
-  private String m_TextFile;
-  private String m_TagFile;
-  private String m_HtmlFile;
+  private Path               propertyFile;
+  private String             m_TextFile;
+  private String             m_TagFile;
+  private String             m_HtmlFile;
+  private StringBuilder      m_sbTraceSeq;
+  private LoadAassController m_controller;
+  private boolean            m_bGenTagFile;
 
   private List<TaggedValue>         m_liVals;
   private List<ValoreByTag>         m_liTagVals;
@@ -118,8 +123,10 @@ public class GestPDFFatt extends Task<String> {
     updateMessage(szMsg + " Ricerca sequenze...");
     cercaSeqValues();
     renamePdfFiles();
-    if (genHTMLFile)
+    if (genHTMLFile) {
       creaDbValori();
+      m_fromHtml.saveHtmlFile(m_HtmlFile);
+    }
     updateMessage(szMsg + " scrivo su DB...");
     inserisciInDB();
     updateMessage(szMsg + " Fatto !");
@@ -168,9 +175,9 @@ public class GestPDFFatt extends Task<String> {
     if (genTagFile) {
       m_fromHtml.saveTagFile(m_TagFile);
     }
-    if (genHTMLFile) {
-      m_fromHtml.saveHtmlFile(m_HtmlFile);
-    }
+    //    if (genHTMLFile) {
+    //      m_fromHtml.saveHtmlFile(m_HtmlFile);
+    //    }
     if (genPDFText) {
       m_fromHtml.saveTxtFile(m_TextFile);
     }
@@ -323,6 +330,9 @@ public class GestPDFFatt extends Task<String> {
     m_HtmlFile = szNoExt + ".HTML";
     m_liRigaHolder = new ArrayList<>();
     tagFactory = new TagValFactory();
+    m_controller = (LoadAassController) LoadAassMainApp.getInst().getController();
+    m_bGenTagFile = m_controller.isGenTags();
+    m_sbTraceSeq = null;
   }
 
   private void discerniTipoPropDaNomeFile() {
@@ -367,8 +377,10 @@ public class GestPDFFatt extends Task<String> {
       setTipoFatt(ETipoFatt.EnergiaElettrica);
     else if (szTxt.indexOf(CSZ_TEXT_H2O) >= 0)
       setTipoFatt(ETipoFatt.Acqua);
-    else
-      s_log.warn("non sono riuscito a capire che tipo di Fattura AASS e'");
+    else {
+      s_log.warn("non sono riuscito a capire che tipo di Fattura AASS e': {}", pdfFile.toString());
+      return;
+    }
     if (propertyFile == null || m_props == null) {
       String szProp = String.format("Fatt%s_HTML.properties", tipoFatt.getTitolo());
       setPropertyFile(Paths.get(szProp));
@@ -426,44 +438,106 @@ public class GestPDFFatt extends Task<String> {
    * @param liCmp
    */
   private void cercaSeqValues() {
+    if (s_log.isTraceEnabled() && m_bGenTagFile)
+      m_sbTraceSeq = new StringBuilder();
     int kk = 0;
     // semforo dei consumi effettivi
     boolean bSemaConsEffettivi = true;
-    for (int tagIndx = 0; tagIndx < m_liVals.size(); tagIndx++) {
-      kk = tagIndx;
-      TaggedValue tgv = m_liVals.get(tagIndx);
-      // per scartare le righe delle letture stimate
-      String szDiz = tgv.getTxt();
-      if (szDiz.contains("CONSUMI STIMATI"))
-        bSemaConsEffettivi = false;
-      else if (szDiz.contains("CONSUMI EFFETTIVI"))
-        bSemaConsEffettivi = true;
-      else if (szDiz.contains("TOTALE SERVIZI FORNITURA GAS"))
-        bSemaConsEffettivi = true;
+    TaggedValue tgNumeric = null;
 
-      for (Integer ii : m_liSeqs.keySet()) {
-        ValoreBySeq seq = m_liSeqs.get(ii);
-        if ( !seq.goodStart(tgv))
-          continue;
+    try {
 
-        int nTagsAvanti = seq.estraiValori(m_liVals, tagIndx);
-        if (nTagsAvanti != 0) {
+      for (int tagIndx = 0; tagIndx < m_liVals.size(); tagIndx++) {
+        kk = tagIndx;
+        TaggedValue tgv = m_liVals.get(tagIndx);
+        tgNumeric = tgv.getTipo().isNumeric() ? tgv : null;
+        if (s_log.isTraceEnabled() && m_bGenTagFile)
+          m_sbTraceSeq.append(tgv.toString()).append("\n");
+
+        // per scartare le righe delle letture stimate
+        bSemaConsEffettivi = seConsumiEffettivi(tgv.getTxt());
+        for (Integer ii : m_liSeqs.keySet()) {
+          ValoreBySeq seq = m_liSeqs.get(ii);
+          if ( !seq.goodStart(tgv))
+            continue;
+          // nTagsAvanti != 0 trovata la sequenza
+          int nTagsAvanti = seq.estraiValori(m_liVals, tagIndx);
+          if (nTagsAvanti <= 0)
+            continue;
           // trovato la sequenza !
           // per cui incremento la riga di pertinenza
           // if (bSemaConsEffettivi)
           seq.setStimato( !bSemaConsEffettivi);
           seq.addRiga();
+          if (s_log.isTraceEnabled())
+            traceScrivi(tagIndx, tagIndx + nTagsAvanti);
           // - 1 perche' poi ho tagIndx++
           tagIndx += nTagsAvanti - 1;
+          tgNumeric = null;
           break;
         }
-        s_log.trace("La seq N.{}\n\t{} non match-a col val:\n\t{}", //
-            seq.getNumSeq(), //
-            seq.getValoreTag(0).toString(), //
-            tgv.toString());
+        if (tgNumeric != null && s_log.isTraceEnabled())
+          s_log.trace("Scarto Tag Num:\n{}", traceScartoTgv(tagIndx));
+      }
+    } catch (Exception e) {
+      System.out.println("GestPDFFatt.cercaSeqValues():" + e.getMessage());
+    }
+
+    s_log.trace("GestPDFFatt cercaSeqValues  qta tags =" + kk);
+    if (m_sbTraceSeq != null && !m_sbTraceSeq.isEmpty()) {
+      String szPdfFile = getPdfFile().toString();
+      int n = szPdfFile.lastIndexOf(".");
+      String szTraceFile = szPdfFile.substring(0, n) + "_TRACE.txt";
+      Path pth = Paths.get(szTraceFile);
+      try {
+        Files.deleteIfExists(pth);
+        byte[] bys = m_sbTraceSeq.toString().getBytes();
+        Files.write(pth, bys);
+        s_log.info("Scritto traceLog {}", szTraceFile);
+      } catch (IOException e) {
+        s_log.error("Errore su trace file: {}, msg = {}", pth.toString(), e.getMessage());
       }
     }
-    s_log.trace("GestPDFFatt cercaSeqValues  qta tags =" + kk);
+  }
+
+  private boolean seConsumiEffettivi(String p_sz) {
+    boolean bEff = true;
+    if (p_sz.contains("CONSUMI STIMATI"))
+      bEff = false;
+    else if (p_sz.contains("CONSUMI EFFETTIVI"))
+      bEff = true;
+    else if (p_sz.contains("TOTALE SERVIZI FORNITURA GAS"))
+      bEff = true;
+    return bEff;
+  }
+
+  private String traceScartoTgv(int ndx) {
+    // style="background-color: #f02020;color: yellow;"
+    StringBuilder sb = new StringBuilder();
+    for (int j = ndx - 2; j <= ndx + 2; j++) {
+      if (j < 0 || j >= m_liVals.size())
+        continue;
+      if (sb.length() > 0)
+        sb.append("\n");
+      TaggedValue tgv = m_liVals.get(j);
+      sb.append("\t").append(tgv.toString());
+      sb.append(j == ndx ? "\t <-- no seq!" : "");
+      if (j == ndx) {
+        if (null != m_sbTraceSeq)
+          m_sbTraceSeq.append("\t no seq ! ^^^^\n");
+        tgv.setNoSeq(true);
+      }
+    }
+    return sb.toString();
+  }
+
+  private void traceScrivi(int p_tagIndx, int p_i) {
+    if (null == m_sbTraceSeq)
+      return;
+    for (int k = p_tagIndx; k < p_i; k++) {
+      TaggedValue tgv = m_liVals.get(k);
+      m_sbTraceSeq.append(tgv.toString()).append("\n");
+    }
   }
 
   @Override

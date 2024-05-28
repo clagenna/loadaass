@@ -34,7 +34,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
@@ -180,6 +179,20 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
         showPdfDoc();
     });
     liPdf.setCellFactory(p -> new ListCell<Path>() {
+      /*
+       * quando passo in hovering col mouse esce un popup { final Popup popup =
+       * new Popup(); popup.setAutoHide(true); final EventHandler<MouseEvent>
+       * hoverListener = new EventHandler<MouseEvent>() {
+       * @Override public void handle(MouseEvent event) { final Label
+       * popupContent = new Label("Mostro popup che contiene = '" + getText() +
+       * "'"); popupContent.setStyle(
+       * "-fx-background-color: #64b5f6; -fx-border-color: #000000; -fx-border-width: 1px; -fx-padding: 5px; -fx-text-fill: white;"
+       * ); popup.getContent().clear(); popup.getContent().addAll(popupContent);
+       * if (event.getEventType() == MouseEvent.MOUSE_EXITED) { popup.hide(); }
+       * else if (event.getEventType() == MouseEvent.MOUSE_ENTERED) {
+       * popup.show(liPdf, event.getScreenX() + 10, event.getScreenY()); } } };
+       * setOnMouseEntered(hoverListener); setOnMouseExited(hoverListener); }
+       */
 
       @Override
       protected void updateItem(Path item, boolean empty) {
@@ -624,6 +637,10 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     return stg;
   }
 
+  public boolean isGenTags() {
+    return m_bGenTag;
+  }
+
   @FXML
   void btClearMsgClick(ActionEvent event) {
     // System.out.println("ReadFattHTMLController.btClearMsgClick()");
@@ -681,11 +698,11 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       s_log.error("Errore caricamento FXML {}", ResultView.CSZ_FXMLNAME, e);
       return;
     }
-//    Node nod = radice;
-//    do {
-//      controller = (ResultView) nod.getProperties().get("refToCntrl");
-//      nod = nod.getParent();
-//    } while (controller == null && nod != null);
+    //    Node nod = radice;
+    //    do {
+    //      controller = (ResultView) nod.getProperties().get("refToCntrl");
+    //      nod = nod.getParent();
+    //    } while (controller == null && nod != null);
 
     Stage stageResults = new Stage();
     Scene scene = new Scene(radice, 600, 440);
@@ -717,18 +734,18 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     cntrlIntesta = null;
     try {
       FXMLLoader fxmlLoad = new FXMLLoader(url);
-//      radice = FXMLLoader.load(url);
+      //      radice = FXMLLoader.load(url);
       radice = fxmlLoad.load();
       cntrlIntesta = fxmlLoad.getController();
     } catch (IOException e) {
       s_log.error("Errore caricamento FXML {}", ViewRecIntesta.CSZ_FXMLNAME, e);
       return;
     }
-//    Node nod = radice;
-//    do {
-//      cntrlIntesta = (ViewRecIntesta) nod.getProperties().get("refToCntrl");
-//      nod = nod.getParent();
-//    } while (cntrlIntesta == null && nod != null);
+    //    Node nod = radice;
+    //    do {
+    //      cntrlIntesta = (ViewRecIntesta) nod.getProperties().get("refToCntrl");
+    //      nod = nod.getParent();
+    //    } while (cntrlIntesta == null && nod != null);
 
     Stage stageViewIntes = new Stage();
     Scene scene = new Scene(radice, 600, 440);

@@ -87,6 +87,7 @@ public class TableViewFiller {
       TableColumn<List<Object>, Object> tbcol = new TableColumn<>(szColNam);
       tbcol.setCellValueFactory(param -> new SimpleObjectProperty<Object>(formattaCella(param.getValue().get(j))));
       tbcol.setStyle(cssAlign);
+
       tableview.getColumns().add(tbcol);
     }
   }
