@@ -41,7 +41,7 @@ public class ValoreBySeq {
    */
   public boolean goodStart(TaggedValue p_cmp) {
     ValoreByTag primo = m_liSeq.get(0);
-    boolean bRet = p_cmp.getTipo() == primo.getTipoDato();
+    boolean bRet = p_cmp.getTipo().isCompatible(primo.getTipoDato());
     if (bRet) {
       // il tipo combacia, vediamo se anche il campo civetta
       if (primo.hasCivetta())
@@ -117,11 +117,10 @@ public class ValoreBySeq {
       if (indx >= p_liCmp.size())
         return 0;
       tgv = p_liCmp.get(indx);
-      if (tg.getTipoDato() != tgv.getTipo()) {
-        s_log.trace("Seq({})[{}]:\"{}\"({}) <> Tgv:\"{}\"({})", // 
+      if ( !tg.getTipoDato().isCompatible(tgv.getTipo())) {
+        s_log.trace("Seq({})[{}]:\"{}\"({}) <> Tgv:\"{}\"({})", //
             getNumSeq(), //
-            (j-1),
-            tg.getFieldName(), // 
+            j - 1, tg.getFieldName(), //
             tg.getTipoDato(), //
             tgv.getTxt(), //
             tgv.getTipo()); //

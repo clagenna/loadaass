@@ -285,7 +285,20 @@ public class TaggedValue implements Comparable<TaggedValue> {
     return vData;
   }
 
+  /**
+   * Cerco di tornare un valore double scelto tra i numerici. Questo è dovuto al
+   * fatto che nelle fatture i valori numerici sono spesso <i>ballerini</i> tra
+   * tipoligie diverse. Vedi la "quantita" nei consumi.
+   *
+   * @return double fra i campi numerici valorizzati
+   */
   public Double getvDbl() {
+    if (null != vDbl)
+      return vDbl;
+    if (null != vImporto)
+      return vImporto.doubleValue();
+    if (null != vInt)
+      return Double.valueOf(vInt);
     return vDbl;
   }
 

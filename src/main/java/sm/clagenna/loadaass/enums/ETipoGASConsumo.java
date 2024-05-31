@@ -9,7 +9,9 @@ public enum ETipoGASConsumo {
   EnergiaSpread1S("S1", "Spread I scaglione"), //
   EnergiaSpread2S("S2", "Spread II scaglione"), //
   EnergiaSpread3S("S3", "Spread III scaglione"), //
-  QuotaFissa("F", "Quota Fissa");
+  QuotaFissa("F", "Quota Fissa"), //
+  // dicitura: "GAS Art.5 D.D. n.93/2023" 
+  RimbArt_5_DD("R5DD", "Art.5");
 
   private String sigla;
   private String dicitura;

@@ -113,8 +113,9 @@ public class ValoreByTag extends Valore {
   }
 
   /**
-   * il campo m_civetta è la stringa che <b>deve</b> essere presente per
-   * riconoscere il tag. Se racchiusa in apici singoli "'" allora diventa un
+   * il campo m_civetta è una o piu stringhe (separate da "pipe='|'") che
+   * <b>deve</b> essere presente per riconoscere il tag.<br/>
+   * Se la singola stringa e' racchiusa in apici singoli "'" allora diventa un
    * match esatto nella {@link #verificaCivetta(TaggedValue)}
    *
    * @param p_sz
@@ -124,8 +125,11 @@ public class ValoreByTag extends Valore {
       return;
     if (m_liCivetta == null)
       m_liCivetta = new ArrayList<>();
-    Civetta civ = new Civetta(p_sz);
-    m_liCivetta.add(civ);
+    String arr[] = p_sz.split("\\|");
+    for (String sz : arr) {
+      Civetta civ = new Civetta(sz);
+      m_liCivetta.add(civ);
+    }
   }
 
   public int getExcRiga() {

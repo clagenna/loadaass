@@ -17,8 +17,8 @@ import org.xml.sax.SAXParseException;
 
 public class Utils {
 
-  public static double                 DBL_XMAX        = 580.0f;
-  public static double                 DBL_YMAX        = 800.0f;
+  public static double                 DBL_XMAX        = 595.0f;
+  public static double                 DBL_YMAX        = 841.0f;
   public static double                 F_A4wi          = 2480f;
   public static double                 F_A4he          = 3508f;
   public static double                 F_XCharMax      = 150f;

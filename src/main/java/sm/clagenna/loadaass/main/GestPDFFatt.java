@@ -58,6 +58,7 @@ public class GestPDFFatt extends Task<String> {
   private String             m_TextFile;
   private String             m_TagFile;
   private String             m_HtmlFile;
+  private String             m_TraceFile;
   private StringBuilder      m_sbTraceSeq;
   private LoadAassController m_controller;
   private boolean            m_bGenTagFile;
@@ -321,13 +322,29 @@ public class GestPDFFatt extends Task<String> {
       m_props = new AppProperties();
       m_props.leggiPropertyFile(propertyFile);
     }
-
     if ( !Files.exists(pdfFile, LinkOption.NOFOLLOW_LINKS))
       throw new ReadFattException("Non esiste " + pdfFile.toString());
-    String szNoExt = FilenameUtils.removeExtension(pdfFile.toString());
-    m_TextFile = szNoExt + ".txt";
-    m_TagFile = szNoExt + "_Tags.txt";
-    m_HtmlFile = szNoExt + ".HTML";
+    Path pthPadre = Paths.get(pdfFile.getParent().toString(), "acqinfo");
+    try {
+      if ( !Files.exists(pthPadre))
+        Files.createDirectories(pthPadre);
+    } catch (IOException e) {
+      String msg = String.format("Non riesco a creare il dir \"%s\"", pthPadre.toString());
+      // s_log.error(msg);
+      throw new ReadFattException(msg);
+    }
+    String padre = pthPadre.toString();
+
+    String szPdfNoExt = FilenameUtils.removeExtension(pdfFile.getFileName().toString());
+    m_TextFile = Paths.get(padre, szPdfNoExt + ".txt").toString();
+    m_TagFile = Paths.get(padre, szPdfNoExt + "_Tags.txt").toString();
+    m_HtmlFile = Paths.get(padre, szPdfNoExt + ".HTML").toString();
+    m_TraceFile = Paths.get(padre, szPdfNoExt + "_TRACE.txt").toString();
+
+    //    String szNoExt = FilenameUtils.removeExtension(pdfFile.toString());
+    //    m_TextFile = szNoExt + ".txt";
+    //    m_TagFile = szNoExt + "_Tags.txt";
+    //    m_HtmlFile = szNoExt + ".HTML";
     m_liRigaHolder = new ArrayList<>();
     tagFactory = new TagValFactory();
     m_controller = (LoadAassController) LoadAassMainApp.getInst().getController();
@@ -485,15 +502,12 @@ public class GestPDFFatt extends Task<String> {
 
     s_log.trace("GestPDFFatt cercaSeqValues  qta tags =" + kk);
     if (m_sbTraceSeq != null && !m_sbTraceSeq.isEmpty()) {
-      String szPdfFile = getPdfFile().toString();
-      int n = szPdfFile.lastIndexOf(".");
-      String szTraceFile = szPdfFile.substring(0, n) + "_TRACE.txt";
-      Path pth = Paths.get(szTraceFile);
+      Path pth = Paths.get(m_TraceFile);
       try {
         Files.deleteIfExists(pth);
         byte[] bys = m_sbTraceSeq.toString().getBytes();
         Files.write(pth, bys);
-        s_log.info("Scritto traceLog {}", szTraceFile);
+        s_log.info("Scritto traceLog {}", m_TraceFile);
       } catch (IOException e) {
         s_log.error("Errore su trace file: {}, msg = {}", pth.toString(), e.getMessage());
       }
