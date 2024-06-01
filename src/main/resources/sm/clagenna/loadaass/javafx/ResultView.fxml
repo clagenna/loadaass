@@ -6,63 +6,67 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity"
-	minHeight="-Infinity" minWidth="-Infinity" prefHeight="409.0"
-	prefWidth="846.0" xmlns="http://javafx.com/javafx/19"
-	xmlns:fx="http://javafx.com/fxml/1"	
-	fx:controller="sm.clagenna.loadaass.javafx.ResultView">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="409.0" prefWidth="846.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sm.clagenna.loadaass.javafx.ResultView">
 	<children>
-		<HBox prefHeight="51.0" prefWidth="843.0"
-			AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-			AnchorPane.topAnchor="0.0">
+		<HBox prefHeight="40.0" prefWidth="846.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 			<children>
 				<Label text="Titolare">
 					<padding>
 						<Insets left="5.0" right="5.0" />
 					</padding>
 				</Label>
-				<ComboBox fx:id="cbIntesta" onAction="#cbIntestaSel"
-					prefHeight="25.0" prefWidth="198.0" />
+				<ComboBox fx:id="cbIntesta" onAction="#cbIntestaSel" prefHeight="25.0" prefWidth="198.0" promptText="Scegli il titolare delle fatture" />
 				<Label layoutX="10.0" layoutY="10.0" text="Query">
 					<padding>
 						<Insets left="5.0" right="5.0" />
 					</padding>
 				</Label>
-				<ComboBox fx:id="cbQuery" onAction="#cbQuerySel"
-					prefHeight="25.0" prefWidth="198.0" />
+				<ComboBox fx:id="cbQuery" onAction="#cbQuerySel" prefHeight="25.0" prefWidth="198.0" promptText="Query di estrazione" />
 				<Label text="Anno">
 					<padding>
 						<Insets left="5.0" right="5.0" />
 					</padding>
 				</Label>
-				<ComboBox fx:id="cbAnnoComp" onAction="#cbAnnoCompSel"
-					prefHeight="25.0" prefWidth="116.0" />
-				<Button fx:id="btCerca" mnemonicParsing="false"
-					onAction="#btCercaClick" text="Cerca">
+				<ComboBox fx:id="cbAnnoComp" onAction="#cbAnnoCompSel" prefHeight="25.0" prefWidth="116.0" promptText="Anno di competenza" />
+				<Button fx:id="btCerca" mnemonicParsing="false" onAction="#btCercaClick" text="Cerca">
 					<HBox.margin>
 						<Insets left="25.0" />
 					</HBox.margin>
 				</Button>
-				<Button fx:id="btExportCsv" layoutX="684.0" layoutY="25.0"
-					mnemonicParsing="false" onAction="#btExportCsvClick" text="To CSV">
+				<Button fx:id="btExportCsv" layoutX="684.0" layoutY="25.0" mnemonicParsing="false" onAction="#btExportCsvClick" text="To CSV">
 					<HBox.margin>
 						<Insets left="20.0" />
 					</HBox.margin>
 				</Button>
 			</children>
 			<padding>
-				<Insets bottom="5.0" left="5.0" right="15.0" top="15.0" />
+				<Insets bottom="5.0" left="5.0" right="9.0" top="7.0" />
 			</padding>
 		</HBox>
-		<TableView fx:id="tblview" layoutY="47.0"
-			maxHeight="1.7976931348623157E308" prefHeight="369.0"
-			prefWidth="843.0" AnchorPane.bottomAnchor="0.0"
-			AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-			AnchorPane.topAnchor="47.0">
+      <HBox layoutY="53.0" prefHeight="40.0" prefWidth="846.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="41.0">
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="9.0" top="7.0" />
+         </padding>
+         <children>
+            <Label text="Mese Iniz">
+               <padding>
+                  <Insets left="5.0" right="5.0" />
+               </padding>
+            </Label>
+            <ComboBox fx:id="cbMeseComp" onAction="#cbMeseCompSel" prefHeight="25.0" prefWidth="198.0" promptText="Scegli il mese specifico" />
+            <Label text="Where SQL">
+               <padding>
+                  <Insets left="5.0" right="5.0" />
+               </padding>
+            </Label>
+            <TextArea fx:id="txWhere" prefHeight="37.0" prefWidth="497.0" promptText="Testo della WHERE SQL " />
+         </children>
+      </HBox>
+		<TableView fx:id="tblview" layoutY="79.0" maxHeight="1.7976931348623157E308" prefHeight="330.0" prefWidth="846.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="79.0">
 			<columns>
 				<TableColumn prefWidth="75.0" text="C1" />
 				<TableColumn prefWidth="75.0" text="C2" />

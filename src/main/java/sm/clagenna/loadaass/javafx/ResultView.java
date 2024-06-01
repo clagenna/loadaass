@@ -19,6 +19,7 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -28,6 +29,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
@@ -54,17 +56,26 @@ public class ResultView implements Initializable, IStartApp {
   private static final String CSZ_QRY_TRUE   = "1=1";
   private static final String CSZ_PROP_QRIES = "Queries.properties";
   //  private static final DecimalFormat s_xfmt                = new DecimalFormat("#0.0000");
-  private static final String QRY_ANNOCOMP = "" //
-      + "SELECT DISTINCT annoComp FROM EEFattura" //
-      + " UNION " //
-      + "SELECT DISTINCT annoComp FROM GASFattura" //
-      + " UNION " //
+  private static final String  QRY_ANNOCOMP  = ""                                          //
+      + "SELECT DISTINCT annoComp FROM EEFattura"                                          //
+      + " UNION "                                                                          //
+      + "SELECT DISTINCT annoComp FROM GASFattura"                                         //
+      + " UNION "                                                                          //
       + "SELECT DISTINCT annoComp FROM H2OFattura;";
-
+  private static final String  QRY_MESESCOMP = ""                                          //
+      + "SELECT DISTINCT strftime('%Y-%m', cs.dtIniz) AS meseComp FROM EEConsumo as cs"    //
+      + " UNION "                                                                          //
+      + "SELECT DISTINCT strftime('%Y-%m', cs.dtIniz) AS meseComp FROM GASConsumo as cs"   //
+      + " UNION "                                                                          //
+      + "SELECT DISTINCT strftime('%Y-%m', cs.dtIniz) AS meseComp FROM H2OConsumo as cs";
   @FXML
   private ComboBox<RecIntesta> cbIntesta;
   @FXML
   private ComboBox<Integer>    cbAnnoComp;
+  @FXML
+  private ComboBox<String>     cbMeseComp;
+  @FXML
+  private TextArea             txWhere;
   @FXML
   private ComboBox<String>     cbQuery;
   @FXML
@@ -86,6 +97,8 @@ public class ResultView implements Initializable, IStartApp {
 
   private RecIntesta m_fltrIntesta;
   private Integer    m_fltrAnnoComp;
+  private String     m_fltrMeseComp;
+  private String     m_fltrWhere;
   private String     m_qry;
 
   private TableViewFiller m_tbvf;
@@ -117,9 +130,10 @@ public class ResultView implements Initializable, IStartApp {
 
     caricaComboTitolare();
     caricaComboAnno();
+    caricaComboMese();
     // caricaComboQueries();
     caricaComboQueriesFromDB();
-
+    txWhere.textProperty().addListener((obj,old,nv) -> txWhereSel(obj, old, nv));
     impostaForma(m_mainProps);
     if (lstage != null)
       lstage.setOnCloseRequest(e -> {
@@ -146,7 +160,23 @@ public class ResultView implements Initializable, IStartApp {
       }
       cbAnnoComp.getItems().addAll(liAnno);
     } catch (SQLException e) {
-      s_log.error("Query {}; err={}", CSZ_FXMLNAME, e.getMessage(), e);
+      s_log.error("Query {}; err={}", QRY_ANNOCOMP, e.getMessage(), e);
+    }
+
+  }
+
+  private void caricaComboMese() {
+    Connection conn = m_db.getConn();
+    List<String> liMese = new ArrayList<>();
+    liMese.add((String) null);
+    try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(QRY_MESESCOMP)) {
+      while (rs.next()) {
+        String mese = rs.getString(1);
+        liMese.add(mese);
+      }
+      cbMeseComp.getItems().addAll(liMese);
+    } catch (SQLException e) {
+      s_log.error("Query {}; err={}", QRY_MESESCOMP, e.getMessage(), e);
     }
 
   }
@@ -251,7 +281,14 @@ public class ResultView implements Initializable, IStartApp {
   @FXML
   void cbAnnoCompSel(ActionEvent event) {
     m_fltrAnnoComp = cbAnnoComp.getSelectionModel().getSelectedItem();
-    s_log.debug("ResultView.cbAnnoCompSel():" + m_fltrAnnoComp);
+    s_log.debug("ResultView.cbAnnoCompSel({}):", m_fltrAnnoComp);
+    abilitaBottoni();
+  }
+
+  @FXML
+  void cbMeseCompSel(ActionEvent event) {
+    m_fltrMeseComp = cbMeseComp.getSelectionModel().getSelectedItem();
+    s_log.debug("ResultView.cbMeseCompSel({}):", m_fltrMeseComp);
     abilitaBottoni();
   }
 
@@ -263,6 +300,15 @@ public class ResultView implements Initializable, IStartApp {
     s_log.debug("ResultView.cbQuerySel():" + szK);
     abilitaBottoni();
   }
+  
+
+  @FXML
+  void txWhereSel(ObservableValue<? extends String> obj, String old, String nval) {
+    m_fltrWhere = nval;
+    s_log.debug("ResultView.txWhereSel({}):", m_fltrWhere);
+    abilitaBottoni();
+  }
+
 
   private void abilitaBottoni() {
     boolean bv = Utils.isValue(m_qry);
@@ -289,14 +335,20 @@ public class ResultView implements Initializable, IStartApp {
     }
     String szLeft = m_qry.substring(0, n + CSZ_QRY_TRUE.length());
     String szRight = m_qry.substring(n + CSZ_QRY_TRUE.length());
-    String szFiltr = "";
+    StringBuilder szFiltr = new StringBuilder();
     if (m_fltrIntesta != null) {
-      szFiltr += String.format(" AND NomeIntesta='%s'", m_fltrIntesta.getNomeIntesta());
+      szFiltr.append(String.format(" AND NomeIntesta='%s'", m_fltrIntesta.getNomeIntesta()));
     }
     if (m_fltrAnnoComp != null) {
-      szFiltr += String.format(" AND annoComp=%d", m_fltrAnnoComp);
+      szFiltr.append(String.format(" AND annoComp=%d", m_fltrAnnoComp));
     }
-    String szQryFltr = String.format("%s %s %s", szLeft, szFiltr, szRight);
+    if (m_fltrMeseComp != null) {
+      szFiltr.append(String.format(" AND meseComp='%s'", m_fltrMeseComp));
+    }
+    if (m_fltrWhere != null) {
+      szFiltr.append(String.format(" AND %s", m_fltrWhere));
+    }
+    String szQryFltr = String.format("%s %s %s", szLeft, szFiltr.toString(), szRight);
     m_tbvf = new TableViewFiller(tblview);
     tblview = m_tbvf.openQuery(szQryFltr);
 
