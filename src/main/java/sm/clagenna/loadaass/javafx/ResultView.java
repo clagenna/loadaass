@@ -27,6 +27,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
@@ -345,7 +346,7 @@ public class ResultView implements Initializable, IStartApp {
     if (m_fltrMeseComp != null) {
       szFiltr.append(String.format(" AND meseComp='%s'", m_fltrMeseComp));
     }
-    if (m_fltrWhere != null) {
+    if (null != m_fltrWhere && m_fltrWhere.length() > 3 ) {
       szFiltr.append(String.format(" AND %s", m_fltrWhere));
     }
     String szQryFltr = String.format("%s %s %s", szLeft, szFiltr.toString(), szRight);
@@ -376,6 +377,9 @@ public class ResultView implements Initializable, IStartApp {
         });
       }
     });
+    tblview.getSelectionModel().setSelectionMode(
+        SelectionMode.MULTIPLE
+    );
     abilitaBottoni();
   }
 

@@ -28,6 +28,7 @@ import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -312,6 +313,18 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     colMsg.setCellValueFactory(new PropertyValueFactory<>("message"));
     cbLevelMin.getItems().addAll(Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL);
     cbLevelMin.getSelectionModel().select(levelMin);
+    // questa
+    tblView.getItems()
+        .addListener((ListChangeListener<Log4jRow>) s -> Platform.runLater(() -> tblView.scrollTo(s.getList().size() - 1)));
+    //    tblView.getItems().addListener(new ListChangeListener<Log4jRow>(){
+    //
+    //      @Override
+    //      public void onChanged(ListChangeListener.Change<? extends Log4jRow> c) {
+    //          // tblView.scrollTo(c.getList().size()-1);
+    //        Platform.runLater( () -> tblView.scrollTo(c.getList().size()-1) );
+    //      }
+    //
+    //  });
   }
 
   @Override

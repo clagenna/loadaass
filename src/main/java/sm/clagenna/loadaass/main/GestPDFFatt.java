@@ -472,7 +472,7 @@ public class GestPDFFatt extends Task<String> {
           m_sbTraceSeq.append(tgv.toString()).append("\n");
 
         // per scartare le righe delle letture stimate
-        bSemaConsEffettivi = seConsumiEffettivi(tgv.getTxt());
+        bSemaConsEffettivi = seConsumiEffettivi(tgv.getTxt(), bSemaConsEffettivi);
         for (Integer ii : m_liSeqs.keySet()) {
           ValoreBySeq seq = m_liSeqs.get(ii);
           if ( !seq.goodStart(tgv))
@@ -514,8 +514,8 @@ public class GestPDFFatt extends Task<String> {
     }
   }
 
-  private boolean seConsumiEffettivi(String p_sz) {
-    boolean bEff = true;
+  private boolean seConsumiEffettivi(String p_sz, boolean bPrecEffStim) {
+    boolean bEff = bPrecEffStim;
     if (p_sz.contains("CONSUMI STIMATI"))
       bEff = false;
     else if (p_sz.contains("CONSUMI EFFETTIVI"))

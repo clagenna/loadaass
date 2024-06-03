@@ -1,14 +1,14 @@
 package sm.clagenna.loadaass.enums;
 
 public enum ETipoEEConsumo {
-  EnergiaPUN("PU", "Corrispettivo Energia PUN"), //
-  EnergiaSpread1S("S1", "Corrispettivo Energia Spread"), //
-  EnergiaSpread2S("S2", "Corrispettivo Energia Spread"), //
-  Energia1S("E1", "Corrispettivo energia"), //
-  Energia2S("E2", "Corrispettivo energia"), //
-  Energia3S("E3", "Corrispettivo energia"), //
-  PotenzaImpegnata("P", "Potenza impegnata"), //
-  RaccRifiuti("R", "Raccolta rifiuti");
+  EnergiaPUN("PU", "Ener. PUN"), //
+  EnergiaSpread1S("S1", "Spread Sc.1"), //
+  EnergiaSpread2S("S2", "Spread Sc.2"), //
+  Energia1S("E1", "Ener. Scgl.1"), //
+  Energia2S("E2", "Ener. Scgl.2"), //
+  Energia3S("E3", "Ener. Scgl.3"), //
+  PotenzaImpegnata("P", "Potenza imp."), //
+  RaccRifiuti("R", "Rifiuti");
 
   private String sigla;
   private String dicitura;
