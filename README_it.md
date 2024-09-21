@@ -1,3 +1,11 @@
+# parametri di lancio
+Ricordarsi di mettere nelle opzioni di lancio:
+-	Run &rarr; Debug Configurations...
+-	(Left Tab) Java Application &rarr; LoadAssMainApp 
+-	(Right Tab)  Arguments &rarr; VM Arguments
+
+	--module-path "c:\Program Files\Java\javafx-sdk-21.0.1\lib" --add-modules javafx.swing,javafx.graphics,javafx.fxml,javafx.media,javafx.web 
+
 # loadaass
 Programma che viene utilizzato per caricare le bollette di luce, acqua e gas dalle fatture emesse dalla società di servizi sammarinese AASS (Azienda Autonoma di Stato per i Servizi di San Marino)
 

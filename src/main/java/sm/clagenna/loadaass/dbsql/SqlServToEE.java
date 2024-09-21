@@ -288,8 +288,7 @@ public class SqlServToEE extends SqlServBase {
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_LettDtPrec);
-      @SuppressWarnings("unchecked")
-      List<Object> li = (List<Object>) vtag.getValore();
+      @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
       s_log.warn("Sembra non ci siano letture!", e);
@@ -328,13 +327,13 @@ public class SqlServToEE extends SqlServBase {
       s_log.error("Sembra non ci sia la fattura!", e);
       return;
     }
+
     ETipoEEConsumo tipoSpesa = null;
     BigDecimal quantita = null;
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_PotCostUnit);
-      @SuppressWarnings("unchecked")
-      List<Object> li = (List<Object>) vtag.getValore();
+      @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
       s_log.warn("Sembra non ci siano righe di consumi!", e);
@@ -342,30 +341,37 @@ public class SqlServToEE extends SqlServBase {
     }
 
     for (int riga = 0; riga < QtaRighe; riga++) {
-      String sz = (String) getValore(Consts.TGV_tipoPotImpegn, riga);
-      Object obj = getValore(Consts.TGV_tipoScaglione, riga);
-      String sca = obj != null && obj instanceof String ? obj.toString() : "*";
-      // System.out.printf("Consumo tipo = %s -- %s\n", sz, sca);
-      tipoSpesa = ETipoEEConsumo.parse(sz, sca);
-      obj = getValore(Consts.TGV_PotConsumo, riga);
-      Integer vv = obj != null && obj instanceof Integer ? (Integer) obj : null;
-      if (vv != null)
-        quantita = new BigDecimal(vv);
-      else
-        quantita = (BigDecimal) getValore(Consts.TGV_PotConsumo2, riga);
-      int k = 1;
+      try {
+        String sz = (String) getValore(Consts.TGV_tipoPotImpegn, riga);
+        Object obj = getValore(Consts.TGV_tipoScaglione, riga);
+        String sca = obj != null && obj instanceof String ? obj.toString() : "*";
+        // System.out.printf("Consumo tipo = %s -- %s\n", sz, sca);
+        tipoSpesa = ETipoEEConsumo.parse(sz, sca);
+        if (null == tipoSpesa) {
+          s_log.warn("Tipo consumo/spesa sconosciuto! (scagl={}) descr=\"{}\"", sca, sz);
+          continue;
+        }
+        obj = getValore(Consts.TGV_PotConsumo, riga);
+        Integer vv = obj != null && obj instanceof Integer ? (Integer) obj : null;
+        if (vv != null)
+          quantita = new BigDecimal(vv);
+        else
+          quantita = (BigDecimal) getValore(Consts.TGV_PotConsumo2, riga);
+        int k = 1;
 
-      setVal(idEEFattura, m_stmt_ins_Consumo, k++, Types.INTEGER);
-      setVal(tipoSpesa.getSigla(), m_stmt_ins_Consumo, k++, Types.VARCHAR);
-      setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotDtDa, riga, k++, Types.DATE);
-      setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotDtA, riga, k++, Types.DATE);
-      setStimato(m_stmt_ins_Consumo, Consts.TGV_PotDtA, riga, k++, Types.DATE);
-      setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotCostUnit, riga, k++, Types.DECIMAL);
-      setVal(quantita, m_stmt_ins_Consumo, k++, Types.DECIMAL);
-      setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotTotale, riga, k++, Types.DECIMAL);
+        setVal(idEEFattura, m_stmt_ins_Consumo, k++, Types.INTEGER);
+        setVal(tipoSpesa.getSigla(), m_stmt_ins_Consumo, k++, Types.VARCHAR);
+        setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotDtDa, riga, k++, Types.DATE);
+        setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotDtA, riga, k++, Types.DATE);
+        setStimato(m_stmt_ins_Consumo, Consts.TGV_PotDtA, riga, k++, Types.DATE);
+        setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotCostUnit, riga, k++, Types.DECIMAL);
+        setVal(quantita, m_stmt_ins_Consumo, k++, Types.DECIMAL);
+        setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotTotale, riga, k++, Types.DECIMAL);
 
-      m_stmt_ins_Consumo.executeUpdate();
-
+        m_stmt_ins_Consumo.executeUpdate();
+      } catch (Exception e) {
+        s_log.error("Errore Ins consumo! {}", e.getMessage(), e);
+      }
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
     s_log.info("Inserito {} righe di Consumo EE per Fattura del {}", QtaRighe, TaggedValue.fmtData.format((Date) obj));

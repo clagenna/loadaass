@@ -19,13 +19,16 @@ import sm.clagenna.loadaass.enums.EServerId;
 import sm.clagenna.loadaass.sys.ex.DatasetException;
 
 public class Dataset implements IDataset, Closeable {
-  private static final Logger       s_log = LogManager.getLogger(Dataset.class);
-  @Getter @Setter private EServerId tipoServer;
-  private DtsCols                   columns;
-  @Getter @Setter private DBConn    db;
+  private static final Logger s_log = LogManager.getLogger(Dataset.class);
+  @Getter @Setter
+  private EServerId           tipoServer;
+  private DtsCols             columns;
+  @Getter @Setter
+  private DBConn              db;
 
-  @Getter private List<DtsRow> righe;
-  private int                  nCurrRow;
+  @Getter
+  private List<DtsRow> righe;
+  private int          nCurrRow;
 
   public Dataset() {
     setTipoServer(EServerId.SqlServer);
@@ -66,12 +69,12 @@ public class Dataset implements IDataset, Closeable {
       while (p_stmt.next()) {
         DtsRow row = new DtsRow(this);
         row.addRow(p_stmt);
-//        if (s_log.isTraceEnabled()) {
-//          System.out.printf("%s\n%s\n", columns.getIntestazione(), row.toString());
-//        }
+        //        if (s_log.isTraceEnabled()) {
+        //          System.out.printf("%s\n%s\n", columns.getIntestazione(), row.toString());
+        //        }
         addRow(row);
       }
-      if (righe != null)
+      if (null != righe)
         nRet = righe.size();
     } catch (SQLException e) {
       s_log.error("Errore in addRow(resultset), msg={}", e.getMessage());

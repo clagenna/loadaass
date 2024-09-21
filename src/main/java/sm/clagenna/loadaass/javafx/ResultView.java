@@ -306,7 +306,7 @@ public class ResultView implements Initializable, IStartApp {
   @FXML
   void txWhereSel(ObservableValue<? extends String> obj, String old, String nval) {
     m_fltrWhere = nval;
-    s_log.debug("ResultView.txWhereSel({}):", m_fltrWhere);
+    // s_log.debug("ResultView.txWhereSel({}):", m_fltrWhere);
     abilitaBottoni();
   }
 

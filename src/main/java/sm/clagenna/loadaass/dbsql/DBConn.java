@@ -36,7 +36,7 @@ public abstract class DBConn implements Closeable {
   public abstract EServerId getServerId();
 
   public abstract int getLastIdentity() throws SQLException;
-  
+
   public abstract String getQueryListViews();
 
   /**
@@ -57,6 +57,7 @@ public abstract class DBConn implements Closeable {
     try {
       changePragma();
       conn = DriverManager.getConnection(szUrl, user, passwd);
+      getLog().info("Apertura DB \"{}\" di tipo {}", getDbname(), getServerId());
     } catch (SQLException e) {
       getLog().error("Error in open connection:{}", e.getMessage(), e);
     }

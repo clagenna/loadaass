@@ -8,12 +8,10 @@ import lombok.Setter;
 import sm.clagenna.loadaass.enums.EServerId;
 
 public class DBConnFactory {
-  private static final Logger s_log     = LogManager.getLogger(DBConnFactory.class);
-  @Getter @Setter
-  private static boolean      singleton = true;
-  private DBConnFactory       s_inst;
-  @Getter @Setter
-  private DBConn              conn;
+  private static final Logger            s_log     = LogManager.getLogger(DBConnFactory.class);
+  @Getter @Setter private static boolean singleton = true;
+  private DBConnFactory                  s_inst;
+  @Getter @Setter private DBConn         conn;
 
   public DBConnFactory() {
     if (DBConnFactory.isSingleton()) {
@@ -55,7 +53,7 @@ public class DBConnFactory {
         conn = new DBConnSQL();
         break;
     }
-    s_log.info("Connessione al DB di tipo {}", tip);
+    //  s_log.info("Connessione al DB \"{}\" di tipo {}", conn.getDbname(), tip);
     return conn;
   }
 }
