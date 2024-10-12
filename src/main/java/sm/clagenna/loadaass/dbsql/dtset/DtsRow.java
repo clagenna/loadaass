@@ -2,6 +2,7 @@ package sm.clagenna.loadaass.dbsql.dtset;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,10 +19,11 @@ import sm.clagenna.loadaass.sys.ParseData;
 import sm.clagenna.loadaass.sys.ex.DatasetException;
 
 public class DtsRow {
-  private static final Logger s_log = LogManager.getLogger(DtsRow.class);
-  private List<Object>        valori;
-  private Dataset             dataset;
-  private ParseData           parsedt;
+  private static final Logger     s_log     = LogManager.getLogger(DtsRow.class);
+  private static SimpleDateFormat s_fmtY4MD = new SimpleDateFormat("yyyy-MM-dd");
+  private List<Object>            valori;
+  private Dataset                 dataset;
+  private ParseData               parsedt;
 
   public DtsRow(Dataset p_dts) throws DatasetException {
     dataset = p_dts;
@@ -99,7 +101,7 @@ public class DtsRow {
     LocalDateTime dt = parsedt.parseData(szVal);
     if (dt != null) {
       p_val = java.sql.Timestamp.valueOf(dt);
-      s_log.trace("Convertito {} in Timestamp {}", szVal, ParseData.s_fmtDtExif.format(dt));
+      // s_log.trace("Convertito {} in Timestamp {}", szVal, ParseData.s_fmtDtExif.format(dt));
     }
     return p_val;
   }
@@ -161,5 +163,26 @@ public class DtsRow {
 
   public List<Object> getValues() {
     return valori;
+  }
+
+  public List<Object> getValues(boolean bEdit) {
+    if ( !bEdit)
+      return valori;
+    List<Object> loc = new ArrayList<Object>();
+    for (Object o : valori) {
+      Object ret = o;
+      String szcls = null != o ? o.getClass().getSimpleName() : "*NULL*";
+      switch (szcls) {
+        case "Timestamp":
+          ret = s_fmtY4MD.format(o);
+          break;
+        default:
+          break;
+      }
+      // String sz = null != o ? o.toString() : "";
+      // System.out.printf("DtsRow.getValues([%s]=\"%s\")\n", szcls, sz);
+      loc.add(ret);
+    }
+    return loc;
   }
 }

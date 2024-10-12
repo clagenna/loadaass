@@ -246,6 +246,8 @@ public class SqlServToH2O extends SqlServBase {
     setValTgv(m_stmt_ins_fattura, Consts.TGV_RestituzAccPrec, 0, k++, Types.DECIMAL);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_TotPagare, 0, k++, Types.DECIMAL);
     setVal(szPdfFileName, m_stmt_ins_fattura, k++, Types.VARCHAR);
+    if (isShowStatement())
+      s_log.info(toString(m_stmt_ins_fattura));
     m_stmt_ins_fattura.executeUpdate();
     addIdFattura(getConnSql().getLastIdentity());
   }
@@ -285,7 +287,8 @@ public class SqlServToH2O extends SqlServBase {
       setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettData, riga, k++, Types.DATE);
       setVal(tp.getSigla(), m_stmt_ins_Lettura, k++, Types.VARCHAR);
       setValTgv(m_stmt_ins_Lettura, Consts.TGV_Consumofatt, riga, k++, Types.DECIMAL);
-
+      if (isShowStatement())
+        s_log.info(toString(m_stmt_ins_Lettura));
       m_stmt_ins_Lettura.executeUpdate();
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
@@ -329,7 +332,8 @@ public class SqlServToH2O extends SqlServBase {
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_lettPrezzoU, riga, k++, Types.DECIMAL);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_LettQta, riga, k++, Types.DECIMAL);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_LettImp, riga, k++, Types.DECIMAL);
-
+      if (isShowStatement())
+        s_log.info(toString(m_stmt_ins_Consumo));
       /* int retsql = */ m_stmt_ins_Consumo.executeUpdate();
       // System.out.println("SqlServToH2O.insertNewConsumo() ret=" + retsql);
     }

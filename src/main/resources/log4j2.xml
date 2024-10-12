@@ -15,6 +15,7 @@
 		
 	</Appenders>
 	<Loggers>
+	    <Logger name="sqlite.core" level="warn" />
 		<Logger name="org.mabb.fontverter.opentype" level="warn">
 			<AppenderRef ref="console"/>
 		</Logger>

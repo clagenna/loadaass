@@ -1,5 +1,7 @@
 package sm.clagenna.loadaass.main;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
@@ -187,11 +190,14 @@ public class GestPDFFatt extends Task<String> {
   public void leggiCercaValori() throws ReadFattPropsException {
     m_liTagVals = new ArrayList<>();
     // qui metto i campi "by tag"
-    for (int ndx = 1; ndx < 100; ndx++) {
+    int qtaBuchi = 0;
+    for (int ndx = 1; ndx < 200 && qtaBuchi < 5; ndx++) {
       String szIndx = String.format("tag%02d", ndx);
       String szTagVal = m_props.getProperty(szIndx);
-      if (szTagVal == null)
-        break;
+      if (szTagVal == null) {
+        qtaBuchi++;
+        continue;
+      }
       String szFldNam = getFieldName(szTagVal);
       ValoreByTag vTag = tagFactory.creaValTag(szFldNam); // new ValoreByTag();
       if ( !vTag.parseProp(szTagVal))
@@ -204,12 +210,12 @@ public class GestPDFFatt extends Task<String> {
     }
     // qui tratto i campi BySeq
     m_liSeqs = new HashMap<>();
-    boolean bContinua = true;
-    for (int nSeq = 1; nSeq < 100 && bContinua; nSeq++) {
+    qtaBuchi = 0;
+    for (int nSeq = 1; nSeq < 100 && qtaBuchi < 5; nSeq++) {
       ValoreBySeq seq = new ValoreBySeq();
       seq.setTagValFactory(tagFactory);
       seq.setNumSeq(nSeq);
-      for (int ndx = 1; ndx < 100 && bContinua; ndx++) {
+      for (int ndx = 1; ndx < 100; ndx++) {
         String szIndx = String.format("seq%02d_%02d", nSeq, ndx);
         String szTagVal = m_props.getProperty(szIndx);
         if (szTagVal == null) {
@@ -220,8 +226,10 @@ public class GestPDFFatt extends Task<String> {
       }
       if (seq.size() > 0)
         m_liSeqs.put(nSeq, seq);
-      else
-        bContinua = false;
+      else {
+        s_log.debug("Non esiste seq={}", nSeq);
+        qtaBuchi++;
+      }
     }
     if (m_liSeqs.size() < 1) {
       throw new ReadFattPropsException("Nelle props. mancano le seq.");
@@ -260,16 +268,28 @@ public class GestPDFFatt extends Task<String> {
   }
 
   private void creaDbValori() {
-    m_liDataset = new ArrayList<>();
-    CreaDataset dts = new CreaDataset();
-    dts.creaDtSet(m_liTagVals);
-    s_log.trace(dts.toString());
-    m_liDataset.add(dts);
-    for (RigaHolder rh : m_liRigaHolder) {
-      dts = new CreaDataset();
-      dts.creaDtSet(rh);
+    String padre = Paths.get(pdfFile.getParent().toString(), "acqinfo").toString();
+    String szPdfNoExt = FilenameUtils.removeExtension(pdfFile.getFileName().toString());
+    String csvFile = Paths.get(padre, szPdfNoExt + ".csv").toString();
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile, false))) {
+      m_liDataset = new ArrayList<>();
+      CreaDataset dts = new CreaDataset();
+      dts.creaDtSet(m_liTagVals);
+      // s_log.trace(dts.toString());
+      bw.write(dts.toString());
+      bw.write("\n");
       m_liDataset.add(dts);
-      s_log.trace(dts.toString());
+      for (RigaHolder rh : m_liRigaHolder) {
+        dts = new CreaDataset();
+        dts.creaDtSet(rh);
+        m_liDataset.add(dts);
+        // s_log.trace(dts.toString());
+        bw.write(dts.toString());
+        bw.write("\n");
+      }
+      s_log.info("Scritto CSV file {}", csvFile);
+    } catch (IOException e) {
+      s_log.error("Errore scrittura file CSV", e);
     }
   }
 

@@ -169,7 +169,7 @@ public class ValoreBySeq {
       //      Object val = p.getValoreNoEx();
       //      String szV = (val != null && !val.getClass().getSimpleName().equals("Object")) ? p.toString() : "*null*";
       //      sz += String.format("(%d){%s}", k++, szV);
-      sz += String.format("(%d){%s}", k++, p.toString());
+      sz += String.format("(%d){%s\n\t}", k++, p.toString());
       vir = "\n\t";
     }
     return sz;

@@ -17,6 +17,7 @@ import sm.clagenna.loadaass.data.Valore;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.enums.ETipoFatt;
 import sm.clagenna.loadaass.sys.ex.ReadFattSQLException;
+import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public abstract class SqlServBase implements ISql {
   @Getter @Setter
@@ -29,6 +30,10 @@ public abstract class SqlServBase implements ISql {
   private ETipoFatt     tipoFatt;
   @Getter @Setter
   private RecIntesta    recIntesta;
+  @Getter @Setter
+  private boolean       showStatement;
+  private Date          dtCongStimatoIniz;
+  private Date          dtCongStimatoFine;
 
   private List<Integer> listIdFattura;
 
@@ -48,6 +53,11 @@ public abstract class SqlServBase implements ISql {
     tagFactory = p_fact;
     setConnSql(p_con);
     setPdfFileName(p_pdf);
+    // per suplire alla mancanza di dicitura "stimata" nelle fatt prima del apr 2022
+
+    dtCongStimatoIniz = getTagFactory().getDate(Consts.TGV_PeriodAccontoDtIniz);
+    dtCongStimatoFine = getTagFactory().getDate(Consts.TGV_PeriodAccontoDtFine);
+    
     init();
   }
 
@@ -80,6 +90,8 @@ public abstract class SqlServBase implements ISql {
         qry = String.format(QRY_del_Fattura, nomeTab, tpf);
         try (PreparedStatement stmt = conn.prepareStatement(qry)) {
           stmt.setInt(1, iidFatt);
+          if (isShowStatement())
+            getLog().info(toString(stmt));
           int qtaDel = stmt.executeUpdate();
           getLog().debug("Cancellato {} righe da {}", qtaDel, nomeTab);
         } catch (SQLException e) {
@@ -147,7 +159,17 @@ public abstract class SqlServBase implements ISql {
 
   /**
    * Va a verificare se il {@link Valore#isStimato(int)} alla riga {riga} ha
-   * impostato il flag di <b>Stimato</b> e lo imposta sullo statement
+   * impostato il flag di <b>Stimato</b> e lo imposta sullo statement<br/>
+   * <b>IMPORTANTE</b><br/>
+   * nelle fatture prima di apr 2022 mancava la dicitura "stimato" nelle letture
+   * :-(<br/>
+   * mi affido alle diciture
+   * 
+   * <pre>
+   * Periodo di fatturazione dal 01/02/2022 al 31/03/2022 
+   * Periodo di conguaglio dal 18/12/2021 al 16/02/2022 
+   * Periodo di acconto dal 17/02/2022 al 31/03/202
+   * </pre>
    *
    * @param p_stmt
    *          statement della query
@@ -167,8 +189,17 @@ public abstract class SqlServBase implements ISql {
       getLog().error("Non esiste il campo \"{}\"", p_tgvf);
       return;
     }
-    int bv = vtag.isStimato(riga) ? 1 : 0;
-    setVal(bv, p_stmt, p_indxStmt, p_sqlType);
+    int bStim = vtag.isStimato(riga) ? 1 : 0;
+    if (null != dtCongStimatoIniz) {
+      Date letDtDa = tagFactory.getDate(Consts.TGV_periodoDa, riga);
+      Date letDtA = tagFactory.getDate(Consts.TGV_periodoA, riga);
+      if (null != letDtDa && null != letDtA) {
+        boolean bv = letDtDa.getTime() >= dtCongStimatoIniz.getTime() && //
+            letDtA.getTime() <= dtCongStimatoFine.getTime();
+        bStim = bv ? 1 : bStim;
+      }
+    }
+    setVal(bStim, p_stmt, p_indxStmt, p_sqlType);
   }
 
   protected void setVal(Object vv, PreparedStatement p_stmt, int p_indxStmt, int p_sqlType) throws SQLException {
@@ -206,6 +237,23 @@ public abstract class SqlServBase implements ISql {
         getLog().error("Il campo {} ha tipo non riconosciuto \"{}\"", p_indxStmt, szClsNam);
         break;
     }
+  }
+
+  public String toString(PreparedStatement stmt) {
+    String qry = stmt.toString();
+    String[] arr = qry.split("parameters=");
+    qry = arr[0];
+    String[] pars = arr[1].replace("[", "").replace("]", "").split(",");
+
+    for (String par : pars) {
+      int n = qry.indexOf("?");
+      if (n < 0)
+        break;
+      String sz1 = qry.substring(0, n);
+      String sz2 = qry.substring(n + 2);
+      qry = String.format("%s%s %s", sz1, par, sz2);
+    }
+    return qry;
   }
 
 }

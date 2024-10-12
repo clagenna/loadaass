@@ -130,6 +130,7 @@ public class LoadAassMainApp extends Application implements IStartApp {
 
   @Override
   public void closeApp(AppProperties prop) {
+    sqlIntesta.saveUpdates();
     Scene sce = primaryStage.getScene();
     double px = sce.getWindow().getX();
     double py = sce.getWindow().getY();

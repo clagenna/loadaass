@@ -3,6 +3,8 @@ package sm.clagenna.loadaass.javafx;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -134,7 +136,7 @@ public class ResultView implements Initializable, IStartApp {
     caricaComboMese();
     // caricaComboQueries();
     caricaComboQueriesFromDB();
-    txWhere.textProperty().addListener((obj,old,nv) -> txWhereSel(obj, old, nv));
+    txWhere.textProperty().addListener((obj, old, nv) -> txWhereSel(obj, old, nv));
     impostaForma(m_mainProps);
     if (lstage != null)
       lstage.setOnCloseRequest(e -> {
@@ -301,7 +303,6 @@ public class ResultView implements Initializable, IStartApp {
     s_log.debug("ResultView.cbQuerySel():" + szK);
     abilitaBottoni();
   }
-  
 
   @FXML
   void txWhereSel(ObservableValue<? extends String> obj, String old, String nval) {
@@ -309,7 +310,6 @@ public class ResultView implements Initializable, IStartApp {
     // s_log.debug("ResultView.txWhereSel({}):", m_fltrWhere);
     abilitaBottoni();
   }
-
 
   private void abilitaBottoni() {
     boolean bv = Utils.isValue(m_qry);
@@ -346,7 +346,7 @@ public class ResultView implements Initializable, IStartApp {
     if (m_fltrMeseComp != null) {
       szFiltr.append(String.format(" AND meseComp='%s'", m_fltrMeseComp));
     }
-    if (null != m_fltrWhere && m_fltrWhere.length() > 3 ) {
+    if (null != m_fltrWhere && m_fltrWhere.length() > 3) {
       szFiltr.append(String.format(" AND %s", m_fltrWhere));
     }
     String szQryFltr = String.format("%s %s %s", szLeft, szFiltr.toString(), szRight);
@@ -377,9 +377,7 @@ public class ResultView implements Initializable, IStartApp {
         });
       }
     });
-    tblview.getSelectionModel().setSelectionMode(
-        SelectionMode.MULTIPLE
-    );
+    tblview.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     abilitaBottoni();
   }
 
@@ -404,8 +402,12 @@ public class ResultView implements Initializable, IStartApp {
       String szLastDir = m_mainProps.getLastDir();
       Path pth = Paths.get(szLastDir, szPdf);
       // System.out.println("ResultView.tableRow_dblclick()="+pth.toString());
-      s_log.info("Apro il file fattura {}", szPdf);
-      m_appmain.getHostServices().showDocument(pth.toString());
+      if ( !Files.exists(pth, LinkOption.NOFOLLOW_LINKS))
+        s_log.error("Il file {} non esiste !", pth.toString());
+      else {
+        s_log.info("Mostro il file PDF fattura \"{}\"", szPdf);
+        m_appmain.getHostServices().showDocument(pth.toString());
+      }
     }
   }
 

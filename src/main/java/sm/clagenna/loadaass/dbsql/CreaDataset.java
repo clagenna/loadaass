@@ -15,8 +15,8 @@ import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class CreaDataset {
   @SuppressWarnings("unused")
-  private static final Logger      s_log  = LogManager.getLogger(CreaDataset.class);
-  private static int               NWIDTH = 20;
+  private static final Logger s_log  = LogManager.getLogger(CreaDataset.class);
+  private static int          NWIDTH = 20;
 
   private Map<String, ValoreByTag> m_map;
   private int                      m_nRighe;
@@ -34,9 +34,14 @@ public class CreaDataset {
         if (m_map.containsKey(vbt.getFieldName()))
           continue;
         Object obj = vbt.getValoreNoEx();
-        if (obj != null && (obj instanceof List<?>)) {
-          int n = ((List<?>) obj).size();
-          m_nRighe = n > m_nRighe ? n : m_nRighe;
+        if (obj != null && vbt.isArray()) {
+          try {
+            List<?> liobj = (List<?>) vbt.getValore();
+            int n = liobj.size();
+            m_nRighe = n > m_nRighe ? n : m_nRighe;
+          } catch (ReadFattValoreException e) {
+            e.printStackTrace();
+          }
         } else
           m_nRighe = 1;
         m_map.put(vbt.getFieldName(), vbt);

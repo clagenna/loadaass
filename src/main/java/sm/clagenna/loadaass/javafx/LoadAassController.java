@@ -570,6 +570,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       s_log.error("Il path \"{}\" non esiste !", pthDirPDF.toString());
       return p_fi;
     }
+    recIntesta.setDirFatture(szFiin);
     reloadListFilesPDF();
     return p_fi;
   }

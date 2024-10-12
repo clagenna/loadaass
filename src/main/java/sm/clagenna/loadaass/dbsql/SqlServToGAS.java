@@ -3,10 +3,13 @@ package sm.clagenna.loadaass.dbsql;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -154,6 +157,7 @@ public class SqlServToGAS extends SqlServBase {
 
     m_stmt_cerca_fattura.setInt(k++, reci.getIdIntestaInt());
     clearIdFattura();
+    System.out.println(toString(m_stmt_cerca_fattura));
     try (ResultSet res = m_stmt_cerca_fattura.executeQuery()) {
       while (res.next()) {
         var idf = res.getInt(1);
@@ -250,6 +254,8 @@ public class SqlServToGAS extends SqlServBase {
     setVal(impostaQuiet, m_stmt_ins_fattura, k++, Types.DECIMAL);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_TotPagare, 0, k++, Types.DECIMAL);
     setVal(szPdfFileName, m_stmt_ins_fattura, k++, Types.VARCHAR);
+    if (isShowStatement())
+      s_log.info(toString(m_stmt_ins_fattura));
     m_stmt_ins_fattura.executeUpdate();
     addIdFattura(getConnSql().getLastIdentity());
   }
@@ -267,8 +273,7 @@ public class SqlServToGAS extends SqlServBase {
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_TipoLett);
-      @SuppressWarnings("unchecked")
-      List<Object> li = (List<Object>) vtag.getValore();
+      @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
       s_log.warn("Sembra non ci siano letture di GAS!");
@@ -289,6 +294,8 @@ public class SqlServToGAS extends SqlServBase {
       setVal(tp.getSigla(), m_stmt_ins_Lettura, k++, Types.VARCHAR);
       setValTgv(m_stmt_ins_Lettura, Consts.TGV_Consumofatt, riga, k++, Types.DECIMAL);
 
+      if (isShowStatement())
+        s_log.info(toString(m_stmt_ins_Lettura));
       m_stmt_ins_Lettura.executeUpdate();
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
@@ -309,13 +316,13 @@ public class SqlServToGAS extends SqlServBase {
     int QtaRighe = -1;
     try {
       ValoreByTag vtag = getTagFactory().get(Consts.TGV_TipoCausale);
-      @SuppressWarnings("unchecked")
-      List<Object> li = (List<Object>) vtag.getValore();
+      @SuppressWarnings("unchecked") List<Object> li = (List<Object>) vtag.getValore();
       QtaRighe = li.size();
     } catch (ReadFattValoreException e) {
       s_log.warn("Sembra non ci siano righe di consumi di GAS!");
       return;
     }
+
 
     for (int riga = 0; riga < QtaRighe; riga++) {
       Object obj = getValore(Consts.TGV_TipoCausale, riga);
@@ -334,6 +341,8 @@ public class SqlServToGAS extends SqlServBase {
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_LettQta, riga, k++, Types.DECIMAL);
       setValTgv(m_stmt_ins_Consumo, Consts.TGV_LettImp, riga, k++, Types.DECIMAL);
 
+      if (isShowStatement())
+        s_log.info(toString(m_stmt_ins_Consumo));
       m_stmt_ins_Consumo.executeUpdate();
     }
     Object obj = getValore(Consts.TGV_DataEmiss);

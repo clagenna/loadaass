@@ -1,8 +1,12 @@
+@if not defined DEBUG set DEBUG=0
+@if %DEBUG% equ 0 echo off
+
 :: -----------------------------------------------
 :: mi sposto nel direttorio di lancio
 for %%a in ( %0 ) do set curr=%%~dpa
 set curr=%curr:~,-1%
 cd /d "%curr%"
+if %DEBUG% GEQ 1 pause
 
 :: -----------------------------------------------
 :: settaggi iniziali
@@ -10,6 +14,7 @@ set DBFILE=SQLaass.sqlite3
 set DT=%DATE:~6,4%-%DATE:~3,2%-%DATE:~0,2%_%TIME:~0,2%-%TIME:~3,2%-%TIME:~6,2%
 set DT=%DT: =0%
 set filOUT=SQLaass_backup_%DT%.bak
+if %DEBUG% GEQ 1 pause
 
 :: -----------------------------------------------
 :: alla ricerca di SQLite
@@ -26,6 +31,8 @@ if "%RES2%" equ "0" goto litok
 goto fine
 
 :litok
+if %DEBUG% GEQ 1 echo sqlite3.exe %DBFILE% ".dump" -gt- %filOUT%
+if %DEBUG% GEQ 1 pause
 sqlite3.exe %DBFILE% ".dump" > %filOUT%
 dir %filOUT%
 

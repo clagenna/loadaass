@@ -3,6 +3,7 @@ package sm.clagenna.loadaass.data;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Pattern;
@@ -36,7 +37,10 @@ public class TaggedValue implements Comparable<TaggedValue> {
   private String     vFattNo;
   private String     vInt15;
 
-  public static DateFormat fmtData = new SimpleDateFormat("dd/MM/yyyy");
+  public static DateFormat           fmtData   = new SimpleDateFormat("dd/MM/yyyy");
+  @SuppressWarnings("unused")
+  private static final DecimalFormat s_dblFmt2 = new DecimalFormat("#,###.00");
+  private static final DecimalFormat s_dblFmt0 = new DecimalFormat("#,###");
 
   private static Pattern patInt15   = Pattern.compile(ETipiDato.IntN15.getRegex());
   private static Pattern patBarrato = Pattern.compile(ETipiDato.Barrato.getRegex());
@@ -349,10 +353,17 @@ public class TaggedValue implements Comparable<TaggedValue> {
     }
     //    String sz = String.format("Top:%d(%d)\tleft:%d, %s=\"%s\"", //
     //        getTop(), getPage(), getLeft(), szIs, getTxt());
-    String sz = String.format("(%.2f,%.2f)\t%d(%d), %d\t%s=\"%s\"", //
-        getFy(), getFx(), //
-        getTop(), getPage(), getLeft(), szIs, getTxt());
+    String sz = String.format("(%d,%s,%s)\t%d, %d\t%s=\"%s\"", //
+        getPage(), //
+        formatDbl(getFy()), formatDbl(getFx()), //
+        getTop(), getLeft(), szIs, getTxt());
     return sz;
+  }
+
+  private String formatDbl(double dbl) {
+    String szRet = s_dblFmt0.format(dbl);
+    szRet = String.format("%5s", szRet);
+    return szRet;
   }
 
   /**

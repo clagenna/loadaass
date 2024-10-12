@@ -101,7 +101,7 @@ public class TableViewFiller {
     }
     for (DtsRow riga : m_dts.getRighe()) {
       ObservableList<Object> tbRiga = FXCollections.observableArrayList();
-      tbRiga.addAll(riga.getValues());
+      tbRiga.addAll(riga.getValues(true));
       dati.add(tbRiga);
     }
     tableview.setItems(dati);

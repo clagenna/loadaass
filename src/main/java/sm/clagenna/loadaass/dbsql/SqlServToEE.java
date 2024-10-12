@@ -272,6 +272,8 @@ public class SqlServToEE extends SqlServBase {
     setVal(impostaQuiet, m_stmt_ins_fattura, k++, Types.DECIMAL);
     setValTgv(m_stmt_ins_fattura, Consts.TGV_TotPagare, 0, k++, Types.DECIMAL);
     setVal(szPdfFileName, m_stmt_ins_fattura, k++, Types.VARCHAR);
+    if (isShowStatement())
+      s_log.info(toString(m_stmt_ins_fattura));
     m_stmt_ins_fattura.executeUpdate();
     addIdFattura(getConnSql().getLastIdentity());
   }
@@ -311,7 +313,8 @@ public class SqlServToEE extends SqlServBase {
       setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettDtAttuale, riga, k++, Types.DATE);
       setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettAttuale, riga, k++, Types.INTEGER);
       setValTgv(m_stmt_ins_Lettura, Consts.TGV_LettConsumo, riga, k++, Types.DECIMAL);
-
+      if (isShowStatement())
+        s_log.info(toString(m_stmt_ins_Lettura));
       m_stmt_ins_Lettura.executeUpdate();
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
@@ -367,7 +370,8 @@ public class SqlServToEE extends SqlServBase {
         setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotCostUnit, riga, k++, Types.DECIMAL);
         setVal(quantita, m_stmt_ins_Consumo, k++, Types.DECIMAL);
         setValTgv(m_stmt_ins_Consumo, Consts.TGV_PotTotale, riga, k++, Types.DECIMAL);
-
+        if (isShowStatement())
+          s_log.info(toString(m_stmt_ins_Consumo));
         m_stmt_ins_Consumo.executeUpdate();
       } catch (Exception e) {
         s_log.error("Errore Ins consumo! {}", e.getMessage(), e);

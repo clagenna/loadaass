@@ -1,5 +1,6 @@
 package sm.clagenna.loadaass.data;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -36,7 +37,7 @@ public class TagValFactory {
         ret.setFieldName(p_nam);
         m_map.put(p_nam, ret);
       } catch (ReadFattValoreException e) {
-        //
+        s_log.error("Errore creaValTag(\"{}\"", p_nam, e);
       }
     } else
       s_log.debug("Il tag \"{}\" esiste gia' vedi:{} !", p_nam, ret.toString());
@@ -47,6 +48,30 @@ public class TagValFactory {
     ValoreByTag ret = m_map.get(p_nam);
     if (ret == null)
       s_log.error("Il tag \"{}\" non e' stato creato !", p_nam);
+    return ret;
+  }
+
+  public Date getDate(String p_nam) {
+    Date ret = null;
+    ValoreByTag tgv = m_map.get(p_nam);
+    try {
+      if (null != tgv)
+        ret = (Date) tgv.getValore();
+    } catch (ReadFattValoreException e) {
+      s_log.error("Il tag \"{}\" e' errato ! err={}", p_nam, e.getMessage());
+    }
+    return ret;
+  }
+  
+  public Date getDate(String p_nam, int riga) {
+    Date ret = null;
+    ValoreByTag tgv = m_map.get(p_nam);
+    try {
+      if (null != tgv)
+        ret = (Date) tgv.getValore(riga);
+    } catch (ReadFattValoreException e) {
+      s_log.error("Il tag \"{}\" e' errato ! err={}", p_nam, e.getMessage());
+    }
     return ret;
   }
 
