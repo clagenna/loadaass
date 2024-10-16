@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import sm.clagenna.loadaass.dbsql.DBConn;
@@ -85,7 +86,21 @@ public class TableViewFiller {
           break;
       }
       TableColumn<List<Object>, Object> tbcol = new TableColumn<>(szColNam);
-      tbcol.setCellValueFactory(param -> new SimpleObjectProperty<Object>(formattaCella(param.getValue().get(j))));
+//      tbcol.setCellFactory(tc -> {
+//        TableCell<List<Object>, Object> cel = new TableCell<List<Object>, Object>();
+//        cel.setOnMouseClicked(e -> {
+//          if ( !cel.isEmpty()) {
+//            Object ob = cel.getItem();
+//            System.out.printf("TableViewFiller.cellMouseClick(%s)\n", ob.toString());
+//          }
+//        });
+//        return cel;
+//      });
+      tbcol.setCellValueFactory(param -> {
+        SimpleObjectProperty<Object> cel = new SimpleObjectProperty<Object>(formattaCella(param.getValue().get(j)));
+        return cel;
+      });
+
       tbcol.setStyle(cssAlign);
 
       tableview.getColumns().add(tbcol);

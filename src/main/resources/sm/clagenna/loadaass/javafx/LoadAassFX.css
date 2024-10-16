@@ -1,9 +1,10 @@
 
 .button {
 	-fx-text-fill: black;
-	-fx-background-color: #ccc;
-	background-color: #ccc;
-	-fx-background-radius: 10 10 0 10;
+	/* background-color: #7AECC6; */  
+	background-color: #3396CF;  
+	-fx-background-color: #3396CF;
+	-fx-background-radius: 20 20 0 20;
 	-fx-padding: 5 10 5 10;
 	padding: 5 10 5 10;
 /*	-fx-border-color: #f4f4; */
@@ -44,9 +45,19 @@
 .newPdf {
 	-webkit-text-fill-color: darkgreen;
 	-fx-text-fill: darkgreen;
+	-fx-background-color: #FAECC6;
+	-webkit-background-color: #FAECC6;
+}
+
+.newPdfsel {
+	-webkit-text-fill-color: darkgreen;
+	-fx-text-fill: darkgreen;
+	-fx-background-color: #C45F0E;
+	-webkit-background-color: #C45F0E;
 }
 
 .oldPdf {
 	-webkit-text-fill-color: black;
 	-fx-text-fill: black;
 }
+

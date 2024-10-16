@@ -80,6 +80,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
   private static final String CSZ_INTESTATARIO = "intestatario";
   private static final String CSZ_SPLITPOS     = "splitpos";
   private static final String CSS_NEW_PDF      = "newPdf";
+  private static final String CSS_NEW_PDFsel   = "newPdfsel";
   private static final String CSS_OLD_PDF      = "oldPdf";
 
   @FXML
@@ -179,47 +180,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       if (ev.getClickCount() > 1)
         showPdfDoc();
     });
-    liPdf.setCellFactory(p -> new ListCell<Path>() {
-      /*
-       * quando passo in hovering col mouse esce un popup { final Popup popup =
-       * new Popup(); popup.setAutoHide(true); final EventHandler<MouseEvent>
-       * hoverListener = new EventHandler<MouseEvent>() {
-       * @Override public void handle(MouseEvent event) { final Label
-       * popupContent = new Label("Mostro popup che contiene = '" + getText() +
-       * "'"); popupContent.setStyle(
-       * "-fx-background-color: #64b5f6; -fx-border-color: #000000; -fx-border-width: 1px; -fx-padding: 5px; -fx-text-fill: white;"
-       * ); popup.getContent().clear(); popup.getContent().addAll(popupContent);
-       * if (event.getEventType() == MouseEvent.MOUSE_EXITED) { popup.hide(); }
-       * else if (event.getEventType() == MouseEvent.MOUSE_ENTERED) {
-       * popup.show(liPdf, event.getScreenX() + 10, event.getScreenY()); } } };
-       * setOnMouseEntered(hoverListener); setOnMouseExited(hoverListener); }
-       */
-
-      @Override
-      protected void updateItem(Path item, boolean empty) {
-        super.updateItem(item, empty);
-        if (item != null) {
-          String szFiPdf = item.getFileName().toString();
-          // System.out.println("updateItem()");
-          setText(item.toString());
-          if ( !sqlPdfs.contains(szFiPdf)) {
-            //This won't work for the first time but will be the one
-            //used in the next calls
-            getStyleClass().remove(CSS_OLD_PDF);
-            getStyleClass().add(CSS_NEW_PDF);
-            // setTextFill(Color.DARKGREEN);
-            // setFont(Font.font(16));
-          } else {
-            // setTextFill(Color.BLACK);
-            // setFont(Font.font(13));
-            // System.out.println("black=" + item.toString());
-            getStyleClass().remove(CSS_NEW_PDF);
-            getStyleClass().add(CSS_OLD_PDF);
-          }
-        }
-      }
-
-    });
+    listViewColorize();
     // -------- combo level -------
     if (props != null) {
       String sz = props.getProperty(CSZ_LOG_LEVEL);
@@ -242,6 +203,72 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     }
     ckLanciaExcel.selectedProperty().addListener(e -> ckLanciaExcelClick(e));
     initTblView();
+  }
+
+  private void listViewColorize() {
+    liPdf.setCellFactory(p -> new ListCell<Path>() {
+      /**
+       * quando passo in hovering col mouse esce un popup
+       * 
+       * <pre>
+       * {
+       *   final Popup popup = new Popup();
+       *   popup.setAutoHide(true);
+       *   final EventHandler<MouseEvent> hoverListener = new EventHandler<MouseEvent>() {
+       *     @Override
+       *     public void handle(MouseEvent event) {
+       *       final Label popupContent = new Label("Mostro popup che contiene = '" + getText() + "'");
+       *       popupContent.setStyle(
+       *           "-fx-background-color: #64b5f6; -fx-border-color: #000000; -fx-border-width: 1px; -fx-padding: 5px; -fx-text-fill: white;");
+       *       popup.getContent().clear();
+       *       popup.getContent().addAll(popupContent);
+       *       if (event.getEventType() == MouseEvent.MOUSE_EXITED) {
+       *         popup.hide();
+       *       } else if (event.getEventType() == MouseEvent.MOUSE_ENTERED) {
+       *         popup.show(liPdf, event.getScreenX() + 10, event.getScreenY());
+       *       }
+       *     }
+       *   };
+       *   setOnMouseEntered(hoverListener);
+       *   setOnMouseExited(hoverListener);
+       * }
+       * </pre>
+       */
+
+      @Override
+      protected void updateItem(Path item, boolean empty) {
+        super.updateItem(item, empty);
+        if (item != null) {
+          String szFiPdf = item.getFileName().toString();
+          String szColo = getStyleClass().toString();
+          setText(item.toString());
+          boolean bsel = isSelected();
+          ObservableList<String> stcl = getStyleClass();
+          if ( !sqlPdfs.contains(szFiPdf)) {
+            //This won't work for the first time but will be the one
+            //used in the next calls
+            stcl.remove(CSS_OLD_PDF);
+            stcl.remove(CSS_NEW_PDF);
+            stcl.remove(CSS_NEW_PDFsel);
+            stcl.add(bsel ? CSS_NEW_PDFsel : CSS_NEW_PDF);
+            // szColo = "New PDF";
+            // setTextFill(Color.DARKGREEN);
+            // setFont(Font.font(16));
+          } else {
+            // setTextFill(Color.BLACK);
+            // setFont(Font.font(13));
+            // System.out.println("black=" + item.toString());
+            stcl.remove(CSS_NEW_PDF);
+            stcl.remove(CSS_NEW_PDFsel);
+            if ( !stcl.contains(CSS_OLD_PDF))
+              stcl.add(CSS_OLD_PDF);
+            // szColo = "old";
+          }
+          // System.out.printf("updateItem(\"%s\" color=%s)\n", szFiPdf, szColo);
+        }
+      }
+
+    });
   }
 
   public SqlServIntest aggiornaCbIntesta() {
@@ -581,7 +608,8 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     szGlobMatch = "glob:*:/**/*.pdf";
     PathMatcher matcher = FileSystems.getDefault().getPathMatcher(szGlobMatch);
     try (Stream<Path> walk = Files.walk(pthDirPDF)) {
-      result = walk.filter(p -> !Files.isDirectory(p)) // not a directory
+      result = walk.filter(p -> !Files.isDirectory(p)) // 
+          // not a directory
           // .map(p -> p.toString().toLowerCase()) // convert path to string
           .filter(f -> matcher.matches(f)) // check end with
           .collect(Collectors.toList()); // collect all matched to a List
@@ -593,6 +621,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     ObservableList<Path> li = FXCollections.observableArrayList(result);
     liPdf.setItems(li);
     liPdf.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+    listViewColorize();
 
     MenuItem mi1 = new MenuItem("Vedi Fattura");
     mi1.setOnAction((ActionEvent ev) -> {
@@ -776,6 +805,19 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       cntrlIntesta.initApp(props);
     }
     stageViewIntes.show();
+  }
+
+  @FXML
+  void mnuRescanDirs(ActionEvent event) {
+    try {
+      getStage().getScene().setCursor(Cursor.WAIT);
+      System.out.println("Menu Rescan Dirspess:" + event.toString());
+      reloadListFilesPDF();
+    } catch (Exception e) {
+      // 
+    } finally {
+      getStage().getScene().setCursor(Cursor.DEFAULT);
+    }
   }
 
   @FXML

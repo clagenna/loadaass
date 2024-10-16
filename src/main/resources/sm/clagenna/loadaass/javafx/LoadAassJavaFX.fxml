@@ -24,7 +24,7 @@
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
-            <MenuItem mnemonicParsing="false" text="New" />
+            <MenuItem mnemonicParsing="false" onAction="#mnuRescanDirs" text="Rescan Dir" />
                   <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#mnuExitClick" text="Quit" />
           </items>
@@ -59,7 +59,7 @@
                <tooltip>
                   <Tooltip text="Viene generato il file con tutti i TAG dopo interpretazione del PDF, Inoltre se in TRACE mode viene scritto il trace delle associazioni delle sequenze" />
                </tooltip></CheckBox>
-            <CheckBox fx:id="ckLanciaExcel" layoutX="556.0" layoutY="49.0" mnemonicParsing="false" text="Lancia Excel">
+            <CheckBox fx:id="ckLanciaExcel" disable="true" layoutX="556.0" layoutY="49.0" mnemonicParsing="false" text="Lancia Excel">
                <tooltip>
                   <Tooltip text="** OBSOLETO ***" />
                </tooltip></CheckBox>

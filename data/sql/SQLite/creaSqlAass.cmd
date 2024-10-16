@@ -10,12 +10,12 @@ if %DEBUG% GEQ 1 pause
 
 :: -----------------------------------------------
 :: settaggi iniziali
-set DBFILE=SQLaass_base.sqlite3
-@echo backup del DB [93m %DBFILE% [0m
-set DT=%DATE:~6,4%-%DATE:~3,2%-%DATE:~0,2%_%TIME:~0,2%-%TIME:~3,2%-%TIME:~6,2%
-set DT=%DT: =0%
-set filOUT=backup\SQLaass_schema_%DT%.sql
-if %DEBUG% GEQ 1 pause
+if "%1" == "" (
+  set DBFILE=SQLAass_Base.sqlite3
+  ) else (
+  set DBFILE=%1
+  )
+@echo Creazione del DB [93m %DBFILE% [0m
 
 :: -----------------------------------------------
 :: alla ricerca di SQLite
@@ -33,24 +33,16 @@ goto fine
 
 :litok
 :: -----------------------------------------------
-:: Lascio solo l'ultimo schema con suffisso .sql
-if not exist SQLaass_schema*.sql goto litok2
-pushd backup
-forfiles /P . /M SQLaass_schema*.sql /C "cmd /c ren @fname.sql @fname.bak"
-popd
+:: istanzio nuovo DB di base (vuoto)
+if %DEBUG% GEQ 1 echo type SQLaass_Schema.sql -PIPE-  sqlite3 %DBFILE%
+if %DEBUG% GEQ 1 pause
 
-:: -----------------------------------------------
-:: eseguo il comando di esport
-:litok2
-@if %DEBUG% GEQ 1 echo sqlite3.exe %DBFILE% ".schema" -gt- %filOUT%
-@if %DEBUG% GEQ 1 pause
-sqlite3.exe %DBFILE% ".schema" > %filOUT%
+if exist %DBFILE% del %DBFILE%
+type SQLaass_Schema.sql |sqlite3 %DBFILE%
 @echo .
-@echo creato schema su file [92m %filOUT% [0m 
+@echo creato DB su file [92m %DBFILE% [0m 
 @echo .
-
-dir %filOUT%
-
+dir %DBFILE%
 
 :fine
 if %DEBUG% GEQ 1 pause

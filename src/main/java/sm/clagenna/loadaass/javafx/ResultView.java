@@ -399,7 +399,8 @@ public class ResultView implements Initializable, IStartApp {
       // System.out.println("PDF = " + szPdf);
     }
     if (null != szPdf) {
-      String szLastDir = m_mainProps.getLastDir();
+      String szLastDir = m_mainProps.getLastDir(); // ??
+      szLastDir = m_fltrIntesta.getDirFatture();
       Path pth = Paths.get(szLastDir, szPdf);
       // System.out.println("ResultView.tableRow_dblclick()="+pth.toString());
       if ( !Files.exists(pth, LinkOption.NOFOLLOW_LINKS))
