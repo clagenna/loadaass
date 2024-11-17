@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum ETipoEEConsumo {
-  EnergiaPUN("PU", "Ener. PUN"), //
   EnergiaSpread1S("S1", "Spread Sc.1"), //
   EnergiaSpread2S("S2", "Spread Sc.2"), //
+  EnergiaPUN("PU", "Ener. PUN"), //
   Energia1S("E1", "Ener. Scgl.1", "Corrispettivo Energia"), //
   Energia2S("E2", "Ener. Scgl.2", "Corrispettivo Energia"), //
   Energia3S("E3", "Ener. Scgl.3", "Corrispettivo Energia"), //
@@ -38,6 +38,10 @@ public enum ETipoEEConsumo {
       // if (p_dic.toLowerCase().contains(vv.dicitura.toLowerCase())) {
       if (vv.containDicitura(p_dic)) {
         ret = vv;
+        if ( p_dic.contains("PUN") ) {
+          ret = EnergiaPUN;
+          break;
+        }
         switch (vv) {
           case Energia1S:
             sz = p_sca != null ? p_sca.substring(0, 1) : "*";

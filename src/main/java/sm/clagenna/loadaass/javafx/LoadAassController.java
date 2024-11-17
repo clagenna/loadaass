@@ -514,7 +514,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     btConvPDF.setDisable(true);
     for (Path pth : sels) {
       try {
-        System.out.println("eseguiConversioneRunTask() ... new Task!");
+        // System.out.println("eseguiConversioneRunTask() ... new Task!");
         GestPDFFatt gpdf = new GestPDFFatt(pth);
         lbProgressione.textProperty().bind(gpdf.messageProperty());
         gpdf.setOnRunning(ev -> {

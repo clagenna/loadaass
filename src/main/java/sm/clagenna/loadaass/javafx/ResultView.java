@@ -427,7 +427,7 @@ public class ResultView implements Initializable, IStartApp {
     }
     LoadAassController cntrl = (LoadAassController) LoadAassMainApp.getInst().getController();
     szFilNam.append(".csv");
-    System.out.println("ResultView.btExportCsvClick():" + szFilNam.toString());
+    // System.out.println("ResultView.btExportCsvClick():" + szFilNam.toString());
     Dataset dts = m_tbvf.getDataset();
     Dts2Csv csv = new Dts2Csv(dts);
     m_CSVfile = szFilNam.toString();

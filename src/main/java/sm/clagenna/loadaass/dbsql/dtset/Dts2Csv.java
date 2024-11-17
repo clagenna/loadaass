@@ -44,7 +44,7 @@ public class Dts2Csv {
     for (DtsRow rig : m_dts.getRighe()) {
       for (Object val : rig.getValues()) {
         if (val != null)
-          m_sb.append(val.toString().replace(",", "."));
+          m_sb.append(val.toString()); // .replace(",", "."));
         m_sb.append(s_flds);
       }
       m_sb.append(lNl);
