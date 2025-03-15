@@ -18,6 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import sm.clagenna.loadaass.data.RecIntesta;
+import sm.clagenna.stdcla.sql.DBConn;
 
 public class SqlServIntest {
 

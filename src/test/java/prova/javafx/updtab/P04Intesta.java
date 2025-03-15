@@ -1,7 +1,7 @@
 package prova.javafx.updtab;
 
 import javafx.beans.property.SimpleStringProperty;
-import sm.clagenna.loadaass.dbsql.dtset.DtsRow;
+import sm.clagenna.stdcla.sql.DtsRow;
 
 public class P04Intesta {
 
@@ -16,11 +16,11 @@ public class P04Intesta {
   }
 
   public P04Intesta(DtsRow rec) {
-    Object vv = rec.getValue("idIntesta");
+    Object vv = rec.get("idIntesta");
     idIntesta = new SimpleStringProperty(String.valueOf(vv));
-    vv = rec.getValue("nomeIntesta");
+    vv = rec.get("nomeIntesta");
     nomeIntesta = new SimpleStringProperty((String) vv);
-    vv = rec.getValue("dirFatture");
+    vv = rec.get("dirFatture");
     dirFatture = new SimpleStringProperty((String) vv);
   }
 

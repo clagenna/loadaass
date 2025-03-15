@@ -7,8 +7,9 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import sm.clagenna.loadaass.data.TaggedValue;
-import sm.clagenna.loadaass.sys.Utils;
+import sm.clagenna.loadaass.data.HtmlValue;
+import sm.clagenna.stdcla.utils.Utils;
+
 
 public class TextPrint {
 
@@ -43,7 +44,7 @@ public class TextPrint {
         m_a4.add(sb.toString());
   }
 
-  public void scrivi(TaggedValue p_cm) {
+  public void scrivi(HtmlValue p_cm) {
     //    int px = (int) (p_cm.left() / DBL_XMAX * F_XCharMax);
     //    int py = (int) (p_cm.top() / DBL_YMAX * F_YRigheMax);
     //    // salto alla pagina

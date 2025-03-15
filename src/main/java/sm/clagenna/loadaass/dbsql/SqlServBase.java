@@ -17,7 +17,7 @@ import sm.clagenna.loadaass.data.Valore;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.enums.ETipoFatt;
 import sm.clagenna.loadaass.sys.ex.ReadFattSQLException;
-import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
+import sm.clagenna.stdcla.sql.DBConn;
 
 public abstract class SqlServBase implements ISql {
   @Getter @Setter
@@ -57,7 +57,7 @@ public abstract class SqlServBase implements ISql {
 
     dtCongStimatoIniz = getTagFactory().getDate(Consts.TGV_PeriodAccontoDtIniz);
     dtCongStimatoFine = getTagFactory().getDate(Consts.TGV_PeriodAccontoDtFine);
-    
+
     init();
   }
 
@@ -164,10 +164,10 @@ public abstract class SqlServBase implements ISql {
    * nelle fatture prima di apr 2022 mancava la dicitura "stimato" nelle letture
    * :-(<br/>
    * mi affido alle diciture
-   * 
+   *
    * <pre>
-   * Periodo di fatturazione dal 01/02/2022 al 31/03/2022 
-   * Periodo di conguaglio dal 18/12/2021 al 16/02/2022 
+   * Periodo di fatturazione dal 01/02/2022 al 31/03/2022
+   * Periodo di conguaglio dal 18/12/2021 al 16/02/2022
    * Periodo di acconto dal 17/02/2022 al 31/03/202
    * </pre>
    *

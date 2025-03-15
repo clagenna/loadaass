@@ -1,6 +1,7 @@
 package sm.clagenna.loadaass.data;
 
 import sm.clagenna.loadaass.dbsql.ISql;
+import sm.clagenna.loadaass.dbsql.SqlServToAnalisi;
 import sm.clagenna.loadaass.dbsql.SqlServToEE;
 import sm.clagenna.loadaass.dbsql.SqlServToGAS;
 import sm.clagenna.loadaass.dbsql.SqlServToH2O;
@@ -24,6 +25,8 @@ public class FactoryFattura {
       case GAS:
         ret = new SqlServToGAS();
         break;
+      case Analisi:
+        ret = new SqlServToAnalisi();
       default:
         break;
     }

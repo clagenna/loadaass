@@ -31,8 +31,8 @@ public class ValoreByTag extends Valore {
     setCivetta(p_szCivetta);
   }
 
-  public boolean verificaCivetta(TaggedValue p_cmp) {
-    boolean bRet = false;
+  public boolean verificaCivetta(HtmlValue p_cmp) {
+    boolean bRet = true;
     if (m_liCivetta == null)
       return bRet;
     for (Civetta civ : m_liCivetta) {
@@ -75,8 +75,8 @@ public class ValoreByTag extends Valore {
    * @throws ReadFattValoreException
    */
   @Override
-  public int estraiValori(List<TaggedValue> p_liCmp, int p_k) throws ReadFattValoreException {
-    TaggedValue cmpVal = p_liCmp.get(p_k);
+  public int estraiValori(List<HtmlValue> p_liCmp, int p_k) throws ReadFattValoreException {
+    HtmlValue cmpVal = p_liCmp.get(p_k);
     if (cmpVal.getTipo() != m_tipoc) {
       s_log.debug("Non assegno a {} il tag {}", this.toString(), cmpVal.toString());
       return 0;
@@ -116,7 +116,7 @@ public class ValoreByTag extends Valore {
    * il campo m_civetta è una o piu stringhe (separate da "pipe='|'") che
    * <b>deve</b> essere presente per riconoscere il tag.<br/>
    * Se la singola stringa e' racchiusa in apici singoli "'" allora diventa un
-   * match esatto nella {@link #verificaCivetta(TaggedValue)}
+   * match esatto nella {@link #verificaCivetta(HtmlValue)}
    *
    * @param p_sz
    */

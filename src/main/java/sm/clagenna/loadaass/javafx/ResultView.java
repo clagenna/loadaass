@@ -12,20 +12,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -33,19 +37,20 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 import sm.clagenna.loadaass.data.RecIntesta;
-import sm.clagenna.loadaass.data.TableViewFiller;
-import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
-import sm.clagenna.loadaass.dbsql.dtset.Dataset;
-import sm.clagenna.loadaass.dbsql.dtset.Dts2Csv;
-import sm.clagenna.loadaass.sys.AppProperties;
-import sm.clagenna.loadaass.sys.IStartApp;
-import sm.clagenna.loadaass.sys.Utils;
-import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
+import sm.clagenna.stdcla.javafx.IStartApp;
+import sm.clagenna.stdcla.javafx.TableViewFiller;
+import sm.clagenna.stdcla.sql.DBConn;
+import sm.clagenna.stdcla.sql.Dataset;
+import sm.clagenna.stdcla.sys.ex.AppPropsException;
+import sm.clagenna.stdcla.sys.ex.DatasetException;
+import sm.clagenna.stdcla.utils.AppProperties;
+import sm.clagenna.stdcla.utils.Utils;
 
 public class ResultView implements Initializable, IStartApp {
   private static final Logger s_log = LogManager.getLogger(ResultView.class);
@@ -55,9 +60,10 @@ public class ResultView implements Initializable, IStartApp {
   private static final String CSZ_PROP_POSRESVIEW_Y = "resview.y";
   private static final String CSZ_PROP_DIMRESVIEW_X = "resview.lx";
   private static final String CSZ_PROP_DIMRESVIEW_Y = "resview.ly";
-  //  private static final String        CSZ_PROP_SPLITPOS     = "resview.splitpos";
+
   private static final String CSZ_QRY_TRUE   = "1=1";
   private static final String CSZ_PROP_QRIES = "Queries.properties";
+
   //  private static final DecimalFormat s_xfmt                = new DecimalFormat("#0.0000");
   private static final String  QRY_ANNOCOMP  = ""                                          //
       + "SELECT DISTINCT annoComp FROM EEFattura"                                          //
@@ -127,7 +133,7 @@ public class ResultView implements Initializable, IStartApp {
       m_prQries = new AppProperties();
       File fi = new File(CSZ_PROP_QRIES);
       m_prQries.leggiPropertyFile(fi, true, true);
-    } catch (ReadFattPropsException e) {
+    } catch (AppPropsException e) {
       s_log.error("Errore caricamento file {} delle Queries", CSZ_PROP_QRIES);
     }
 
@@ -184,44 +190,53 @@ public class ResultView implements Initializable, IStartApp {
 
   }
 
-  @SuppressWarnings("unused")
-  private void caricaComboQueries() {
-    m_mapQry = new HashMap<>();
-    List<String> liQry = new ArrayList<>();
-    Set<Object> keys = m_prQries.getProperties().keySet();
-    for (Object k : keys) {
-      String szKey = k.toString();
-      if ( !szKey.startsWith("QRY."))
-        continue;
-      String szDiz = szKey.substring(4).replace('.', ' ');
-      m_mapQry.put(szDiz, szKey);
-      liQry.add(szDiz);
-    }
-    cbQuery.getItems().addAll(liQry);
-  }
+  //  @SuppressWarnings("unused")
+  //  private void caricaComboQueries() {
+  //    m_mapQry = new HashMap<>();
+  //    List<String> liQry = new ArrayList<>();
+  //    Set<Object> keys = m_prQries.getProperties().keySet();
+  //    for (Object k : keys) {
+  //      String szKey = k.toString();
+  //      if ( !szKey.startsWith("QRY."))
+  //        continue;
+  //      String szDiz = szKey.substring(4).replace('.', ' ');
+  //      m_mapQry.put(szDiz, szKey);
+  //      liQry.add(szDiz);
+  //    }
+  //    cbQuery.getItems().addAll(liQry);
+  //  }
+  //
+  //  private void caricaComboQueriesFromDB() {
+  //    Connection conn = m_db.getConn();
+  //    m_mapQry = new HashMap<>();
+  //    List<String> liQry = new ArrayList<>();
+  //    liQry.add((String) null);
+  //    String szQryAllViews = m_db.getQueryListViews();
+  //    try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(szQryAllViews)) {
+  //      while (rs.next()) {
+  //        String szViewName = rs.getString(1);
+  //        if ( ! (szViewName.startsWith("EE") || //
+  //            szViewName.startsWith("GAS") || //
+  //            szViewName.startsWith("H2O")))
+  //          continue;
+  //        liQry.add(szViewName);
+  //        m_mapQry.put(szViewName, szViewName);
+  //        String szQry = String.format("SELECT * FROM %s WHERE 1=1", szViewName);
+  //        m_prQries.getProperties().put(szViewName, szQry);
+  //      }
+  //      cbQuery.getItems().addAll(liQry);
+  //    } catch (SQLException e) {
+  //      s_log.error("Query {}; err={}", CSZ_FXMLNAME, e.getMessage(), e);
+  //    }
+  //  }
 
   private void caricaComboQueriesFromDB() {
-    Connection conn = m_db.getConn();
-    m_mapQry = new HashMap<>();
-    List<String> liQry = new ArrayList<>();
-    liQry.add((String) null);
-    String szQryAllViews = m_db.getQueryListViews();
-    try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(szQryAllViews)) {
-      while (rs.next()) {
-        String szViewName = rs.getString(1);
-        if ( ! (szViewName.startsWith("EE") || //
-            szViewName.startsWith("GAS") || //
-            szViewName.startsWith("H2O")))
-          continue;
-        liQry.add(szViewName);
-        m_mapQry.put(szViewName, szViewName);
-        String szQry = String.format("SELECT * FROM %s WHERE 1=1", szViewName);
-        m_prQries.getProperties().put(szViewName, szQry);
-      }
-      cbQuery.getItems().addAll(liQry);
-    } catch (SQLException e) {
-      s_log.error("Query {}; err={}", CSZ_FXMLNAME, e.getMessage(), e);
-    }
+    m_mapQry = m_db.getListDBViews();
+    List<String> liNam = new ArrayList<String>(m_mapQry.keySet());
+    Collections.sort(liNam);
+    cbQuery.getItems().clear();
+    cbQuery.getItems().add((String) null);
+    cbQuery.getItems().addAll(liNam);
   }
 
   private void impostaForma(AppProperties p_props) {
@@ -235,11 +250,25 @@ public class ResultView implements Initializable, IStartApp {
       return;
     }
 
+    ObservableList<Screen> screenSizes = Screen.getScreens();
+    int minX = 0, maxX = 0, minY = 0, maxY = 0;
+    for (Screen scr : screenSizes) {
+      Rectangle2D rect = scr.getBounds();
+      minX = (int) (rect.getMinX() < minX ? rect.getMinX() : minX);
+      maxX = (int) (rect.getMaxX() > maxX ? rect.getMaxX() : maxX);
+      minY = (int) (rect.getMinY() < minY ? rect.getMinY() : minY);
+      maxY = (int) (rect.getMaxY() > maxY ? rect.getMaxY() : maxY);
+    }
+
     int px = p_props.getIntProperty(CSZ_PROP_POSRESVIEW_X);
     int py = p_props.getIntProperty(CSZ_PROP_POSRESVIEW_Y);
     int dx = p_props.getIntProperty(CSZ_PROP_DIMRESVIEW_X);
     int dy = p_props.getIntProperty(CSZ_PROP_DIMRESVIEW_Y);
     if (px * py != 0) {
+      px = px < minX ? minX : px;
+      px = px > maxX ? maxX - 100 : px;
+      py = py < minY ? minY : py;
+      py = py > maxY ? maxY - 100 : py;
       lstage.setX(px);
       lstage.setY(py);
       lstage.setWidth(dx);
@@ -298,8 +327,7 @@ public class ResultView implements Initializable, IStartApp {
   @FXML
   void cbQuerySel(ActionEvent event) {
     String szK = cbQuery.getSelectionModel().getSelectedItem();
-    String szNam = m_mapQry.get(szK);
-    m_qry = m_prQries.getProperty(szNam);
+    m_qry = m_mapQry.get(szK);
     s_log.debug("ResultView.cbQuerySel():" + szK);
     abilitaBottoni();
   }
@@ -350,8 +378,36 @@ public class ResultView implements Initializable, IStartApp {
       szFiltr.append(String.format(" AND %s", m_fltrWhere));
     }
     String szQryFltr = String.format("%s %s %s", szLeft, szFiltr.toString(), szRight);
-    m_tbvf = new TableViewFiller(tblview);
-    tblview = m_tbvf.openQuery(szQryFltr);
+    m_tbvf = new TableViewFiller(tblview, m_db);
+    m_tbvf.setSzQry(szQryFltr);
+    // m_tbvf.openQuery();
+
+    ExecutorService backGrService = Executors.newFixedThreadPool(1);
+    Platform.runLater(new Runnable() {
+      @Override
+      public void run() {
+        lstage.getScene().setCursor(Cursor.WAIT);
+        btCerca.setDisable(true);
+      }
+    });
+
+    try {
+      m_tbvf.setOnRunning(ev -> {
+        s_log.debug("TableViewFiller task running...");
+      });
+      m_tbvf.setOnSucceeded(ev -> {
+        s_log.debug("TableViewFiller task Finished!");
+        endTask();
+      });
+      m_tbvf.setOnFailed(ev -> {
+        s_log.debug("TableViewFiller task failure");
+        endTask();
+      });
+      backGrService.execute(m_tbvf);
+    } catch (Exception e) {
+      s_log.error("Errore task TableViewFiller");
+    }
+    backGrService.shutdown();
 
     //    tblview.setRowFactory( tbl -> new  TableRow<Object>() {
     //            TableRow<Object> row = this;
@@ -379,6 +435,18 @@ public class ResultView implements Initializable, IStartApp {
     });
     tblview.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     abilitaBottoni();
+  }
+
+  private void endTask() {
+    Platform.runLater(new Runnable() {
+      @Override
+      public void run() {
+        lstage.getScene().setCursor(Cursor.DEFAULT);
+        btCerca.setDisable(false);
+        btExportCsv.setDisable(false);
+      }
+    });
+
   }
 
   protected void tableRow_dblclick(TableRow<List<Object>> row) {
@@ -428,10 +496,14 @@ public class ResultView implements Initializable, IStartApp {
     LoadAassController cntrl = (LoadAassController) LoadAassMainApp.getInst().getController();
     szFilNam.append(".csv");
     // System.out.println("ResultView.btExportCsvClick():" + szFilNam.toString());
-    Dataset dts = m_tbvf.getDataset();
-    Dts2Csv csv = new Dts2Csv(dts);
-    m_CSVfile = szFilNam.toString();
-    csv.saveFile(m_CSVfile);
+    try {
+      Dataset dts = m_tbvf.getDataset();
+      //    Dts2Csv csv = new Dts2Csv(dts);
+      m_CSVfile = szFilNam.toString();
+      dts.savecsv(Paths.get(m_CSVfile));
+    } catch (DatasetException e) {
+      s_log.error("Save CSV file {} andata male ! err={}", szFilNam, e.getMessage(), e);
+    }
     if (cntrl.isLanciaExc())
       lanciaExcel2();
     abilitaBottoni();
@@ -470,6 +542,12 @@ public class ResultView implements Initializable, IStartApp {
     }
     if (rc != 0)
       throw new RuntimeException("Start Excel failed rc=" + rc);
+  }
+
+  @Override
+  public void changeSkin() {
+    // TODO Auto-generated method stub
+
   }
 
 }

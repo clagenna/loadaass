@@ -15,10 +15,12 @@ import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 public abstract class Valore {
   private static final Logger s_log = LogManager.getLogger(Valore.class);
 
-  private static final SimpleDateFormat s_fmtDt = new SimpleDateFormat("dd/MM/yyyy");
+  public static final String            NULL_VAL = "*---*";
+  private static final SimpleDateFormat s_fmtDt  = new SimpleDateFormat("dd/MM/yyyy");
 
   protected String      m_fldNam;
   protected ETipiDato   m_tipoc;
+  protected boolean     m_AllNumerics;
   protected boolean     m_isArray;
   private List<Object>  valore;
   private List<Boolean> stimati;
@@ -39,18 +41,18 @@ public abstract class Valore {
    * @param p_k
    * @return
    */
-  public abstract int estraiValori(List<TaggedValue> p_liCmp, int p_k) throws ReadFattValoreException;
+  public abstract int estraiValori(List<HtmlValue> p_liCmp, int p_k) throws ReadFattValoreException;
 
   public void assegna(ETipiDato p_tipoc, boolean p_bArray) {
     m_tipoc = p_tipoc;
     m_isArray = p_bArray;
   }
 
-  public void assegnaValDaCampo(TaggedValue p_cmp) throws ReadFattValoreException {
+  public void assegnaValDaCampo(HtmlValue p_cmp) throws ReadFattValoreException {
     assegnaValDaCampo(p_cmp, 0);
   }
 
-  public void assegnaValDaCampo(TaggedValue p_cmp, int p_riga) throws ReadFattValoreException {
+  public void assegnaValDaCampo(HtmlValue p_cmp, int p_riga) throws ReadFattValoreException {
     initValore(p_riga);
     if ( !m_isArray && !valore.get(0).getClass().getSimpleName().equals("Object")) {
       String sz = String.format("Doppia assegnazione campo %s", m_fldNam);
@@ -79,6 +81,15 @@ public abstract class Valore {
         break;
       case IntN15:
         vv = p_cmp.getTxt();
+        break;
+      case Aster:
+      case Perc:
+      case Minus:
+      case Less:
+        vv = p_cmp.getTxt();
+        break;
+      case MinMax:
+        vv = p_cmp.getMinMax();
         break;
       default:
         break;
@@ -169,6 +180,12 @@ public abstract class Valore {
     return valore.get(0);
   }
 
+  public int size() {
+    if ( !isArray() || null == valore)
+      return 0;
+    return valore.size();
+  }
+
   public Object getValore(int rig) throws ReadFattValoreException {
     if (valore == null || valore.size() == 0) {
       String sz = String.format("campo %s non e' assegnato", m_fldNam);
@@ -182,7 +199,7 @@ public abstract class Valore {
   }
 
   public boolean isStimato(int rig) {
-    if (!m_isArray || (stimati == null))
+    if ( !m_isArray || stimati == null)
       return false;
     if (rig < 0 || rig >= valore.size()) {
       s_log.error("isStimato index out of bounds : {}", rig);
@@ -221,6 +238,14 @@ public abstract class Valore {
     return m_tipoc;
   }
 
+  public void setAllNumerics(boolean bv) {
+    m_AllNumerics = bv;
+  }
+
+  public boolean isAllNumerics() {
+    return m_AllNumerics;
+  }
+
   @Override
   public String toString() {
     String sz = String.format("%s%s[%s]\t=", m_fldNam, m_isArray ? "[]" : " ", m_tipoc);
@@ -251,8 +276,13 @@ public abstract class Valore {
     return sz;
   }
 
+  public String toStringLess() {
+    String sz = String.format("%s[%s]", m_fldNam, m_tipoc);
+    return sz;
+  }
+
   public String formattaObj(Object p_ob) {
-    String ret = "*---*";
+    String ret = NULL_VAL;
     if (p_ob == null || p_ob.getClass().getSimpleName().equals("Object"))
       return ret;
     if (p_ob instanceof String sz) {

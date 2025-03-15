@@ -16,12 +16,13 @@ import org.apache.logging.log4j.Logger;
 
 import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.data.TagValFactory;
-import sm.clagenna.loadaass.data.TaggedValue;
+import sm.clagenna.loadaass.data.HtmlValue;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.enums.ETipoEEConsumo;
 import sm.clagenna.loadaass.enums.ETipoLettProvvenienza;
 import sm.clagenna.loadaass.sys.ex.ReadFattSQLException;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
+import sm.clagenna.stdcla.sql.DBConn;
 
 public class SqlServToEE extends SqlServBase {
 
@@ -318,7 +319,7 @@ public class SqlServToEE extends SqlServBase {
       m_stmt_ins_Lettura.executeUpdate();
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
-    s_log.info("Inserito {} righe di lettura EE per Fattura del {}", QtaRighe, TaggedValue.fmtData.format((Date) obj));
+    s_log.info("Inserito {} righe di lettura EE per Fattura del {}", QtaRighe, HtmlValue.fmtData.format((Date) obj));
   }
 
   @Override
@@ -378,7 +379,7 @@ public class SqlServToEE extends SqlServBase {
       }
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
-    s_log.info("Inserito {} righe di Consumo EE per Fattura del {}", QtaRighe, TaggedValue.fmtData.format((Date) obj));
+    s_log.info("Inserito {} righe di Consumo EE per Fattura del {}", QtaRighe, HtmlValue.fmtData.format((Date) obj));
   }
 
 }

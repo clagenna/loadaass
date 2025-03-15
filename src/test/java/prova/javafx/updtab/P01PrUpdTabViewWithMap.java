@@ -21,13 +21,14 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import sm.clagenna.loadaass.dbsql.DBConn;
-import sm.clagenna.loadaass.dbsql.DBConnFactory;
-import sm.clagenna.loadaass.dbsql.dtset.Dataset;
-import sm.clagenna.loadaass.dbsql.dtset.DtsCol;
-import sm.clagenna.loadaass.dbsql.dtset.DtsCols;
-import sm.clagenna.loadaass.dbsql.dtset.DtsRow;
-import sm.clagenna.loadaass.sys.AppProperties;
+import sm.clagenna.stdcla.sql.DBConn;
+import sm.clagenna.stdcla.sql.DBConnFactory;
+import sm.clagenna.stdcla.sql.Dataset;
+import sm.clagenna.stdcla.sql.DtsCol;
+import sm.clagenna.stdcla.sql.DtsCols;
+import sm.clagenna.stdcla.sql.DtsRow;
+import sm.clagenna.stdcla.sys.ex.AppPropsException;
+import sm.clagenna.stdcla.utils.AppProperties;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
 
 /**
@@ -58,11 +59,11 @@ public class P01PrUpdTabViewWithMap extends Application {
     fillTableView();
   }
 
-  private void openProps() throws FileNotFoundException, ReadFattPropsException {
+  private void openProps() throws FileNotFoundException, ReadFattPropsException, AppPropsException {
     AppProperties.setSingleton(false);
     try {
       m_prop = new AppProperties();
-    } catch (ReadFattPropsException e) {
+    } catch (AppPropsException e) {
       e.printStackTrace();
     }
     File fiProp = new File(CSZ_FILE_PROPERTIES);

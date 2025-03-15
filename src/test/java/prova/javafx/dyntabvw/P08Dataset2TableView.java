@@ -16,14 +16,15 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import sm.clagenna.loadaass.dbsql.DBConn;
-import sm.clagenna.loadaass.dbsql.DBConnFactory;
-import sm.clagenna.loadaass.dbsql.dtset.Dataset;
-import sm.clagenna.loadaass.dbsql.dtset.DtsCol;
-import sm.clagenna.loadaass.dbsql.dtset.DtsCols;
-import sm.clagenna.loadaass.dbsql.dtset.DtsRow;
-import sm.clagenna.loadaass.sys.AppProperties;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
+import sm.clagenna.stdcla.sql.DBConn;
+import sm.clagenna.stdcla.sql.DBConnFactory;
+import sm.clagenna.stdcla.sql.Dataset;
+import sm.clagenna.stdcla.sql.DtsCol;
+import sm.clagenna.stdcla.sql.DtsCols;
+import sm.clagenna.stdcla.sql.DtsRow;
+import sm.clagenna.stdcla.sys.ex.AppPropsException;
+import sm.clagenna.stdcla.utils.AppProperties;
 
 public class P08Dataset2TableView extends Application {
   private static final String     CSZ_FILE_PROPERTIES = "loadAass.properties";
@@ -44,13 +45,9 @@ public class P08Dataset2TableView extends Application {
     fillTableView();
   }
 
-  private void openProps() throws FileNotFoundException, ReadFattPropsException {
+  private void openProps() throws FileNotFoundException, ReadFattPropsException, AppPropsException {
     AppProperties.setSingleton(false);
-    try {
-      m_prop = new AppProperties();
-    } catch (ReadFattPropsException e) {
-      e.printStackTrace();
-    }
+    m_prop = new AppProperties();
     File fiProp = new File(CSZ_FILE_PROPERTIES);
     if ( !fiProp.exists())
       throw new FileNotFoundException(CSZ_FILE_PROPERTIES);

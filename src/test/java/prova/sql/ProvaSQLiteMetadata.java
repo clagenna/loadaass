@@ -16,11 +16,12 @@ import org.junit.Test;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteConfig.Pragma;
 
-import sm.clagenna.loadaass.dbsql.DBConn;
-import sm.clagenna.loadaass.dbsql.DBConnFactory;
+import sm.clagenna.stdcla.sql.DBConn;
+import sm.clagenna.stdcla.sql.DBConnFactory;
+import sm.clagenna.stdcla.sys.ex.AppPropsException;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
-import sm.clagenna.loadaass.sys.AppProperties;
-import sm.clagenna.loadaass.sys.Utils;
+import sm.clagenna.stdcla.utils.AppProperties;
+import sm.clagenna.stdcla.utils.Utils;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
 
 public class ProvaSQLiteMetadata {
@@ -37,7 +38,7 @@ public class ProvaSQLiteMetadata {
   }
 
   @Test
-  public void doTheJob() throws ReadFattPropsException, SQLException, ParseException {
+  public void doTheJob() throws ReadFattPropsException, SQLException, ParseException, AppPropsException {
     m_prop = new AppProperties();
     m_prop.leggiPropertyFile(new File("loadAass.properties"), true, false);
     apriDbSqlite();

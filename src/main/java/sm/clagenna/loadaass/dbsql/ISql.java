@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.data.TagValFactory;
 import sm.clagenna.loadaass.enums.ETipoFatt;
+import sm.clagenna.stdcla.sql.DBConn;
 
 public interface ISql {
 

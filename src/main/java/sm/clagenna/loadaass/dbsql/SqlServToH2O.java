@@ -16,12 +16,13 @@ import org.apache.logging.log4j.Logger;
 
 import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.data.TagValFactory;
-import sm.clagenna.loadaass.data.TaggedValue;
+import sm.clagenna.loadaass.data.HtmlValue;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.enums.ETipoH2OConsumo;
 import sm.clagenna.loadaass.enums.ETipoLettProvvenienza;
 import sm.clagenna.loadaass.sys.ex.ReadFattSQLException;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
+import sm.clagenna.stdcla.sql.DBConn;
 
 public class SqlServToH2O extends SqlServBase {
 
@@ -292,7 +293,7 @@ public class SqlServToH2O extends SqlServBase {
       m_stmt_ins_Lettura.executeUpdate();
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
-    s_log.info("Inserito {} righe di consumo H2O per Fattura del {}", QtaRighe, TaggedValue.fmtData.format((Date) obj));
+    s_log.info("Inserito {} righe di consumo H2O per Fattura del {}", QtaRighe, HtmlValue.fmtData.format((Date) obj));
   }
 
   @Override
@@ -338,7 +339,7 @@ public class SqlServToH2O extends SqlServBase {
       // System.out.println("SqlServToH2O.insertNewConsumo() ret=" + retsql);
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
-    s_log.info("Inserito {} righe di lettura H2O per Fattura del {}", QtaRighe, TaggedValue.fmtData.format((Date) obj));
+    s_log.info("Inserito {} righe di lettura H2O per Fattura del {}", QtaRighe, HtmlValue.fmtData.format((Date) obj));
   }
 
 }

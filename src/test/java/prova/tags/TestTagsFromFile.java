@@ -6,11 +6,12 @@ import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import sm.clagenna.loadaass.data.TaggedValue;
+import sm.clagenna.loadaass.data.HtmlValue;
 import sm.clagenna.loadaass.enums.ETipoFatt;
 import sm.clagenna.loadaass.main.GestPDFFatt;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
 import sm.clagenna.loadaass.tohtml.FromPdf2Html;
+import sm.clagenna.stdcla.sys.ex.AppPropsException;
 
 public class TestTagsFromFile {
   private static final String CSZ_PROPERTIES = "src/main/resources/FattGAS_HTML.properties";
@@ -65,13 +66,13 @@ public class TestTagsFromFile {
     try {
       Files.lines(Paths.get(p_fi)) //
           .forEach(l -> parseRiga(l));
-      for (TaggedValue cv : m_pdf2h.getListCampi()) {
+      for (HtmlValue cv : m_pdf2h.getListCampi()) {
         System.out.println("tgVal=" + cv.toString());
       }
       m_gest.discerniTipoPropContenuto();
       m_gest.leggiCercaValori();
       m_gest.cercaTagValues();
-    } catch (IOException e) {
+    } catch (IOException | AppPropsException e) {
       e.printStackTrace();
     }
   }

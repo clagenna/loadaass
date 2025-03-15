@@ -14,11 +14,12 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import lombok.Getter;
 import lombok.Setter;
 import sm.clagenna.loadaass.data.RecIntesta;
-import sm.clagenna.loadaass.dbsql.DBConn;
-import sm.clagenna.loadaass.dbsql.DBConnSQL;
+import sm.clagenna.stdcla.sql.DBConn;
+import sm.clagenna.stdcla.sql.DBConnSQL;
+import sm.clagenna.stdcla.sys.ex.AppPropsException;
+import sm.clagenna.stdcla.utils.ILog4jReader;
+import sm.clagenna.stdcla.utils.MioAppender;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
-import sm.clagenna.loadaass.sys.ILog4jReader;
-import sm.clagenna.loadaass.sys.MioAppender;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
 
@@ -45,7 +46,7 @@ public class ReadFattHTMLMain implements ILog4jReader {
     //
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws AppPropsException {
     ReadFattHTMLMain app = new ReadFattHTMLMain();
     inst = app;
     try {
@@ -64,7 +65,7 @@ public class ReadFattHTMLMain implements ILog4jReader {
     // String fiProp = m_cmdParse.getPropertyFile();
   }
 
-  public void vaiColTango() throws ReadFattException {
+  public void vaiColTango() throws ReadFattException, AppPropsException {
     Path pth = null;
 
     GestPDFFatt gpdf = new GestPDFFatt(m_cmdParse.getPDFFatt());
@@ -88,7 +89,7 @@ public class ReadFattHTMLMain implements ILog4jReader {
         throw new ReadFattPropsException(String.format("L'intestatario \"%s\" non esiste nel DB", m_cmdParse.getIntesta()));
       gpdf.setRecIntesta(intes);
       gpdf.convertiPDF();
-    } catch (IOException e) {
+    } catch (IOException | AppPropsException e) {
       s_log.error("Errore di conversione {}", gpdf.getPdfFile(), e);
       // e.printStackTrace();
     }

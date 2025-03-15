@@ -17,7 +17,7 @@ Le regole per la scoperta dei campi sono memorizzate nel file delle proprietà c
 2.  FattGAS_HTML.properties
 3.  FattH2O_HTML.properties
 
-where:
+dove:
 
  - EE sta' per  (Energia Elettrica)
  - GAS sta' per GAS

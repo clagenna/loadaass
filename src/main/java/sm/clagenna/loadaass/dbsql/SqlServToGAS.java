@@ -3,13 +3,10 @@ package sm.clagenna.loadaass.dbsql;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -19,12 +16,13 @@ import org.apache.logging.log4j.Logger;
 
 import sm.clagenna.loadaass.data.RecIntesta;
 import sm.clagenna.loadaass.data.TagValFactory;
-import sm.clagenna.loadaass.data.TaggedValue;
+import sm.clagenna.loadaass.data.HtmlValue;
 import sm.clagenna.loadaass.data.ValoreByTag;
 import sm.clagenna.loadaass.enums.ETipoGASConsumo;
 import sm.clagenna.loadaass.enums.ETipoLettProvvenienza;
 import sm.clagenna.loadaass.sys.ex.ReadFattSQLException;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
+import sm.clagenna.stdcla.sql.DBConn;
 
 public class SqlServToGAS extends SqlServBase {
 
@@ -299,7 +297,7 @@ public class SqlServToGAS extends SqlServBase {
       m_stmt_ins_Lettura.executeUpdate();
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
-    s_log.info("Inserito {} righe di lettura GAS per Fattura del {}", QtaRighe, TaggedValue.fmtData.format((Date) obj));
+    s_log.info("Inserito {} righe di lettura GAS per Fattura del {}", QtaRighe, HtmlValue.fmtData.format((Date) obj));
 
   }
 
@@ -323,7 +321,6 @@ public class SqlServToGAS extends SqlServBase {
       return;
     }
 
-
     for (int riga = 0; riga < QtaRighe; riga++) {
       Object obj = getValore(Consts.TGV_TipoCausale, riga);
       tipoCausale = ETipoGASConsumo.parse(obj.toString());
@@ -346,7 +343,7 @@ public class SqlServToGAS extends SqlServBase {
       m_stmt_ins_Consumo.executeUpdate();
     }
     Object obj = getValore(Consts.TGV_DataEmiss);
-    s_log.info("Inserito {} righe di consumo GAS per Fattura del {}", QtaRighe, TaggedValue.fmtData.format((Date) obj));
+    s_log.info("Inserito {} righe di consumo GAS per Fattura del {}", QtaRighe, HtmlValue.fmtData.format((Date) obj));
 
   }
 

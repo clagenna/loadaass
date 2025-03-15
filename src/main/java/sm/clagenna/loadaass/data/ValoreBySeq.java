@@ -13,8 +13,8 @@ import sm.clagenna.loadaass.enums.ETipiDato;
 import sm.clagenna.loadaass.sys.ex.ReadFattValoreException;
 
 public class ValoreBySeq {
-
-  private static final Logger s_log = LogManager.getLogger(ValoreBySeq.class);
+  private static final Logger s_log          = LogManager.getLogger(ValoreBySeq.class);
+  private static boolean      s_debEstraiVal = false;
 
   private List<ValoreByTag> m_liSeq;
   @Getter
@@ -39,7 +39,7 @@ public class ValoreBySeq {
    *          campo tagged fornito come partenza della sequenza
    * @return true se combacia la tipologia
    */
-  public boolean goodStart(TaggedValue p_cmp) {
+  public boolean goodStart(HtmlValue p_cmp) {
     ValoreByTag primo = m_liSeq.get(0);
     boolean bRet = p_cmp.getTipo().isCompatible(primo.getTipoDato());
     if (bRet) {
@@ -73,7 +73,10 @@ public class ValoreBySeq {
     }
     String szNam = arr[0];
     String szCivetta = arr[1];
+    boolean bAllNumerics = "N".equalsIgnoreCase(arr[2]);
     ETipiDato tipoc = ETipiDato.decode(arr[2]);
+    if (null == tipoc && bAllNumerics)
+      tipoc = ETipiDato.Float;
     int nExcCol = -1;
     int nExcRiga = -1;
     if ( !arr[3].equals("-") && !arr[4].equals("-")) {
@@ -95,6 +98,7 @@ public class ValoreBySeq {
     ValoreByTag cmp = m_tagFact.creaValTag(szNam); // new ValoreByTag(szNam, szCivetta, tipoc, bArray);
     cmp.assegna(szCivetta, tipoc, bArray);
     cmp.setExcelCoord(nExcCol, nExcRiga);
+    cmp.setAllNumerics(bAllNumerics);
     setNumSeq(p_nSeq);
     m_liSeq.add(cmp);
     return true;
@@ -108,37 +112,98 @@ public class ValoreBySeq {
     m_liSeq.add(cmp);
   }
 
-  public int estraiValori(List<TaggedValue> p_liCmp, int p_k) {
-    TaggedValue tgv = p_liCmp.get(p_k);
+  public int estraiValori(List<HtmlValue> p_liCmp, int p_k) {
     int j = 0;
+    HtmlValue htmlV;
     // verifico che la la tipologia sequenza combaci con tipolog tags
+    HtmlValue htmlFirst = p_liCmp.get(p_k);
+    boolean bObbWord = m_tagFact.isObbWord(htmlFirst.getTxt());
     for (ValoreByTag tg : m_liSeq) {
       int indx = p_k + j++;
       if (indx >= p_liCmp.size())
         return 0;
-      tgv = p_liCmp.get(indx);
-      if ( !tg.getTipoDato().isCompatible(tgv.getTipo())) {
-        s_log.trace("Seq({})[{}]:\"{}\"({}) <> Tgv:\"{}\"({})", //
-            getNumSeq(), //
-            j - 1, tg.getFieldName(), //
-            tg.getTipoDato(), //
-            tgv.getTxt(), //
-            tgv.getTipo()); //
-        return 0;
+      htmlV = p_liCmp.get(indx);
+      ETipiDato seqTip = tg.getTipoDato();
+      ETipiDato tgvTip = htmlV.getTipo();
+      // if ( ! (seqTip.isCompatible(tgvTip) && tg.verificaCivetta(tgv))) {
+      if (j < 4 || !bObbWord) {
+        if ( !seqTip.isCompatible(tgvTip)) {
+          s_log.trace("Seq({})[{}]:\"{}\"({}) <> Tgv:\"{}\"({})", //
+              getNumSeq(), //
+              j - 1, //
+              tg.getFieldName(), //
+              tg.getTipoDato(), //
+              htmlV.getTxt(), //
+              htmlV.getTipo()); //
+          return 0;
+        }
+      }
+      if (s_debEstraiVal)
+        debugEstrVal("?", p_liCmp, p_k, j - 1);
+      String tx = htmlV.getTxt();
+      ETipiDato etp = tg.getTipoDato();
+      switch (etp) {
+        case Minus:
+        case Perc:
+        case Aster:
+        case Less:
+          if ( !etp.isGoodChar(tx))
+            return 0;
+          break;
+        default:
+          break;
       }
     }
+    if (s_debEstraiVal)
+      debugEstrVal("!", p_liCmp, p_k, j - 1);
     // tutta la sequenza combacia per tipologia
     j = 0;
     for (ValoreByTag tg : m_liSeq) {
-      tgv = p_liCmp.get(p_k + j++);
+      htmlV = p_liCmp.get(p_k + j++);
       try {
-        tg.assegnaValDaCampo(tgv, rigaHolder.getRiga());
+        tg.assegnaValDaCampo(htmlV, rigaHolder.getRiga());
         // System.out.println("ValoreBySeq.estraiValori()=" + this.toString());
       } catch (ReadFattValoreException e) {
-        s_log.error("Errore assegna seq:{} = {}", tg.getFieldName(), tgv.toString());
+        s_log.error("Errore assegna seq:{} = {}", tg.getFieldName(), htmlV.toString());
       }
     }
     return j;
+  }
+
+  private void debugEstrVal(String boh, List<HtmlValue> p_liCmp, int p_k, int i) {
+    StringBuilder sb = new StringBuilder();
+    int prel = 1;
+    int inik = p_k - prel;
+    if (inik < 0) {
+      prel = 0;
+      inik = p_k;
+    }
+    int qtaTok = m_liSeq.size();
+    String sz = null;
+    // emetto TGV : da -1 ... a qtaSeq.size + 1
+    for (int j = 0; j < qtaTok + 2; j++) {
+      if (inik >= p_liCmp.size())
+        break;
+      HtmlValue tgv = p_liCmp.get(inik++);
+      sz = tgv.getTxt();
+      if (sz.length() > 17)
+        sz = sz.substring(0, 17) + "...";
+      sz = String.format("%-20s|", sz);
+      sb.append(sz);
+    }
+    sb.append("\n");
+    inik = 0;
+    // emetto SEQ
+    if (prel > 0)
+      sb.append(" ".repeat(21));
+    for (ValoreByTag tg : m_liSeq) {
+      sz = String.format("%-20s|", tg.toStringLess());
+      sb.append(sz);
+    }
+    sb.append("\n");
+    int qta = 21 * (i + prel) + 5;
+    sb.append(String.format("%sseq:%02d", boh, numSeq)).append(" ".repeat(qta)).append("--^\n");
+    System.out.println(sb.toString());
   }
 
   /**

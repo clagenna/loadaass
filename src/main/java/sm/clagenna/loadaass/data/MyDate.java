@@ -3,7 +3,7 @@ package sm.clagenna.loadaass.data;
 import java.io.Serializable;
 import java.util.Date;
 
-import sm.clagenna.loadaass.sys.Utils;
+import sm.clagenna.stdcla.utils.Utils;
 
 public class MyDate implements Serializable, Comparable<MyDate> {
   private static final long serialVersionUID = -5243862236495832695L;

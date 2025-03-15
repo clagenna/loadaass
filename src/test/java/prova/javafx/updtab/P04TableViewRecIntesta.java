@@ -27,11 +27,12 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import sm.clagenna.loadaass.dbsql.DBConn;
-import sm.clagenna.loadaass.dbsql.DBConnFactory;
-import sm.clagenna.loadaass.dbsql.dtset.Dataset;
-import sm.clagenna.loadaass.dbsql.dtset.DtsRow;
-import sm.clagenna.loadaass.sys.AppProperties;
+import sm.clagenna.stdcla.sql.DBConn;
+import sm.clagenna.stdcla.sql.DBConnFactory;
+import sm.clagenna.stdcla.sql.Dataset;
+import sm.clagenna.stdcla.sql.DtsRow;
+import sm.clagenna.stdcla.sys.ex.AppPropsException;
+import sm.clagenna.stdcla.utils.AppProperties;
 import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
 
 public class P04TableViewRecIntesta extends Application {
@@ -93,11 +94,11 @@ public class P04TableViewRecIntesta extends Application {
     fillTableView();
   }
 
-  private void openProps() throws FileNotFoundException, ReadFattPropsException {
+  private void openProps() throws FileNotFoundException, ReadFattPropsException, AppPropsException {
     AppProperties.setSingleton(false);
     try {
       m_prop = new AppProperties();
-    } catch (ReadFattPropsException e) {
+    } catch (AppPropsException  e) {
       e.printStackTrace();
     }
     File fiProp = new File(CSZ_FILE_PROPERTIES);

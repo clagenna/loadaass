@@ -6,18 +6,20 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import sm.clagenna.loadaass.enums.ETipiDato;
-import sm.clagenna.loadaass.sys.Utils;
+import sm.clagenna.stdcla.utils.Utils;
 
-public class TaggedValue implements Comparable<TaggedValue> {
+public class HtmlValue implements Comparable<HtmlValue>, Cloneable {
 
-  private static final Logger s_log  = LogManager.getLogger(TaggedValue.class);
-  private static int          lastId = 0;
+  private static final Logger s_log      = LogManager.getLogger(HtmlValue.class);
+  private static int          lastId     = 0;
+  public static final String  CSV_HEADER = "sep=;\nid;page;py;px;ny;nx;typ;txt\n";
 
   private int     id;
   private double  fx;
@@ -32,6 +34,8 @@ public class TaggedValue implements Comparable<TaggedValue> {
   private ETipiDato  m_ETipiDato;
   private Date       vData;
   private Double     vDbl;
+  private Double     vMin;
+  private Double     vMax;
   private Integer    vInt;
   private BigDecimal vImporto;
   private String     vFattNo;
@@ -48,15 +52,18 @@ public class TaggedValue implements Comparable<TaggedValue> {
   private static Pattern patReal    = Pattern.compile(ETipiDato.Float.getRegex());
   private static Pattern patImpor   = Pattern.compile(ETipiDato.Importo.getRegex());
   private static Pattern patNum     = Pattern.compile(ETipiDato.Intero.getRegex());
+  private static Pattern patLess    = Pattern.compile(ETipiDato.Less.getRegex());
+  private static Pattern patMinMax  = Pattern.compile(ETipiDato.MinMax.getRegex());
+
   // per suplire all'anno nel txt:  "Credito attuale anno 2022:"
   private static Pattern patNum2p = Pattern.compile("(\\d+):");
 
-  public TaggedValue(double p_x, double p_y, int page, String txt, String szRiHtml) {
+  public HtmlValue(double p_x, double p_y, int page, String txt, String szRiHtml) {
     setFx(p_x);
     setFy(p_y);
     setPage(page);
     setTxt(txt);
-    rigaHtml = szRiHtml;
+    rigaHtml = szRiHtml.trim();
     calcola();
   }
 
@@ -67,7 +74,7 @@ public class TaggedValue implements Comparable<TaggedValue> {
     py += (int) ( (getPage() - 1) * Utils.F_YRigheMax);
     setLeft(px);
     setTop(py);
-    id = TaggedValue.lastId++;
+    id = HtmlValue.lastId++;
   }
 
   public int getId() {
@@ -130,6 +137,13 @@ public class TaggedValue implements Comparable<TaggedValue> {
     return txt;
   }
 
+  public Object getMinMax() {
+    double lMin = null != vMin ? vMin : 0f;
+    double lMax = null != vMax ? vMax : 0f;
+    String sz = String.format("[%s - %s]", Utils.formatDouble(lMin), Utils.formatDouble(lMax));
+    return sz;
+  }
+
   public String getRigaHtml() {
     return rigaHtml;
   }
@@ -144,6 +158,10 @@ public class TaggedValue implements Comparable<TaggedValue> {
 
   public ETipiDato getTipo() {
     return m_ETipiDato;
+  }
+
+  public void setTipo(ETipiDato et) {
+    m_ETipiDato = et;
   }
 
   public String getFattNo() {
@@ -163,13 +181,40 @@ public class TaggedValue implements Comparable<TaggedValue> {
     discerni();
   }
 
-  private void discerni() {
+  protected void discerni() {
     m_ETipiDato = ETipiDato.Stringa;
     vData = null;
     vDbl = null;
+    vMin = null;
+    vMax = null;
     vInt = null;
     vImporto = null;
     vInt15 = null;
+    vMin = null;
+    vMax = null;
+    String lTxt = txt;
+    if (lTxt.matches("\\[.+\\]")) {
+      lTxt = lTxt.replace("[", "");
+      lTxt = lTxt.replace("]", "");
+    }
+    //    Pattern patMMx1 = Pattern.compile("([0-9]+[,\\.]*[0-9]*)[ \t]*([\\-<>]+)[ \\t]*([0-9]+[,\\\\.]*[0-9]*)");
+    //    Pattern patMMx2 = Pattern.compile("([\\-<>]+)[ \\t]*([0-9]+[,\\\\.]*[0-9]*)");
+    // --------- MinMax ----------------------
+    Matcher mtch = patMinMax.matcher(lTxt);
+    if (mtch.matches()) {
+      m_ETipiDato = ETipiDato.MinMax;
+      vMin = Utils.parseDouble(mtch.group(1));
+      vMax = Utils.parseDouble(mtch.group(3));
+      return;
+    }
+    // --------- Less ----------------------
+    Matcher mtch2 = patLess.matcher(lTxt);
+    if (mtch2.matches()) {
+      m_ETipiDato = ETipiDato.MinMax;
+      vMin = 0d;
+      vMax = Utils.parseDouble(mtch2.group(2));
+      return;
+    }
     // ------------- DATA ------------------
     if (txt == null || txt.length() == 0)
       return;
@@ -262,11 +307,24 @@ public class TaggedValue implements Comparable<TaggedValue> {
   }
 
   public boolean isNumero() {
-    return m_ETipiDato == ETipiDato.Intero || m_ETipiDato == ETipiDato.Float;
+    return m_ETipiDato.isNumeric();
   }
 
   public boolean isIntero() {
     return m_ETipiDato == ETipiDato.Intero;
+  }
+
+  public boolean isHiphen() {
+    if (null != txt) {
+      return txt.trim().equals("-");
+    }
+    return false;
+  }
+
+  public boolean isLessOrBig() {
+    if (null != txt && (txt.contains("<") || txt.contains(">")))
+      return true;
+    return false;
   }
 
   public boolean isReale() {
@@ -310,15 +368,31 @@ public class TaggedValue implements Comparable<TaggedValue> {
     return vInt;
   }
 
+  public double getvMin() {
+    if (null == vMin)
+      return 0d;
+    return vMin;
+  }
+
+  public double getvMax() {
+    if (null == vMax)
+      return 0d;
+    return vMax;
+  }
+
   @Override
-  public int compareTo(TaggedValue p_o) {
-    if (getTop() < p_o.getTop())
+  public int compareTo(HtmlValue p_o) {
+    if (getPage() < p_o.getPage())
       return -1;
-    if (getTop() > p_o.getTop())
+    if (getPage() > p_o.getPage())
       return 1;
-    if (getLeft() < p_o.getLeft())
+    if (getFy() < p_o.getFy())
       return -1;
-    if (getLeft() > p_o.getLeft())
+    if (getFy() > p_o.getFy())
+      return 1;
+    if (getFx() < p_o.getFx())
+      return -1;
+    if (getFx() > p_o.getFx())
       return 1;
     return 0;
   }
@@ -348,6 +422,28 @@ public class TaggedValue implements Comparable<TaggedValue> {
       case IntN15:
         szIs = "n15";
         break;
+      case Minus:
+        szIs = "mns";
+        break;
+      case Aster:
+        szIs = "ast";
+        break;
+      case Perc:
+        szIs = "prc";
+        break;
+      case Less:
+        szIs = "les";
+        break;
+      case MinMax:
+        szIs = ETipiDato.MinMax.name();
+        String sz = String.format("(%d,%s,%s)\t%d, %d\t%s=[%s - %s]", //
+            getPage(), //
+            formatDbl(getFy()), formatDbl(getFx()), //
+            getTop(), getLeft(), szIs, //
+            Utils.formatDouble(vMin), //
+            Utils.formatDouble(vMax)); //
+        return sz;
+
       default:
         break;
     }
@@ -358,6 +454,20 @@ public class TaggedValue implements Comparable<TaggedValue> {
         formatDbl(getFy()), formatDbl(getFx()), //
         getTop(), getLeft(), szIs, getTxt());
     return sz;
+  }
+
+  public String toCsv() {
+    StringBuilder sb = new StringBuilder();
+    final String sep = ";";
+    sb.append(id).append(sep);
+    sb.append(page).append(sep);
+    sb.append(Utils.formatDouble(fy)).append(sep);
+    sb.append(Utils.formatDouble(fx)).append(sep);
+    sb.append(top).append(sep);
+    sb.append(left).append(sep);
+    sb.append(m_ETipiDato.getCod()).append(sep);
+    sb.append(txt.replace(sep, "|")).append(sep);
+    return sb.toString();
   }
 
   private String formatDbl(double dbl) {
@@ -372,24 +482,32 @@ public class TaggedValue implements Comparable<TaggedValue> {
    * @param p_succ
    * @return
    */
-  public boolean isConsecutivo(TaggedValue p_succ) {
-    double diffX = Math.abs(p_succ.left - left);
+  public boolean isConsecutivo(HtmlValue p_succ) {
+    double diffX = Math.abs(p_succ.fx - fx);
     double diffY = Math.abs(top - p_succ.top);
     double dimChMax = 7.0;
     double dimCh = 999.9F;
     if (txt != null)
       dimCh = diffX / txt.length();
-    if ( !isText() || //
-        !p_succ.isText() || //
-        diffY >= 1 || //
-        left > p_succ.left || //
-        dimCh > dimChMax) {
+    if ( !isText() || !p_succ.isText() || diffY >= 1 || left > p_succ.left)
       return false;
-    }
+    if (dimCh > dimChMax)
+      return false;
+
     return true;
   }
 
-  public void append(TaggedValue p_rec) {
+  public void append(HtmlValue p_rec) {
+    String otxt = txt;
     txt += " " + p_rec.txt;
+    String from = String.format(">%s</div", otxt);
+    String totx = String.format(">%s</div", txt);
+    rigaHtml = rigaHtml.replace(from, totx); 
+  }
+
+  @Override
+  public Object clone() throws CloneNotSupportedException {
+    HtmlValue htRet = new HtmlValue(fx, fy, page, txt, getRigaHtml());
+    return htRet;
   }
 }

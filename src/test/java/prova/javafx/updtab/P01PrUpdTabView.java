@@ -21,14 +21,14 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import sm.clagenna.loadaass.dbsql.DBConn;
-import sm.clagenna.loadaass.dbsql.DBConnFactory;
-import sm.clagenna.loadaass.dbsql.dtset.Dataset;
-import sm.clagenna.loadaass.dbsql.dtset.DtsCol;
-import sm.clagenna.loadaass.dbsql.dtset.DtsCols;
-import sm.clagenna.loadaass.dbsql.dtset.DtsRow;
-import sm.clagenna.loadaass.sys.AppProperties;
-import sm.clagenna.loadaass.sys.ex.ReadFattPropsException;
+import sm.clagenna.stdcla.sql.DBConn;
+import sm.clagenna.stdcla.sql.DBConnFactory;
+import sm.clagenna.stdcla.sql.Dataset;
+import sm.clagenna.stdcla.sql.DtsCol;
+import sm.clagenna.stdcla.sql.DtsCols;
+import sm.clagenna.stdcla.sql.DtsRow;
+import sm.clagenna.stdcla.sys.ex.AppPropsException;
+import sm.clagenna.stdcla.utils.AppProperties;
 
 /**
  * Vedi <a href=
@@ -58,11 +58,11 @@ public class P01PrUpdTabView extends Application {
     fillTableView();
   }
 
-  private void openProps() throws FileNotFoundException, ReadFattPropsException {
+  private void openProps() throws FileNotFoundException, AppPropsException {
     AppProperties.setSingleton(false);
     try {
       m_prop = new AppProperties();
-    } catch (ReadFattPropsException e) {
+    } catch (AppPropsException e) {
       e.printStackTrace();
     }
     File fiProp = new File(CSZ_FILE_PROPERTIES);
@@ -115,8 +115,7 @@ public class P01PrUpdTabView extends Application {
     tableview = new TableView<>();
     int k = 0;
     for (DtsCol col : cols.getColumns()) {
-      @SuppressWarnings("unused")
-      final int j = k++;
+      @SuppressWarnings("unused") final int j = k++;
       final String szColNam = col.getName();
       SimpleStringProperty colTab = new SimpleStringProperty(szColNam);
       m_mapCols.put(szColNam, colTab);

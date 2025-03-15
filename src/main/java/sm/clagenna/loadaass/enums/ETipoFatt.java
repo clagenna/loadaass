@@ -3,7 +3,8 @@ package sm.clagenna.loadaass.enums;
 public enum ETipoFatt {
   GAS("GAS"), //
   EnergiaElettrica("EE"), //
-  Acqua("H2O");
+  Acqua("H2O"),
+  Analisi("SANG");
 
   private String titolo;
 

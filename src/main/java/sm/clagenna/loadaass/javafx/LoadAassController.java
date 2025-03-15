@@ -60,17 +60,18 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import lombok.Getter;
 import sm.clagenna.loadaass.data.RecIntesta;
-import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
 import sm.clagenna.loadaass.dbsql.SqlServPDFonDB;
 import sm.clagenna.loadaass.main.GestPDFFatt;
-import sm.clagenna.loadaass.sys.AppProperties;
-import sm.clagenna.loadaass.sys.ILog4jReader;
-import sm.clagenna.loadaass.sys.IStartApp;
-import sm.clagenna.loadaass.sys.Log4jRow;
-import sm.clagenna.loadaass.sys.MioAppender;
 import sm.clagenna.loadaass.sys.ex.ReadFattException;
-import sm.clagenna.loadaass.sys.ex.ReadFattLog4jRowException;
+import sm.clagenna.stdcla.javafx.IStartApp;
+import sm.clagenna.stdcla.sql.DBConn;
+import sm.clagenna.stdcla.sys.ex.AppPropsException;
+import sm.clagenna.stdcla.sys.ex.Log4jException;
+import sm.clagenna.stdcla.utils.AppProperties;
+import sm.clagenna.stdcla.utils.ILog4jReader;
+import sm.clagenna.stdcla.utils.Log4jRow;
+import sm.clagenna.stdcla.utils.MioAppender;
 
 public class LoadAassController implements Initializable, ILog4jReader, IStartApp {
 
@@ -209,7 +210,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     liPdf.setCellFactory(p -> new ListCell<Path>() {
       /**
        * quando passo in hovering col mouse esce un popup
-       * 
+       *
        * <pre>
        * {
        *   final Popup popup = new Popup();
@@ -240,7 +241,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
         super.updateItem(item, empty);
         if (item != null) {
           String szFiPdf = item.getFileName().toString();
-          String szColo = getStyleClass().toString();
+          @SuppressWarnings("unused") String szColo = getStyleClass().toString();
           setText(item.toString());
           boolean bsel = isSelected();
           ObservableList<String> stcl = getStyleClass();
@@ -364,7 +365,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     Log4jRow riga = null;
     try {
       riga = new Log4jRow(p_arr);
-    } catch (ReadFattLog4jRowException e) {
+    } catch (Log4jException e) {
       e.printStackTrace();
     }
     if (riga != null)
@@ -469,11 +470,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     });
     ObservableList<Path> sels = liPdf.getSelectionModel().getSelectedItems();
     for (Path pth : sels) {
-      try {
-        eseguiConversione(pth);
-      } catch (ReadFattException | IOException e) {
-        s_log.error("Errore conversione PDF {}", pth.toString(), e);
-      }
+      eseguiConversione(pth);
     }
     Platform.runLater(new Runnable() {
       @Override
@@ -484,10 +481,17 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
 
   }
 
-  private void eseguiConversione(Path p_pth) throws ReadFattException, IOException {
+  private void eseguiConversione(Path p_pth) {
     s_log.info("Converto fatt {}", p_pth.toString());
 
-    GestPDFFatt gpdf = new GestPDFFatt(p_pth);
+    GestPDFFatt gpdf = null;
+    try {
+      gpdf = new GestPDFFatt(p_pth);
+    } catch (AppPropsException | ReadFattException e) {
+      s_log.error("Errore conversione PDF ist {}", p_pth.toString(), e);
+      e.printStackTrace();
+      return;
+    }
     gpdf.setRecIntesta(recIntesta);
     gpdf.setGenPDFText(m_bGenTxt);
     gpdf.setGenTagFile(m_bGenTag);
@@ -500,14 +504,19 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     //    try {
     DBConn connSQL = LoadAassMainApp.getInst().getConnSQL();
     gpdf.setConnSql(connSQL);
-    gpdf.convertiPDF();
+    try {
+      gpdf.convertiPDF();
+    } catch (AppPropsException | ReadFattException e) {
+      s_log.error("Errore conversione PDF {}", p_pth.toString(), e);
+      e.printStackTrace();
+    }
     //    } catch (Exception e) {
     //      s_log.error("Errore di conversione PDF Fattura {}", gpdf.getPdfFile(), e);
     //      throw e;
     //    }
   }
 
-  private void eseguiConversioneRunTask() {
+  private void eseguiConversioneRunTask()  {
     s_log.debug("Lancio la conversione in background con un thread");
     ObservableList<Path> sels = liPdf.getSelectionModel().getSelectedItems();
     ExecutorService backGrService = Executors.newFixedThreadPool(1);
@@ -550,7 +559,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
         // gpdf.convertiPDF();
         backGrService.execute(gpdf);
         // lbProgressione.textProperty().unbind();
-      } catch (ReadFattException e) {
+      } catch (ReadFattException | AppPropsException e) {
         lbProgressione.textProperty().unbind();
         s_log.error("Errore conversione PDF {}", pth.toString(), e);
       }
@@ -608,7 +617,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     szGlobMatch = "glob:*:/**/*.pdf";
     PathMatcher matcher = FileSystems.getDefault().getPathMatcher(szGlobMatch);
     try (Stream<Path> walk = Files.walk(pthDirPDF)) {
-      result = walk.filter(p -> !Files.isDirectory(p)) // 
+      result = walk.filter(p -> !Files.isDirectory(p)) //
           // not a directory
           // .map(p -> p.toString().toLowerCase()) // convert path to string
           .filter(f -> matcher.matches(f)) // check end with
@@ -814,7 +823,7 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
       System.out.println("Menu Rescan Dirspess:" + event.toString());
       reloadListFilesPDF();
     } catch (Exception e) {
-      // 
+      //
     } finally {
       getStage().getScene().setCursor(Cursor.DEFAULT);
     }
@@ -833,6 +842,11 @@ public class LoadAassController implements Initializable, ILog4jReader, IStartAp
     double[] pos = spltPane.getDividerPositions();
     String szPos = String.format("%.4f", pos[0]).replace(",", ".");
     p_props.setProperty(CSZ_SPLITPOS, szPos);
+  }
+
+  @Override
+  public void changeSkin() {
+    s_log.warn("Implementare la changeSkin()");
   }
 
 }

@@ -4,7 +4,9 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,12 +17,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.fit.pdfdom.PDFDomTree;
 
-import sm.clagenna.loadaass.data.TaggedValue;
+import sm.clagenna.loadaass.data.HtmlValue;
+import sm.clagenna.loadaass.enums.ETipiDato;
+import sm.clagenna.stdcla.utils.Utils;
 
 public class FromPdf2Html {
   private static final Logger s_log = LogManager.getLogger(FromPdf2Html.class);
@@ -28,11 +33,10 @@ public class FromPdf2Html {
   private static String       CSZ_PAT2       = ".*<div .* style=\"top:(\\d+\\.\\d+)pt;left:(\\d+\\.\\d+)pt;.*>(.*)</div>";
   private static final String CSZ_EVID_NOSEQ = ";background-color: #f02020;color: yellow;\">";
 
-  private List<String> m_outHtml;
-  private int          m_nPage;
-  // private List<TaggedValue>   m_liCampi;
-  private Map<Integer, TaggedValue> m_map;
-  private TaggedValue               m_lastCp;
+  private List<String>            m_outHtml;
+  private int                     m_nPage;
+  private Map<Integer, HtmlValue> m_map;
+  private HtmlValue               m_lastCp;
 
   public FromPdf2Html() {
     //
@@ -47,21 +51,79 @@ public class FromPdf2Html {
     return true;
   }
 
-  public Map<Integer, TaggedValue> getMap() {
+  public Map<Integer, HtmlValue> getMap() {
     return m_map;
   }
 
-  public List<TaggedValue> getListCampi() {
-    // return m_liCampi;
+  public List<HtmlValue> getListCampi() {
     if (null == m_map)
       return null;
-    List<TaggedValue> li = new ArrayList<TaggedValue>(m_map.values());
+    List<HtmlValue> li = new ArrayList<HtmlValue>(m_map.values());
     Collections.sort(li);
     return li;
   }
 
   /**
-   * Converte il file PDF in formato HTML dove sono presenti i i tags da
+   * Con questa cerco di riunire il range che hanno forma <code>"10 - 40"</code>
+   * oppure <code>"[ 10 -40 ]"</code>
+   *
+   * @return
+   */
+  public List<HtmlValue> unifyByRanges() {
+    List<HtmlValue> li = getListCampi();
+    List<HtmlValue> liRet = new ArrayList<HtmlValue>();
+    int iMax = li.size() - 3;
+    for (int i = 0; i < iMax; i++) {
+      HtmlValue html0 = li.get(i);
+      HtmlValue html1 = li.get(i + 1);
+      HtmlValue html2 = li.get(i + 2);
+      try {
+        if (html0.isNumero() && html1.isHiphen() && html2.isNumero()) {
+          String szTxt = String.format("%s - %s", Utils.formatDouble(html0.getvDbl()), Utils.formatDouble(html2.getvDbl()));
+          HtmlValue loc = (HtmlValue) html0.clone();
+          loc.setTxt(szTxt);
+          liRet.add(loc);
+          i += 2;
+          continue;
+        }
+        if (html0.isLessOrBig() && html1.isNumero()) {
+          String szTxt = String.format(" < %s", Utils.formatDouble(html0.getvDbl()), Utils.formatDouble(html2.getvDbl()));
+          HtmlValue loc = (HtmlValue) html0.clone();
+          loc.setTxt(szTxt);
+          loc.setTipo(ETipiDato.MinMax);
+          liRet.add(loc);
+          i += 1;
+          continue;
+        }
+        if (html0.isLessOrBig()) {
+          String lsz = html0.getTxt().trim().replace("<", "").replace(">", "");
+          Double dbl = Utils.parseDouble(lsz);
+          String szTxt = String.format(" < %s", Utils.formatDouble(dbl));
+          HtmlValue loc = (HtmlValue) html0.clone();
+          loc.setTxt(szTxt);
+          loc.setTipo(ETipiDato.MinMax);
+          liRet.add(loc);
+          continue;
+        }
+      } catch (CloneNotSupportedException e) {
+        e.printStackTrace();
+      }
+      liRet.add(html0);
+    }
+    liRet.add(li.get(iMax));
+    liRet.add(li.get(iMax + 1));
+    liRet.add(li.get(iMax + 2));
+    m_map.clear();
+    m_map = null;
+    m_map = new TreeMap<>();
+    for (HtmlValue h : liRet) {
+      m_map.put(h.getId(), h);
+    }
+    return liRet;
+  }
+
+  /**
+   * Converte il file PDF in formato HTML dove sono presenti i tags da
    * interpretare
    *
    * <pre>
@@ -114,12 +176,19 @@ public class FromPdf2Html {
       if (szRigaHtml.indexOf("div class=\"p\"") < 0)
         continue;
       Matcher mtch = pat2.matcher(szRigaHtml);
+      // se non ho top e left la scarto
       if ( !mtch.find())
         continue;
       int k = 1;
       szTop = mtch.group(k++);
       szLeft = mtch.group(k++);
       szText = mtch.group(k++);
+      if (null != szText && szText.contains("&"))
+        szText = StringEscapeUtils.unescapeHtml4(szText);
+      if (null != szText && szText.contains("["))
+        szText = szText.replace("[", "");
+      if (null != szText && szText.contains("]"))
+        szText = szText.replace("]", "");
       trattaRiga(szLeft, szTop, szText, szRigaHtml);
     }
     if (m_map.size() < 5) {
@@ -146,7 +215,7 @@ public class FromPdf2Html {
     double nTop = Double.parseDouble(szTop);
     if (m_nPage <= 0)
       s_log.error("Pagina fuori range:{} su tag {}", m_nPage, szTxt);
-    TaggedValue rec = new TaggedValue(nLeft, nTop, m_nPage, szTxt, szRiHtml);
+    HtmlValue rec = new HtmlValue(nLeft, nTop, m_nPage, szTxt, szRiHtml);
     if (m_lastCp != null && m_lastCp.isConsecutivo(rec))
       m_lastCp.append(rec);
     else {
@@ -172,6 +241,24 @@ public class FromPdf2Html {
     return sz;
   }
 
+  public String getCSVTAGs() {
+    String sz = "sep=;";
+    //    if (m_liCampi == null || m_liCampi.size() == 0)
+    //      return sz;
+    if (null == m_map || m_map.size() == 0)
+      return sz;
+    //    sz = m_liCampi //
+    //        .stream() //
+    //        .map(t -> t.toString()) //
+    //        .collect(Collectors.joining("\n"));
+    sz = getListCampi() //
+        .stream() //
+        .sorted() //
+        .map(t -> t.toCsv()) //
+        .collect(Collectors.joining("\n"));
+    return HtmlValue.CSV_HEADER + sz;
+  }
+
   public void saveTagFile(String p_tagFile) {
     String sz = getTextTAGs();
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(p_tagFile))) {
@@ -182,9 +269,25 @@ public class FromPdf2Html {
     }
   }
 
+  public void saveCSVFile(String p_csvFile) {
+    String sz = getCSVTAGs();
+    try {
+      Files.deleteIfExists(Paths.get(p_csvFile));
+    } catch (IOException e) {
+      s_log.error("Error {} on delete {}", e.getMessage(), p_csvFile);
+      return;
+    }
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(p_csvFile))) {
+      bw.write(sz);
+      s_log.info("Scritto CSV file {}", p_csvFile);
+    } catch (IOException e) {
+      s_log.error("Errore scrittura TAGs", e);
+    }
+  }
+
   public void saveTxtFile(String p_txtFile) {
     TextPrint txp = new TextPrint(false, 5);
-    for (TaggedValue cm : getListCampi())
+    for (HtmlValue cm : getListCampi())
       txp.scrivi(cm);
     // System.out.println(txp.toString());
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(p_txtFile))) {
@@ -195,6 +298,11 @@ public class FromPdf2Html {
     }
   }
 
+  /**
+   * Questa salva il file come da intrepretazione
+   *
+   * @param p_htmlFile
+   */
   public void saveHtmlFile(String p_htmlFile) {
     evidenziaNoSeqs(p_htmlFile);
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(p_htmlFile))) {
@@ -208,11 +316,36 @@ public class FromPdf2Html {
     }
   }
 
+  /**
+   * Questa salva il file dopo l'interpretazione dei singoli campi, dopo i vari
+   * join per parole vicine, dopo eliminazione dei &amp;NBSP, dopo il sort (in
+   * base top,left), etc ...
+   *
+   * @param p_htmlFile
+   */
+  public void saveHtmlFile2(String p_htmlFile) {
+    evidenziaNoSeqs(p_htmlFile);
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(p_htmlFile))) {
+      //      String szHtml = m_outHtml //
+      //          .stream() //
+      //          .collect(Collectors.joining(System.lineSeparator()));
+      String szHtml = m_map.values() //
+          .stream() //
+          .sorted() //
+          .map(s -> s.getRigaHtml()) //
+          .collect(Collectors.joining(System.lineSeparator()));
+      bw.write(szHtml);
+      s_log.info("Scritto HTML file {}", p_htmlFile);
+    } catch (IOException e) {
+      s_log.error("Errore scrittura TAGs", e);
+    }
+  }
+
   private void evidenziaNoSeqs(String p_htmlFile) {
     boolean bEvid = false;
     int qta = 0;
     // style="background-color: #f02020;color: yellow;"
-    for (TaggedValue tgv : getListCampi()) {
+    for (HtmlValue tgv : getListCampi()) {
       if ( !tgv.isNoSeq())
         continue;
       String szHTML = tgv.getRigaHtml();

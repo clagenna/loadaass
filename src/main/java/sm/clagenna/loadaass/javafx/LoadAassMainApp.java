@@ -21,17 +21,18 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
-import sm.clagenna.loadaass.dbsql.DBConn;
-import sm.clagenna.loadaass.dbsql.DBConnFactory;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
 import sm.clagenna.loadaass.dbsql.SqlServPDFonDB;
-import sm.clagenna.loadaass.sys.AppProperties;
-import sm.clagenna.loadaass.sys.IStartApp;
-import sm.clagenna.loadaass.sys.ex.ReadFattException;
+import sm.clagenna.stdcla.javafx.IStartApp;
+import sm.clagenna.stdcla.sql.DBConn;
+import sm.clagenna.stdcla.sql.DBConnFactory;
+import sm.clagenna.stdcla.sys.ex.AppPropsException;
+import sm.clagenna.stdcla.utils.AppProperties;
 
 public class LoadAassMainApp extends Application implements IStartApp {
-  private static final Logger    s_log            = LogManager.getLogger(LoadAassMainApp.class);
-  public static final String     CSZ_MAIN_APP_CSS = "LoadAassFX.css";
+  private static final Logger    s_log             = LogManager.getLogger(LoadAassMainApp.class);
+  public static final String     CSZ_MAIN_APP_CSS  = "LoadAassFX.css";
+  public static final String     CSZ_PROPERTY_FILE = "LoadAass.properties";
   @Getter
   private static LoadAassMainApp inst;
 
@@ -87,7 +88,7 @@ public class LoadAassMainApp extends Application implements IStartApp {
       props = p_props;
       if (props == null) {
         props = new AppProperties();
-        props.leggiPropertyFile(new File(AppProperties.CSZ_PROPERTIES), false, false);
+        props.leggiPropertyFile(new File(CSZ_PROPERTY_FILE), false, false);
       }
       szDbType = props.getProperty(AppProperties.CSZ_PROP_DB_Type);
 
@@ -101,7 +102,7 @@ public class LoadAassMainApp extends Application implements IStartApp {
         primaryStage.setWidth(dx);
         primaryStage.setHeight(dy);
       }
-    } catch (ReadFattException l_e) {
+    } catch (AppPropsException l_e) {
       LoadAassMainApp.s_log.error("Errore in main initApp: {}", l_e.getMessage(), l_e);
       System.exit(1957);
     }
@@ -218,6 +219,11 @@ public class LoadAassMainApp extends Application implements IStartApp {
       return;
     if (m_liResViews.contains(resultView))
       m_liResViews.remove(resultView);
+  }
+
+  @Override
+  public void changeSkin() {
+    s_log.warn("Implementare la changeSkin()");
   }
 
 }

@@ -27,12 +27,12 @@ import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 import sm.clagenna.loadaass.data.RecIntesta;
-import sm.clagenna.loadaass.dbsql.DBConn;
 import sm.clagenna.loadaass.dbsql.SqlServIntest;
-import sm.clagenna.loadaass.dbsql.dtset.Dataset;
-import sm.clagenna.loadaass.dbsql.dtset.DtsRow;
-import sm.clagenna.loadaass.sys.AppProperties;
-import sm.clagenna.loadaass.sys.IStartApp;
+import sm.clagenna.stdcla.javafx.IStartApp;
+import sm.clagenna.stdcla.sql.DBConn;
+import sm.clagenna.stdcla.sql.Dataset;
+import sm.clagenna.stdcla.sql.DtsRow;
+import sm.clagenna.stdcla.utils.AppProperties;
 
 public class ViewRecIntesta implements Initializable, IStartApp {
 
@@ -265,5 +265,10 @@ public class ViewRecIntesta implements Initializable, IStartApp {
     p_props.setProperty(CSZ_PROP_POSINTESTAVIEW_Y, (int) py);
     p_props.setProperty(CSZ_PROP_DIMINTESTAVIEW_X, (int) dx);
     p_props.setProperty(CSZ_PROP_DIMINTESTAVIEW_Y, (int) dy);
+  }
+
+  @Override
+  public void changeSkin() {
+    s_log.warn("Implementare la changeSkin()");
   }
 }

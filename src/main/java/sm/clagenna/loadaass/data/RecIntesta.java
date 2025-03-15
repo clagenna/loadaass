@@ -3,9 +3,9 @@ package sm.clagenna.loadaass.data;
 import javafx.beans.property.SimpleStringProperty;
 import lombok.Getter;
 import lombok.Setter;
-import sm.clagenna.loadaass.dbsql.DBConn;
-import sm.clagenna.loadaass.dbsql.dtset.DtsRow;
-import sm.clagenna.loadaass.sys.Utils;
+import sm.clagenna.stdcla.sql.DBConn;
+import sm.clagenna.stdcla.sql.DtsRow;
+import sm.clagenna.stdcla.utils.Utils;
 
 public class RecIntesta {
   public static final String COL_ID_INTESTA   = "idIntesta";
@@ -33,11 +33,11 @@ public class RecIntesta {
   }
 
   public RecIntesta(DtsRow rec) {
-    Object vv = rec.getValue(COL_ID_INTESTA);
+    Object vv = rec.get(COL_ID_INTESTA);
     idIntesta = new SimpleStringProperty(String.valueOf(vv));
-    vv = rec.getValue(COL_NOME_INTESTA);
+    vv = rec.get(COL_NOME_INTESTA);
     nomeIntesta = new SimpleStringProperty((String) vv);
-    vv = rec.getValue(COL_DIR_FATTURE);
+    vv = rec.get(COL_DIR_FATTURE);
     dirFatture = new SimpleStringProperty((String) vv);
     setChanged(false);
   }

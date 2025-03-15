@@ -11,6 +11,8 @@ import java.util.Locale;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import sm.clagenna.stdcla.sql.DBConn;
+
 public class SqlServPDFonDB {
   private static final Logger s_log        = LogManager.getLogger(SqlServPDFonDB.class);
   private static final String QRY_sel_pdfs = ""                                         //
